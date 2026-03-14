@@ -1,0 +1,65 @@
+{
+  "name": "egypt's-time-machine",
+  "private": true,
+  "version": "0.0.0",
+  "author": "Egypt Time Machine",
+  "description": "Egypt Time Machine Photobooth Application",
+  "main": "electron/main.cjs",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview",
+    "electron:dev": "cross-env NODE_ENV=development wait-on http://localhost:3000 && electron .",
+    "electron:build": "npm run build && electron-builder"
+  },
+  "dependencies": {
+    "@google/genai": "^1.32.0",
+    "@tensorflow/tfjs": "^1.7.4",
+    "face-api.js": "^0.22.2",
+    "lucide-react": "^0.557.0",
+    "react": "^19.2.1",
+    "react-dom": "^19.2.1",
+    "three": "0.160.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.14.0",
+    "@vitejs/plugin-react": "^5.0.0",
+    "@vitejs/plugin-react-swc": "^4.2.2",
+    "cross-env": "^10.1.0",
+    "electron": "^39.2.7",
+    "electron-builder": "^26.0.12",
+    "electron-is-dev": "^3.0.1",
+    "typescript": "~5.8.2",
+    "vite": "^6.2.0",
+    "vite-plugin-pwa": "^1.2.0",
+    "wait-on": "^9.0.3"
+  },
+  "build": {
+    "appId": "com.egypt.timemachine",
+    "productName": "Egypt Time Machine",
+    "directories": {
+      "output": "release"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*"
+    ],
+    "extraResources": [
+      {
+        "from": "printer-config.json",
+        "to": "printer-config.json"
+      }
+    ],
+    "win": {
+      "target": "portable",
+      "icon": "public/icon.png"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "public/icon.png",
+      "hardenedRuntime": true,
+      "gatekeeperAssess": false
+    }
+  }
+}

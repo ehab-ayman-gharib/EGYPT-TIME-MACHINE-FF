@@ -1,0 +1,7 @@
+{
+  "name": "Egypt's Time Machine",
+  "description": "A time-traveling photobooth that transforms you into historical Egyptian eras using Gemini AI and facial detection.",
+  "requestFramePermissions": [
+    "camera"
+  ]
+}
