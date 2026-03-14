@@ -93,8 +93,16 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
       ctx.restore();
 
       const imageData = canvas.toDataURL('image/jpeg', 0.9);
-      // Important: Detect faces on the upright canvas for accuracy
-      const faceData = await detectFaces(canvas, modelsLoaded);
+      
+      // STRICT BYPASS: No detection for Snap a Memory
+      let faceData: FaceDetectionResult = { maleCount: 0, femaleCount: 1, childCount: 0, totalPeople: 1 };
+      if (era?.id !== EraId.SNAP_A_MEMORY) {
+        console.log('[Capture] Detection triggered for historical era');
+        faceData = await detectFaces(canvas, modelsLoaded);
+      } else {
+        console.log('[Capture] STRICT BYPASS: Skipping detection for Snap a Memory');
+      }
+
       onCapture(imageData, faceData);
     }
     setIsDetecting(false);
@@ -158,7 +166,13 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
             0, 0, canvasWidth, canvasHeight               // Destination
           );
           const imageData = canvas.toDataURL('image/jpeg', 0.9);
-          const faceData = await detectFaces(img, modelsLoaded);
+          
+          // STRICT BYPASS: No detection for Snap a Memory file uploads
+          let faceData: FaceDetectionResult = { maleCount: 0, femaleCount: 1, childCount: 0, totalPeople: 1 };
+          if (era?.id !== EraId.SNAP_A_MEMORY) {
+            faceData = await detectFaces(img, modelsLoaded);
+          }
+          
           onCapture(imageData, faceData);
         }
       } else {
@@ -257,8 +271,8 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
 
 
 
-      {/* Model Loading Overlay */}
-      {!modelsLoaded && !error && (
+      {/* Model Loading Overlay - Only if detection is needed */}
+      {!modelsLoaded && !error && era?.id !== EraId.SNAP_A_MEMORY && (
         <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-slate-900/80 backdrop-blur-sm animate-fade-in">
           <RefreshCw className="w-12 h-12 text-yellow-500 animate-spin mb-4" />
           <p className="text-white text-lg font-bold brand-font tracking-wider">INITIALIZING AI</p>
@@ -309,7 +323,6 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
       {!isProcessing && (
         <div className="absolute bottom-0 left-0 right-0 p-10 pb-16 z-20 flex justify-center items-center gap-8 bg-gradient-to-t from-black/80 via-black/40 to-transparent">
           {/* Upload Button */}
-          {/*           
           <input
             type="file"
             ref={fileInputRef}
@@ -323,7 +336,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
             className="p-4 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/30 transition-colors disabled:opacity-50"
           >
             <Upload size={24} />
-          </button> */}
+          </button>
 
           {/* Capture Button */}
           <button

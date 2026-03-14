@@ -1,7 +1,7 @@
 {
-  "name": "egypt's-time-machine",
+  "name": "egypt-time-machine",
   "private": true,
-  "version": "0.0.0",
+  "version": "0.1.0",
   "author": "Egypt Time Machine",
   "description": "Egypt Time Machine Photobooth Application",
   "main": "electron/main.cjs",

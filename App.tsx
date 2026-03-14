@@ -4,7 +4,7 @@ import { SplashScreen } from './components/SplashScreen';
 import { CameraCapture } from './components/CameraCapture';
 import { LoadingScreen } from './components/LoadingScreen';
 import { ResultScreen } from './components/ResultScreen';
-import { generateHistoricalImage } from './services/geminiService';
+import { transformWithFaceFusion } from './services/faceFusionService';
 import { applyEraStamp } from './services/stampService';
 import { ERAS } from './constants';
 
@@ -43,14 +43,15 @@ const App: React.FC = () => {
         let resultImage: string;
 
         if (selectedEra.id === EraId.SNAP_A_MEMORY) {
-          // "Snap a Memory" mode: Skip AI generation, just use the original photo
+          // "Snap a Memory" mode: STRICT BYPASS
+          // No AI, no detection required (faceData should be default fallback if skipped)
           resultImage = imageSrc;
-          setGeneratedPrompt('Snap a Memory (No AI Prompt)');
-          // Small artificial delay for consistent UX
-          await new Promise(resolve => setTimeout(resolve, 1000));
+          setGeneratedPrompt('Snap a Memory (Instant)');
+          // No artificial delay needed for "instant" feel, but keep a tiny bit if UX feels too jumpy
+          await new Promise(resolve => setTimeout(resolve, 300));
         } else {
-          // Historical eras: Run Gemini AI transformation
-          const result = await generateHistoricalImage(imageSrc, selectedEra, faceData);
+          // Historical eras: Run Local FaceFusion transformation
+          const result = await transformWithFaceFusion(imageSrc, selectedEra, faceData);
           resultImage = result.image;
           setGeneratedPrompt(result.prompt);
         }
@@ -61,14 +62,15 @@ const App: React.FC = () => {
         setGeneratedImage(stampedImage);
         setCurrentScreen(AppScreen.RESULT);
         return; // Success! Exit the function
-      } catch (error) {
+      } catch (error: any) {
         console.error(`Attempt ${attempts} failed:`, error);
         if (attempts >= maxAttempts) {
           // All retries failed
-          console.error("All processing attempts failed. Resetting to splash screen.");
-          // Reset to splash screen like the New Adventure button
-          handleRestart();
-          setCurrentScreen(AppScreen.SPLASH);
+          alert(`Processing Error: ${error.message || error}`);
+          console.error("All processing attempts failed. Staying on processing screen for debug.");
+          // For now, don't reset so we can see the console
+          // handleRestart();
+          // setCurrentScreen(AppScreen.SPLASH);
         } else {
           // Wait a bit before retrying (optional delay)
           await new Promise(resolve => setTimeout(resolve, 500));

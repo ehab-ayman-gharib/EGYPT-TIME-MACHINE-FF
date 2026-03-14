@@ -13,7 +13,7 @@ An AI-powered photobooth that transforms user photos into historical Egyptian po
 | **5 Historical Eras** | Old Kingdom, Coptic, Islamic, Modern Egypt, Snap a Memory |
 | **AI Transformation** | Gemini 2.5 Flash Image generates historically accurate portraits |
 | **Face Detection** | TensorFlow.js detects gender/age for appropriate clothing |
-| **Printing** | Direct integration with Canon SELPHY CP printers |
+| **Printing** | Direct integration with DNP DP-QW410/DS620 printers |
 | **QR Sharing** | Upload and generate QR codes for mobile sharing |
 | **Offline Capable** | PWA with service worker caching |
 
@@ -103,13 +103,16 @@ npm run electron:build
 
 ## 📊 Key Metrics
 
-- **Canvas Size**: 1080 x 1920 px (portrait)
-- **Photo Layer**: 75% of canvas
-- **Frame Layer**: 92% of canvas
+- **Canvas Size**: 1800 x 2700 px (4x6 @ 450 DPI)
+- **Minimum Print Res**: 1200 x 1800 px (4x6 @ 300 DPI)
+- **Photo Layer**: Fitted to frame interior
+- **Frame Layer**: Borderless decorative overlay
 - **AI Model**: Gemini 2.5 Flash Image
+- **Temperature**: 0.5 (Optimal for identity preservation)
 - **Face Detection**: SSD MobileNet V1
 - **Max Retries**: 3 attempts
-- **Print Size**: 100mm x 148mm (4x6")
+- **Print Size**: 100mm x 148mm (4x6") - Professional Borderless
+- **Print Engine**: Shell Image Print (Win) / LP (Mac)
 
 ---
 
@@ -149,6 +152,7 @@ public/
 ## 📝 Important Notes
 
 - **Identity Preservation**: AI tries to maintain facial features
+- **Historical Companions**: Randomly includes figures like Nefertiti/Thutmose III
 - **Anti-Repetition**: Scenery selection avoids consecutive repeats
 - **Safety Settings**: All set to BLOCK_NONE for historical content
 - **Fallback**: Defaults to female if gender detection fails

@@ -82,7 +82,7 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({ imageSrc, prompt, er
         formData.append('folder', 'kemet-mirror');
         formData.append('metadata', JSON.stringify({
           event: 'Cairo Airport Photobooth',
-          photobooth_id: 'kemet_mirror_1',
+          photobooth_id: 'egypt_time_machine_1',
           era: era.name,
           prompt: prompt
         }));
@@ -109,7 +109,7 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({ imageSrc, prompt, er
   const handleDownload = () => {
     const link = document.createElement('a');
     link.href = imageSrc;
-    link.download = `chronolens-${era.id}-${Date.now()}.png`;
+    link.download = `egypt-time-machine-${era.id}-${Date.now()}.png`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);

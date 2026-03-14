@@ -14,7 +14,7 @@ function getAutoLaunchPath() {
     // Check if running from temp folder (portable extraction)
     if (exePath.toLowerCase().includes('\\appdata\\local\\temp\\')) {
         // For NSIS install, construct the expected installed path
-        const installedPath = 'C:\\Program Files\\Pao Pao Holiday Booth\\Pao Pao Holiday Booth.exe';
+        const installedPath = 'C:\\Program Files\\Egypt Time Machine\\Egypt Time Machine.exe';
         console.log('[AutoLaunch] Detected temp folder, using installed path:', installedPath);
         return installedPath;
     }
@@ -26,7 +26,7 @@ const autoLaunchPath = getAutoLaunchPath();
 console.log('[AutoLaunch] Using path for auto-launch:', autoLaunchPath);
 
 const autoLauncher = new AutoLaunch({
-    name: 'Pao Pao Holiday Booth',
+    name: 'Egypt Time Machine',
     path: autoLaunchPath,
     isHidden: false,
 });
@@ -76,7 +76,7 @@ function getPrinterConfig() {
     }
 
     console.log('[Printer] No config file found, using default');
-    return { printerName: 'Canon SELPHY CP910 WS' };
+    return { printerName: 'DP-QW410' };
 }
 
 // Helper function to find the best matching printer for WiFi/Network printing
@@ -107,18 +107,18 @@ function findBestPrinter(configuredName, availablePrinters) {
         return fuzzyMatches[0].name;
     }
 
-    // Try matching by SELPHY keyword (for WiFi printers with different names)
-    const selphyMatch = availablePrinters.find(
-        p => p.name.toLowerCase().includes('selphy')
+    // Try matching by DNP/QW410 keyword (for photo printers with different names)
+    const dnpMatch = availablePrinters.find(
+        p => p.name.toLowerCase().includes('dnp') || p.name.toLowerCase().includes('qw410')
     );
-    if (selphyMatch) {
-        console.log('[Printer] Found SELPHY printer:', selphyMatch.name);
-        return selphyMatch.name;
+    if (dnpMatch) {
+        console.log('[Printer] Found DNP printer:', dnpMatch.name);
+        return dnpMatch.name;
     }
 
-    // Try matching by Canon keyword
+    // Try matching by Canon keyword (fallback)
     const canonMatch = availablePrinters.find(
-        p => p.name.toLowerCase().includes('canon')
+        p => p.name.toLowerCase().includes('canon') || p.name.toLowerCase().includes('selphy')
     );
     if (canonMatch) {
         console.log('[Printer] Found Canon printer:', canonMatch.name);
@@ -205,7 +205,7 @@ ipcMain.handle('get-printer-config', async () => {
     };
 });
 
-// IPC Handler: Print image to Canon SELPHY (100mm x 148mm postcard)
+// IPC Handler: Print image to DNP DP-QW410 (100mm x 148mm postcard)
 ipcMain.handle('print-image', async (event, { imageSrc, printerName }) => {
     console.log('[Printer] Received print request');
     console.log('[Printer] Image data length:', imageSrc ? imageSrc.length : 0);
@@ -225,7 +225,7 @@ ipcMain.handle('print-image', async (event, { imageSrc, printerName }) => {
             const os = require('os');
             const tempPath = path.join(os.tmpdir(), 'print-temp.html');
 
-            // EXACT DIMENSIONS for Canon SELPHY P-Size (100mm x 148mm)
+            // EXACT DIMENSIONS for DNP / Professional Photo Paper (100mm x 148mm)
             const htmlContent = `<!DOCTYPE html>
 <html>
 <head>

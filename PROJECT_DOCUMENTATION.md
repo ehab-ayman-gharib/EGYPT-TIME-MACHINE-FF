@@ -72,16 +72,17 @@
 - **Engine**: Google Gemini 2.5 Flash Image
 - **Features**:
   - Identity preservation (maintains facial features)
-  - Contextual clothing selection based on gender/age
-  - Dynamic scenery selection with anti-repetition logic
-  - Safety settings configured for historical content
-  - Automatic retry mechanism (up to 3 attempts)
+  - **Historical Companions**: Support for generating portraits alongside figures like Queen Nefertiti, Pharaoh Thutmose III, or Goddess Isis.
+  - Contextual clothing selection based on gender/age (male, female, child)
+  - Dynamic scenery selection with anti-repetition logic (localStorage tracked)
+  - Safety settings configured for historical content (BLOCK_NONE)
+  - Automatic retry mechanism (up to 3 attempts with 500ms delay)
 
 #### 4. **Image Composition System**
 - **Layered Approach**:
-  1. **Base Layer**: Era-specific background (1080x1920px)
-  2. **Middle Layer**: AI-generated/captured photo (75% canvas size)
-  3. **Top Layer**: Decorative frame (92% canvas size)
+  1. **Base Layer**: Era-specific background (1800x2700px)
+  2. **Middle Layer**: AI-generated/captured photo (Fitted to 1800x2700 canvas)
+  3. **Top Layer**: Decorative frame (Borderless overlay)
 - **Background Selection**:
   - Old Egypt: Dedicated textured background
   - Other eras: Generic background
@@ -94,14 +95,20 @@
 - **Preview System**: Live face detection overlay
 
 #### 6. **Printing Integration**
-- **Electron IPC**: Direct printer communication
-- **Printer Selection**: Dynamic printer list from system
-- **Saved Preferences**: Remembers last used printer
+- **Electron IPC**: Direct communication with system printers via `print-image` handler.
+- **Platform-Specific Logic**:
+  - **Windows**: Uses Shell Image Print engine (`shimgvw.dll`) for high-quality borderless output.
+  - **macOS/Linux**: Uses native `lp` command with `fit-to-page` scaling, specifically configured for **DNP DP-QW410** paper sizes.
+- **Printer Selection**: 
+  - Dynamic printer list retrieval.
+  - Fuzzy matching for "DNP", "QW410", or "DS620" printers (also compatible with SELPHY).
+  - Remembers last used printer in `printer-config.json`.
 - **Print Specifications**:
-  - Paper size: 100mm x 148mm (4x6 inches)
-  - Format: Canon SELPHY CP compatible
-  - Silent printing mode
-- **Fallback**: Browser print dialog for web version
+  - Standard photobooth size: 100mm x 148mm (4x6 inches).
+  - Target Resolution: **1800 x 2700 pixels** (450 DPI for ultra-sharpness).
+  - Minimum Requirement: **1200 x 1800 pixels** (300 DPI for standard quality).
+  - Silent printing enabled.
+- **Fallback**: Browser print dialog for web-only environments.
 
 #### 7. **QR Code Sharing**
 - **Upload API**: `https://qr-web-api.vercel.app/upload`
@@ -114,7 +121,7 @@
 #### 8. **Download & Export**
 - **Format**: PNG (high quality, 0.9 compression)
 - **Filename**: `egypt-time-machine-{timestamp}.png`
-- **Resolution**: 1080x1920px (portrait)
+- **Resolution**: 1800x2700px (Optimized for 4x6 professional prints)
 
 #### 9. **Analytics Integration**
 - **Dashboard API**: Tracks generated image count
@@ -199,7 +206,7 @@
 │  • Display final composed image                                 │
 │  • Action buttons:                                              │
 │    - Download: Save PNG to device                               │
-│    - Print: Send to Canon SELPHY printer                        │
+│    - Print: Send to DNP professional photo printer              │
 │    - QR Code: Upload & generate shareable QR                    │
 │    - New Adventure: Restart flow                                │
 │                                                                  │
@@ -211,9 +218,9 @@
 │                                                                  │
 │  • Printing Flow (Electron):                                    │
 │    1. Get available printers via IPC                            │
-│    2. Load saved printer preference                             │
-│    3. Create hidden print window                                │
-│    4. Send to printer (100x148mm, silent mode)                  │
+│    2. Load saved printer preference (DP-QW410)                  │
+│    3. Save image and invoke native print command                │
+│    4. Send to printer (100x148mm, borderless)                  │
 │    5. Show success/error feedback                               │
 └────────────────────────┬────────────────────────────────────────┘
                          │
@@ -586,36 +593,41 @@ onUpdateImage: (newImage: string) => void
    - Single person: "a man" / "a woman" / "a child"
    - Multiple: "a group of 2 men and 1 woman"
    
-2. **Scene Selection**: Random with anti-repetition
-   - Stores last scene index in localStorage
-   - Tries up to 10 times to avoid repetition
+2. **Historical Companions**: 
+   - Randomly optionally includes famous figures:
+     - **Queen Nefertiti**: Iconic blue cap crown & Wesekh collar.
+     - **Pharaoh Thutmose III**: Blue War Crown (Khepresh).
+     - **Goddess Isis**: Sun disk with cow horns.
    
-3. **Clothing Selection**: Random from era-specific options
-   - Separate male/female/child clothing
-   - Detailed historical descriptions
+3. **Scene Selection**: Random with anti-repetition
+   - Stores last scene index in localStorage under `extra_last_scenes`.
+   - Tries up to 10 times to avoid repeating the same scene twice in a row.
    
-4. **Prompt Construction**: Combine all elements
+4. **Clothing Selection**: Random from era-specific options
+   - Separate male/female/child clothing paths.
+   - Detailed historical descriptions compiled into the prompt.
+   
+5. **Prompt Construction**: Combine all elements
    - Scene description
    - Subject description
    - Clothing details
-   - Identity preservation rules
+   - **Identity Preservation**: Uses `IDENTITY_PRESERVATION_GUIDE` constants.
    
-5. **API Call**: Send to Gemini 2.5 Flash Image
-   - Temperature: 1.0
+6. **API Call**: Send to Gemini 2.5 Flash Image
+   - Temperature: 0.5 (for better consistency)
    - Aspect ratio: 9:16
-   - Safety settings: BLOCK_NONE (for historical content)
+   - Safety settings: BLOCK_NONE for all categories.
    
-6. **Response Handling**: Extract base64 image
-   - Check finish reason
-   - Log safety ratings
-   - Increment analytics counter
+7. **Response Handling**: Extract base64 image
+   - Logs safety ratings and finish reasons.
+   - Triggers analytics increment on success.
 
 **Configuration**:
 ```typescript
 Model: "gemini-2.5-flash-image"
-Temperature: 1
-AspectRatio: "9:16"
-SafetySettings: All categories set to BLOCK_NONE
+Temperature: 0.5
+Aspect_Ratio: "9:16"
+SafetySettings: BLOCK_NONE (Hate, Sexual, Dangerous, Harassment, Integrity)
 ```
 
 ##### `incrementGeneratedCount()`
@@ -801,11 +813,12 @@ if (era.id === EraId.OLD_EGYPT) {
 - Includes saved printer config
 
 **`print-image`**:
-- Creates hidden print window
-- Loads image in HTML template
-- Configures print options (100x148mm)
-- Sends to specified printer
-- Returns success/failure status
+- Saves base64 image to OS temporary directory.
+- Detects host platform (Windows vs macOS).
+- **Windows Command**: `rundll32.exe ... shimgvw.dll,ImageView_PrintTo /pt`
+- **macOS Command**: `lp -d {printer} -o fit-to-page -o PageSize=dnp4x6`
+- Returns success or failure reason.
+- Automatically cleans up temporary files after 10 seconds.
 
 **Print Specifications**:
 ```javascript
@@ -827,7 +840,8 @@ if (era.id === EraId.OLD_EGYPT) {
 **Format**:
 ```json
 {
-  "printerName": "Canon SELPHY CP1500"
+  "win32": "DP-QW410",
+  "darwin": "Dai_Nippon_Printing_DP_QW410"
 }
 ```
 
@@ -1242,7 +1256,7 @@ public/
 
 3. **Printing**:
    - Only works in Electron (not web version)
-   - Requires Canon SELPHY CP compatible printer
+   - Optimized for **DNP DP-QW410** or DS620 printers
    - Print preview not available
 
 4. **QR Code Upload**:
@@ -1348,6 +1362,6 @@ public/
 
 ---
 
-**Last Updated**: February 2, 2026
-**Version**: 0.0.0
-**Documentation Version**: 1.0
+**Last Updated**: March 14, 2026
+**Version**: 0.1.0
+**Documentation Version**: 1.1
