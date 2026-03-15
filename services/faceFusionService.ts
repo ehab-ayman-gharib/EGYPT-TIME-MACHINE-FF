@@ -35,10 +35,10 @@ export const transformWithFaceFusion = async (
   const gender = faceData.maleCount > faceData.femaleCount ? 'male' : 'female';
   
   // 2. Map Target Template Path
-  // Actual path structure is templates/${EraName}/${gender}/template_01.jpg
+  // Actual path structure is templates/${EraName}/${gender}/target_01.jpg
   // Note: EraName in folder is "Old Kingdom"
   const eraFolderName = ERA_NAME_MAP[era.id] || era.id;
-  const targetPath = `templates/${eraFolderName}/${gender}/template_01.jpg`;
+  const targetPath = `templates/${eraFolderName}/${gender}/target_01.jpg`;
   
   console.log(`[FaceFusion] Selected template: ${targetPath}`);
 

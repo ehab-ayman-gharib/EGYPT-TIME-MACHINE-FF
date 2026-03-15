@@ -180,10 +180,11 @@ ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath }
     const { exec } = require('child_process');
     const tempDir = os.tmpdir();
     const timestamp = Date.now();
-    
-    // Paths
     const sourcePath = path.join(tempDir, `ff_source_${timestamp}.png`);
-    const outputPath = path.join(tempDir, `ff_output_${timestamp}.png`);
+    
+    // Determine target extension to match it for output (FaceFusion requirement)
+    const targetExt = path.extname(targetPath) || '.jpg';
+    const outputPath = path.join(tempDir, `ff_output_${timestamp}${targetExt}`);
     
     // Ensure target path is absolute and accessible by external processes (like Python)
     // Ensure target path is absolute and accessible by external processes (like Python)
@@ -192,28 +193,67 @@ ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath }
 
     if (!path.isAbsolute(targetPath)) {
         // Find the template in the app structure
-        // In production, assets are in dist (relative to this file)
-        const templateSearchPath = path.resolve(__dirname, '..', app.isPackaged ? 'dist' : 'public', targetPath);
+        // Electron builder puts unpacked files in "app.asar.unpacked" sibling to "app.asar"
+        const resourcesPath = process.resourcesPath;
+        const unpackedBase = path.join(resourcesPath, 'app.asar.unpacked');
+        const asarBase = path.join(resourcesPath, 'app.asar');
+        
+        // Potential paths to check (mostly for production)
+        const possiblePaths = app.isPackaged ? [
+            path.join(unpackedBase, 'dist', targetPath),
+            path.join(asarBase, 'dist', targetPath),
+            path.join(resourcesPath, 'app', 'dist', targetPath)
+        ] : [
+            path.join(__dirname, '../public', targetPath)
+        ];
 
-        console.log(`[FaceFusion] Searching for template: ${templateSearchPath}`);
+        let foundPath = null;
+        for (const p of possiblePaths) {
+            console.log(`[FaceFusion] Checking path: ${p} (Exists: ${fs.existsSync(p)})`);
+            if (fs.existsSync(p)) {
+                foundPath = p;
+                break;
+            }
+        }
 
-        // If the path is inside an ASAR archive, we MUST extract it
-        if (templateSearchPath.includes('.asar')) {
-            tempTargetPath = path.join(tempDir, `ff_target_${timestamp}.jpg`);
+        // If not found by existsSync (common for ASAR), but we are in production, try to force the asar/dist path
+        if (!foundPath && app.isPackaged) {
+            foundPath = path.join(asarBase, 'dist', targetPath);
+        } else if (!foundPath) {
+            foundPath = path.join(__dirname, '../public', targetPath);
+        }
+
+        if (foundPath.includes('.asar') && !foundPath.includes('.asar.unpacked')) {
+            // STILL in ASAR and not unpacked? Force extract to temp
+            console.log('[FaceFusion] Template STILL in ASAR. Extracting manually...');
+            tempTargetPath = path.join(tempDir, `ff_target_${timestamp}${targetExt}`);
             try {
-                // fs.readFileSync automatically handles ASAR extraction in Electron
-                const templateBuffer = fs.readFileSync(templateSearchPath);
-                fs.writeFileSync(tempTargetPath, templateBuffer);
+                const buffer = fs.readFileSync(foundPath);
+                fs.writeFileSync(tempTargetPath, buffer);
                 absoluteTargetPath = tempTargetPath;
-                console.log('[FaceFusion] SUCCESSFULLY extracted template to:', absoluteTargetPath);
+                console.log('[FaceFusion] Manual extraction SUCCESS:', absoluteTargetPath);
             } catch (e) {
-                console.error('[FaceFusion] FAILED to extract template from ASAR:', e.message);
-                // Fallback to search path (will likely fail in Python)
-                absoluteTargetPath = templateSearchPath;
+                console.error('[FaceFusion] Manual extraction FAILED:', e.message);
+                absoluteTargetPath = foundPath;
             }
         } else {
-            console.log(`[FaceFusion] Template is on real disk: ${templateSearchPath}`);
-            absoluteTargetPath = templateSearchPath;
+            absoluteTargetPath = foundPath;
+            // Diagnostic: If file still not found by fs.exists, try a folder scan as final fallback
+            if (!fs.existsSync(absoluteTargetPath)) {
+                console.log('[FaceFusion] Path is missing, scanning folder for any image...');
+                try {
+                    const folderPath = path.dirname(absoluteTargetPath);
+                    if (fs.existsSync(folderPath)) {
+                        const files = fs.readdirSync(folderPath);
+                        const firstImage = files.find(f => f.match(/\.(jpg|jpeg|png)$/i));
+                        if (firstImage) {
+                            absoluteTargetPath = path.join(folderPath, firstImage);
+                            console.log('[FaceFusion] FALLBACK: Using first image found:', absoluteTargetPath);
+                        }
+                    }
+                } catch (err) {}
+            }
+            console.log('[FaceFusion] Using path:', absoluteTargetPath);
         }
     }
 
@@ -278,7 +318,8 @@ ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath }
                 // 3. Read output file and convert to base64
                 if (fs.existsSync(outputPath)) {
                     const outputBase64 = fs.readFileSync(outputPath, { encoding: 'base64' });
-                    const dataUrl = `data:image/png;base64,${outputBase64}`;
+                    const mimeType = targetExt.toLowerCase() === '.png' ? 'image/png' : 'image/jpeg';
+                    const dataUrl = `data:${mimeType};base64,${outputBase64}`;
                     
                     cleanup();
                     resolve({ success: true, image: dataUrl });

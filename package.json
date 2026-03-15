@@ -41,6 +41,10 @@
     "directories": {
       "output": "release"
     },
+    "asar": true,
+    "asarUnpack": [
+      "**/templates/**/*"
+    ],
     "files": [
       "dist/**/*",
       "electron/**/*"
