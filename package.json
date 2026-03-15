@@ -15,11 +15,14 @@
   },
   "dependencies": {
     "@google/genai": "^1.32.0",
-    "@tensorflow/tfjs": "^1.7.4",
+    "@tensorflow/tfjs": "1.7.4",
+    "@tensorflow/tfjs-node": "^4.22.0",
+    "canvas": "^3.2.1",
     "face-api.js": "^0.22.2",
     "lucide-react": "^0.557.0",
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
+    "sharp": "^0.34.5",
     "three": "0.160.0"
   },
   "devDependencies": {
@@ -27,7 +30,7 @@
     "@vitejs/plugin-react": "^5.0.0",
     "@vitejs/plugin-react-swc": "^4.2.2",
     "cross-env": "^10.1.0",
-    "electron": "^39.2.7",
+    "electron": "^34.3.0",
     "electron-builder": "^26.0.12",
     "electron-is-dev": "^3.0.1",
     "typescript": "~5.8.2",
@@ -43,7 +46,9 @@
     },
     "asar": true,
     "asarUnpack": [
-      "**/templates/**/*"
+      "**/templates/**/*",
+      "**/node_modules/sharp/**/*",
+      "**/node_modules/canvas/**/*"
     ],
     "files": [
       "dist/**/*",
@@ -58,12 +63,6 @@
     "win": {
       "target": "portable",
       "icon": "public/icon.png"
-    },
-    "mac": {
-      "target": "dmg",
-      "icon": "public/icon.png",
-      "hardenedRuntime": true,
-      "gatekeeperAssess": false
     }
   }
 }

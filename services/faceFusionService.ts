@@ -34,13 +34,12 @@ export const transformWithFaceFusion = async (
   // 1. Determine Gender
   const gender = faceData.maleCount > faceData.femaleCount ? 'male' : 'female';
   
-  // 2. Map Target Template Path
-  // Actual path structure is templates/${EraName}/${gender}/target_01.jpg
-  // Note: EraName in folder is "Old Kingdom"
+  // 2. Map Target Template Folder
+  const genderFolder = faceData.maleCount > faceData.femaleCount ? '1M' : '1F';
   const eraFolderName = ERA_NAME_MAP[era.id] || era.id;
-  const targetPath = `templates/${eraFolderName}/${gender}/target_01.jpg`;
+  const targetPath = `templates/${eraFolderName}/${genderFolder}`;
   
-  console.log(`[FaceFusion] Selected template: ${targetPath}`);
+  console.log(`[FaceFusion] Base template folder: ${targetPath}`);
 
   try {
     // 3. Obtain ipcRenderer (support both Dev and Electron environment)

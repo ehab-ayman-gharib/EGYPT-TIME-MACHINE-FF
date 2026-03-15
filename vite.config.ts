@@ -11,6 +11,14 @@ export default defineConfig(({ mode }) => {
       port: 3000,
       host: '0.0.0.0',
     },
+    optimizeDeps: {
+      exclude: ['sharp', 'canvas', '@tensorflow/tfjs-node']
+    },
+    build: {
+      rollupOptions: {
+        external: ['sharp', 'canvas', '@tensorflow/tfjs-node']
+      }
+    },
     plugins: [
       react(),
       VitePWA({

@@ -193,12 +193,10 @@ ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath }
 
     if (!path.isAbsolute(targetPath)) {
         // Find the template in the app structure
-        // Electron builder puts unpacked files in "app.asar.unpacked" sibling to "app.asar"
         const resourcesPath = process.resourcesPath;
         const unpackedBase = path.join(resourcesPath, 'app.asar.unpacked');
         const asarBase = path.join(resourcesPath, 'app.asar');
         
-        // Potential paths to check (mostly for production)
         const possiblePaths = app.isPackaged ? [
             path.join(unpackedBase, 'dist', targetPath),
             path.join(asarBase, 'dist', targetPath),
@@ -216,7 +214,6 @@ ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath }
             }
         }
 
-        // If not found by existsSync (common for ASAR), but we are in production, try to force the asar/dist path
         if (!foundPath && app.isPackaged) {
             foundPath = path.join(asarBase, 'dist', targetPath);
         } else if (!foundPath) {
@@ -224,7 +221,6 @@ ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath }
         }
 
         if (foundPath.includes('.asar') && !foundPath.includes('.asar.unpacked')) {
-            // STILL in ASAR and not unpacked? Force extract to temp
             console.log('[FaceFusion] Template STILL in ASAR. Extracting manually...');
             tempTargetPath = path.join(tempDir, `ff_target_${timestamp}${targetExt}`);
             try {
@@ -238,23 +234,40 @@ ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath }
             }
         } else {
             absoluteTargetPath = foundPath;
-            // Diagnostic: If file still not found by fs.exists, try a folder scan as final fallback
-            if (!fs.existsSync(absoluteTargetPath)) {
-                console.log('[FaceFusion] Path is missing, scanning folder for any image...');
+
+            // Randomization Logic: If it's a directory, pick a random image
+            if (fs.existsSync(absoluteTargetPath) && fs.statSync(absoluteTargetPath).isDirectory()) {
+                console.log(`[FaceFusion] Target is a directory. Picking random template from: ${absoluteTargetPath}`);
+                try {
+                    const files = fs.readdirSync(absoluteTargetPath)
+                        .filter(f => f.match(/\.(jpg|jpeg|png)$/i));
+                    
+                    if (files.length > 0) {
+                        const randomFile = files[Math.floor(Math.random() * files.length)];
+                        absoluteTargetPath = path.join(absoluteTargetPath, randomFile);
+                        console.log(`[FaceFusion] Randomly selected template: ${absoluteTargetPath}`);
+                    } else {
+                        console.warn(`[FaceFusion] Directory found but no images inside: ${absoluteTargetPath}`);
+                    }
+                } catch (dirErr) {
+                    console.error('[FaceFusion] Error reading template directory:', dirErr.message);
+                }
+            } else if (!fs.existsSync(absoluteTargetPath)) {
+                // Diagnostic: Fallback to first image in parent folder
+                console.log('[FaceFusion] Path is missing, scanning parent folder for any image...');
                 try {
                     const folderPath = path.dirname(absoluteTargetPath);
                     if (fs.existsSync(folderPath)) {
-                        const files = fs.readdirSync(folderPath);
-                        const firstImage = files.find(f => f.match(/\.(jpg|jpeg|png)$/i));
-                        if (firstImage) {
-                            absoluteTargetPath = path.join(folderPath, firstImage);
-                            console.log('[FaceFusion] FALLBACK: Using first image found:', absoluteTargetPath);
+                        const files = fs.readdirSync(folderPath).filter(f => f.match(/\.(jpg|jpeg|png)$/i));
+                        if (files.length > 0) {
+                            absoluteTargetPath = path.join(folderPath, files[0]);
+                            console.log('[FaceFusion] Fallback to first image in folder:', absoluteTargetPath);
                         }
                     }
-                } catch (err) {}
+                } catch (e) {}
             }
-            console.log('[FaceFusion] Using path:', absoluteTargetPath);
         }
+        console.log('[FaceFusion] Using resolved path:', absoluteTargetPath);
     }
 
     // Configuration for FaceFusion
