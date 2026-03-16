@@ -78,7 +78,34 @@
   - Safety settings configured for historical content (BLOCK_NONE)
   - Automatic retry mechanism (up to 3 attempts with 500ms delay)
 
-#### 4. **Image Composition System**
+#### 4. **Local FaceFusion Transformation (High-Fidelity)**
+- **Technology**: FaceFusion 3.3.0 (Local Execution)
+- **Features**:
+- **Single Face Swap**: Optimized for high-fidelity personal portraits.
+- **Cross-Platform Support**: 
+  - Windows: CUDA acceleration (NVIDIA GPU).
+  - macOS: CoreML acceleration (Apple Silicon).
+- **Processors**: `face_swapper` (Inswapper 128 FP16) + `face_enhancer` (GFPGAN 1.4).
+- **Template System**: Curated historical templates located in `public/templates/`.
+- **Randomization**: Automatically picks a random template from gender-specific folders (1M/1F) within era directories.
+- **ASAR Support**: Automatic manual extraction of templates from ASAR when running in packaged Electron environments.
+
+#### 5. **Orchestrator Logic: 2-Pass Sequential Anchor (Dual Portraits)**
+- **Purpose**: Solves gender-mismatch placement (e.g., Male on Right vs Female on Left) in historical templates.
+- **Brain**: 
+  - Detects all faces using `face-api.js`.
+  - Sorts faces by X-coordinate (left-to-right).
+  - Determines the target directory based on the sorted order:
+    - **1M_1F**: Male (Left) + Female (Right)
+    - **1F_1M**: Female (Left) + Male (Right)
+    - **2M**: Male (Left) + Male (Right)
+    - **2F**: Female (Left) + Female (Right)
+- **Physical Isolation**: Uses `sharp` in the Electron main process to create padded crops (1.6x) for each detected face.
+- **Sequential Execution**:
+  - **Pass 1 (Left)**: Swaps the left-most face onto the template using `left-right` ordering.
+  - **Pass 2 (Right)**: Swaps the right-most face onto the result of Pass 1 using `right-left` ordering and applies the `face_enhancer`.
+
+#### 5. **Image Composition System**
 - **Layered Approach**:
   1. **Base Layer**: Era-specific background (1800x2700px)
   2. **Middle Layer**: AI-generated/captured photo (Fitted to 1800x2700 canvas)
@@ -270,8 +297,9 @@ Session State Variables:
 ┌─────────────────────────────────────────────────────────────┐
 │                    AI/ML LAYER                              │
 ├─────────────────────────────────────────────────────────────┤
-│  Google Gemini API     │  Image Generation                  │
-│  TensorFlow.js 1.7.4   │  ML Runtime                        │
+│  Google Gemini API     │  Cloud Image Generation            │
+│  FaceFusion 3.3.0      │  Local High-Fidelity face swap     │
+│  TensorFlow.js 1.7.4   │  Client-side ML Runtime            │
 │  face-api.js 0.22.2    │  Face Detection                    │
 └─────────────────────────────────────────────────────────────┘
 
@@ -280,6 +308,8 @@ Session State Variables:
 ├─────────────────────────────────────────────────────────────┤
 │  Vite 6.2.0            │  Build Tool & Dev Server           │
 │  Electron 39.2.7       │  Desktop Runtime                   │
+│  Python 3.10+          │  FaceFusion Backend Logic          │
+│  Conda / Virtualenv    │  Python Environment Management     │
 │  Electron Builder      │  Packaging (Windows Portable)      │
 │  Vite PWA Plugin       │  Progressive Web App               │
 └─────────────────────────────────────────────────────────────┘
@@ -345,6 +375,12 @@ services/
 │       ├── SSD MobileNet V1 detection
 │       ├── Age/Gender classification
 │       └── Result aggregation
+│
+├── faceFusionService.ts
+│   └── transformWithFaceFusion()
+│       ├── Gender mapping (male/female → 1M/1F)
+│       ├── Era path mapping
+│       └── IPC call to 'execute-face-fusion'
 │
 └── stampService.ts
     └── applyEraStamp()
@@ -1025,7 +1061,31 @@ if (era.id === EraId.OLD_EGYPT) {
 
 ---
 
-### 2. QR Code Upload API
+### 2. Local FaceFusion Integration
+
+**IPC Channel**: `execute-face-fusion`
+**Backend Engine**: Python-based FaceFusion 3.3.0
+
+**Workflow**:
+1. **Source Capture**: UI saves captured frame as base64.
+2. **Template Mapping**: `faceFusionService.ts` determines target path (e.g., `templates/Old Kingdom/1M`).
+3. **Execution**:
+   - UI invokes IPC with `sourceBase64` and `targetPath`.
+   - Main process normalizes paths and extracts templates from ASAR if necessary.
+   - Command triggers `facefusion.py headless-run`.
+4. **Platform Optimization**:
+   - **Windows**: Uses `--execution-providers cuda`.
+   - **macOS**: Uses `--execution-providers coreml`.
+5. **Output**: Returns generated image as base64 back to UI.
+
+**Configuration (`printer-config.json`)**:
+- `condaEnv`: Name of the environment (e.g., "facefusion").
+- `condaPath`: Path to `conda` executable.
+- `facefusionDir`: Absolute path to FaceFusion installation directory.
+
+---
+
+### 3. QR Code Upload API
 
 **Endpoint**: `https://qr-web-api.vercel.app/upload`
 **Method**: POST (multipart/form-data)
@@ -1101,6 +1161,25 @@ npm run dev
 npm run electron:dev
 ```
 
+**FaceFusion Setup (Required for Transformation)**:
+- Install [FaceFusion 3.3.0](https://github.com/facefusion/facefusion)
+- Create a Conda environment (recommended)
+- Update `printer-config.json` with your local paths:
+```json
+{
+  "win32": {
+    "printerName": "DP-QW410",
+    "condaEnv": "facefusion",
+    "facefusionDir": "C:/tools/facefusion"
+  },
+  "darwin": {
+    "printerName": "DNP_QW410",
+    "condaEnv": "facefusion",
+    "facefusionDir": "/Users/name/facefusion"
+  }
+}
+```
+
 ---
 
 ### Production Build
@@ -1134,6 +1213,7 @@ npm run electron:build
 7. ✅ Verify all assets are in `public/` folder:
    - Backgrounds (Old-Egyptian, Generic)
    - Frames (per era)
+   - Templates (for FaceFusion)
    - Stamps (per era)
    - Logos
    - Models (face-api.js weights)
@@ -1210,6 +1290,7 @@ public/
 - `dist/` (built web app)
 - `electron/main.cjs`
 - `printer-config.json`
+- `public/templates/` (Essential for FaceFusion)
 
 ---
 
@@ -1362,6 +1443,6 @@ public/
 
 ---
 
-**Last Updated**: March 14, 2026
-**Version**: 0.1.0
-**Documentation Version**: 1.1
+**Last Updated**: March 17, 2026
+**Version**: 0.2.0
+**Documentation Version**: 1.2

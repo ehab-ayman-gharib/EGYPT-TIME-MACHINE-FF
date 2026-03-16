@@ -208,11 +208,22 @@ export const detectFaces = async (videoElement: HTMLVideoElement | HTMLImageElem
         // Execute
         const results = await task;
 
+        const faces: any[] = results.map((res: any) => ({
+            box: {
+                x: res.detection.box.x,
+                y: res.detection.box.y,
+                width: res.detection.box.width,
+                height: res.detection.box.height
+            },
+            gender: res.gender || 'female',
+            age: res.age ? Math.round(res.age) : 30
+        }));
+
         let maleCount = 0;
         let femaleCount = 0;
         let childCount = 0;
 
-        results.forEach((res: any, index: number) => {
+        results.forEach((res: any) => {
             const gender = res.gender || 'unknown';
             const age = res.age ? Math.round(res.age) : 30; // Default to adult if unknown
 
@@ -224,7 +235,7 @@ export const detectFaces = async (videoElement: HTMLVideoElement | HTMLImageElem
             }
         });
 
-        return { maleCount, femaleCount, childCount, totalPeople: results.length };
+        return { maleCount, femaleCount, childCount, totalPeople: results.length, faces };
     } catch (error: any) {
         return { maleCount: 0, femaleCount: 1, childCount: 0, totalPeople: 1 };
     }

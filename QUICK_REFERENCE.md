@@ -8,14 +8,12 @@ An AI-powered photobooth that transforms user photos into historical Egyptian po
 
 ## 📱 Core Features
 
-| Feature | Description |
-|---------|-------------|
+| **Local Face Fusion** | Cross-platform (Win/Mac) single face swap for high fidelity |
 | **5 Historical Eras** | Old Kingdom, Coptic, Islamic, Modern Egypt, Snap a Memory |
 | **AI Transformation** | Gemini 2.5 Flash Image generates historically accurate portraits |
 | **Face Detection** | TensorFlow.js detects gender/age for appropriate clothing |
-| **Printing** | Direct integration with DNP DP-QW410/DS620 printers |
+| **Printing** | Direct integration with DNP DP-QW410/DS620 printers (Win/Mac) |
 | **QR Sharing** | Upload and generate QR codes for mobile sharing |
-| **Offline Capable** | PWA with service worker caching |
 
 ---
 
@@ -35,6 +33,7 @@ An AI-powered photobooth that transforms user photos into historical Egyptian po
 ### Services
 - **`geminiService.ts`** - AI image generation with Gemini API
 - **`faceService.ts`** - Face detection using TensorFlow.js
+- **`faceFusionService.ts`** - Local high-fidelity face swap orchestration
 - **`stampService.ts`** - Image composition (background + photo + frame)
 
 ### Configuration
@@ -68,13 +67,13 @@ Splash Screen → Select Era → Camera Capture → Face Detection
 
 ## 🛠️ Tech Stack
 
-| Category | Technology |
-|----------|------------|
 | **Frontend** | React 19, TypeScript 5.8 |
-| **AI/ML** | Google Gemini API, TensorFlow.js, face-api.js |
+| **AI/ML** | Google Gemini API, FaceFusion, TensorFlow.js, face-api.js |
+| **Face Swap** | FaceFusion 3.3.0 (Inswapper 128, GFPGAN 1.4) |
 | **3D Graphics** | Three.js |
 | **Build** | Vite 6.2 |
 | **Desktop** | Electron 39 |
+| **Backend Logic**| Python 3.10+, Conda/Venv |
 | **Styling** | TailwindCSS |
 
 ---
@@ -107,9 +106,10 @@ npm run electron:build
 - **Minimum Print Res**: 1200 x 1800 px (4x6 @ 300 DPI)
 - **Photo Layer**: Fitted to frame interior
 - **Frame Layer**: Borderless decorative overlay
-- **AI Model**: Gemini 2.5 Flash Image
+- **AI Model**: Gemini 2.5 Flash Image / FaceFusion 3.3.0
 - **Temperature**: 0.5 (Optimal for identity preservation)
-- **Face Detection**: SSD MobileNet V1
+- **Face Detection**: SSD MobileNet V1 / RetinaFace (FF)
+- **Execution Providers**: CUDA (Windows) / CoreML (macOS)
 - **Max Retries**: 3 attempts
 - **Print Size**: 100mm x 148mm (4x6") - Professional Borderless
 - **Print Engine**: Shell Image Print (Win) / LP (Mac)
@@ -130,6 +130,7 @@ npm run electron:build
 public/
 ├── Backgrounds/          # Era-specific backgrounds
 ├── Frames/              # Decorative frames per era
+├── templates/           # High-fidelity FaceFusion templates
 ├── Stamps/              # Decorative stamps (legacy)
 ├── Logos/               # Branding assets
 ├── models/              # TensorFlow.js models

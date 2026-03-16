@@ -1,6 +1,7 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
 const path = require('path');
 const fs = require('fs');
+const sharp = require('sharp');
 
 let mainWindow = null;
 
@@ -90,6 +91,7 @@ function getAppConfig() {
             let condaEnv = "";
             let condaPath = "conda";
             let facefusionDir = "";
+            let ffmpegPath = "";
 
             if (typeof platformConfig === 'object' && platformConfig !== null) {
                 // New nested structure
@@ -97,6 +99,7 @@ function getAppConfig() {
                 condaEnv = platformConfig.condaEnv || "";
                 condaPath = platformConfig.condaPath || "conda";
                 facefusionDir = platformConfig.facefusionDir || "";
+                ffmpegPath = platformConfig.ffmpegPath || "";
             } else {
                 // Backwards compatibility with legacy flat structure
                 printerName = parsedConfig[platform] || parsedConfig.printerName || "";
@@ -106,13 +109,13 @@ function getAppConfig() {
             }
 
             console.log(`[Config] Loaded - Printer: ${printerName}, Conda: ${condaEnv}, FF Dir: ${facefusionDir}`);
-            return { printerName, condaEnv, condaPath, facefusionDir };
+            return { printerName, condaEnv, condaPath, facefusionDir, ffmpegPath };
         }
     } catch (err) {
         console.warn('[Config] Failed to read config:', err.message);
     }
 
-    return { printerName: "", condaEnv: "", condaPath: "conda", facefusionDir: "" };
+    return { printerName: "", condaEnv: "", condaPath: "conda", facefusionDir: "", ffmpegPath: "" };
 }
 
 // Helper function to find the best matching printer 
@@ -183,10 +186,13 @@ ipcMain.handle('get-printers', async () => {
 });
 
 // Handle FaceFusion Execution
-ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath }) => {
-    console.log('[FaceFusion] Execution requested');
+ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath, faces }) => {
+    console.log('[FaceFusion] Execution requested', { targetPath, faceCount: faces ? faces.length : 0 });
     const os = require('os');
     const { exec } = require('child_process');
+    const { promisify } = require('util');
+    const execAsync = promisify(exec);
+    
     const tempDir = os.tmpdir();
     const timestamp = Date.now();
     const sourcePath = path.join(tempDir, `ff_source_${timestamp}.png`);
@@ -196,18 +202,15 @@ ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath }
     const outputPath = path.join(tempDir, `ff_output_${timestamp}${targetExt}`);
     
     // File Path Normalization
-    // Fix any Windows-style slashes that might have leaked from the frontend
     targetPath = path.normalize(targetPath.replace(/\\/g, '/'));
 
-    // Ensure target path is absolute and accessible by external processes (like Python)
+    // Ensure target path is absolute
     let absoluteTargetPath = targetPath;
     let tempTargetPath = null;
 
     if (!path.isAbsolute(targetPath)) {
-        // Find the template in the app structure
         let resourcesPath = process.resourcesPath;
         if (process.platform === 'darwin' && app.isPackaged) {
-            // macOS: Resources are inside the app bundle's Contents/Resources folder
             resourcesPath = path.join(path.dirname(process.execPath), '..', 'Resources');
         }
 
@@ -224,7 +227,6 @@ ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath }
 
         let foundPath = null;
         for (const p of possiblePaths) {
-            console.log(`[FaceFusion] Checking path: ${p} (Exists: ${fs.existsSync(p)})`);
             if (fs.existsSync(p)) {
                 foundPath = p;
                 break;
@@ -238,164 +240,208 @@ ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath }
         }
 
         if (foundPath.includes('.asar') && !foundPath.includes('.asar.unpacked')) {
-            console.log('[FaceFusion] Template STILL in ASAR. Extracting manually...');
+            console.log('[FaceFusion] Extracting target from ASAR...');
             tempTargetPath = path.join(tempDir, `ff_target_${timestamp}${targetExt}`);
             try {
                 const buffer = fs.readFileSync(foundPath);
                 fs.writeFileSync(tempTargetPath, buffer);
                 absoluteTargetPath = tempTargetPath;
-                console.log('[FaceFusion] Manual extraction SUCCESS:', absoluteTargetPath);
             } catch (e) {
-                console.error('[FaceFusion] Manual extraction FAILED:', e.message);
                 absoluteTargetPath = foundPath;
             }
         } else {
             absoluteTargetPath = foundPath;
 
-            // Randomization Logic: If it's a directory, pick a random image
             if (fs.existsSync(absoluteTargetPath) && fs.statSync(absoluteTargetPath).isDirectory()) {
-                console.log(`[FaceFusion] Target is a directory. Picking random template from: ${absoluteTargetPath}`);
                 try {
-                    const files = fs.readdirSync(absoluteTargetPath)
-                        .filter(f => f.match(/\.(jpg|jpeg|png)$/i));
-                    
+                    const files = fs.readdirSync(absoluteTargetPath).filter(f => f.match(/\.(jpg|jpeg|png)$/i));
                     if (files.length > 0) {
                         const randomFile = files[Math.floor(Math.random() * files.length)];
                         absoluteTargetPath = path.join(absoluteTargetPath, randomFile);
-                        console.log(`[FaceFusion] Randomly selected template: ${absoluteTargetPath}`);
-                    } else {
-                        console.warn(`[FaceFusion] Directory found but no images inside: ${absoluteTargetPath}`);
                     }
-                } catch (dirErr) {
-                    console.error('[FaceFusion] Error reading template directory:', dirErr.message);
-                }
-            } else if (!fs.existsSync(absoluteTargetPath)) {
-                // Diagnostic: Fallback to first image in parent folder
-                console.log('[FaceFusion] Path is missing, scanning parent folder for any image...');
-                try {
-                    const folderPath = path.dirname(absoluteTargetPath);
-                    if (fs.existsSync(folderPath)) {
-                        const files = fs.readdirSync(folderPath).filter(f => f.match(/\.(jpg|jpeg|png)$/i));
-                        if (files.length > 0) {
-                            absoluteTargetPath = path.join(folderPath, files[0]);
-                            console.log('[FaceFusion] Fallback to first image in folder:', absoluteTargetPath);
-                        }
-                    }
-                } catch (e) {}
+                } catch (dirErr) { }
             }
         }
-        console.log('[FaceFusion] Using resolved path:', absoluteTargetPath);
     }
 
     // Configuration for FaceFusion
     const config = getAppConfig();
     const condaEnv = config.condaEnv; 
-    const condaPath = config.condaPath;
+    const condaPath = path.normalize(config.condaPath);
     const facefusionDir = config.facefusionDir;
+    const ffmpegPath = config.ffmpegPath;
+    const activeCwd = facefusionDir || process.cwd();
+    const isWin = process.platform === 'win32';
+    const isMac = process.platform === 'darwin';
+    const execProvider = isMac ? 'coreml' : 'cuda';
     
-    return new Promise((resolve) => {
+    // Command parts
+    // Cross-Platform Python Binary Selection
+    let pythonExecutable = "python";
+    if (isMac) {
+        // Mac: Always prefer local venv as requested
+        pythonExecutable = path.join(activeCwd, 'venv', 'bin', 'python');
+        console.log(`[FaceFusion] Mac - Using Venv: ${pythonExecutable}`);
+    } else if (isWin) {
+        if (condaEnv) {
+            // Windows + Conda: Use simple 'python' for conda run to resolve
+            pythonExecutable = "python";
+            console.log(`[FaceFusion] Win - Using Conda Env: ${condaEnv}`);
+        } else {
+            // Windows - Fallback to venv if no conda env
+            pythonExecutable = path.join(activeCwd, 'venv', 'Scripts', 'python.exe');
+            console.log(`[FaceFusion] Win - Using fallback Venv: ${pythonExecutable}`);
+        }
+    }
+
+    const pythonCmd = `"${pythonExecutable}" facefusion.py`;
+
+    const commonParams = `--execution-providers ${execProvider} --face-detector-model retinaface --face-detector-score 0.1 --face-landmarker-score 0.1 --face-selector-mode one`;
+
+    return new Promise(async (resolve) => {
         try {
             // 1. Save source image
             const base64Data = sourceBase64.replace(/^data:image\/\w+;base64,/, '');
-            fs.writeFileSync(sourcePath, Buffer.from(base64Data, 'base64'));
+            const sourceBuffer = Buffer.from(base64Data, 'base64');
+            fs.writeFileSync(sourcePath, sourceBuffer);
 
-            // 2. Build command
-            const isWin = process.platform === 'win32';
-            const isMac = process.platform === 'darwin';
-            const activeCwd = facefusionDir || process.cwd();
-            
-            // Cross-Platform Python Binary Pathing
-            let pythonExecutable = "python";
-            if (isWin) {
-                pythonExecutable = path.join(activeCwd, 'venv', 'Scripts', 'python.exe');
-            } else if (isMac) {
-                pythonExecutable = path.join(activeCwd, 'venv', 'bin', 'python');
-            }
+            // Check if we should use Orchestrator Logic (2-Pass Sequential Anchor)
+            const isDualSwap = faces && faces.length === 2 && 
+                               (targetPath.includes('1M_1F') || 
+                                targetPath.includes('1F_1M') || 
+                                targetPath.includes('2M') || 
+                                targetPath.includes('2F'));
 
-            const pythonCmd = `"${pythonExecutable}" facefusion.py`;
-            
-            // Execution Provider Switching
-            const execProvider = isMac ? 'coreml' : 'cuda';
-
-            // Note: We use --headless-run for FF 3.3.0
-            const ffParams = `headless-run --execution-providers ${execProvider} --processors face_swapper face_enhancer --face-swapper-model inswapper_128_fp16 --face-enhancer-model gfpgan_1.4 --face-detector-model retinaface --face-detector-score 0.1 --face-landmarker-score 0.1 --face-selector-mode one --source-paths "${sourcePath}" --target-path "${absoluteTargetPath}" --output-path "${outputPath}"`;
-            
-            let command = `${pythonCmd} ${ffParams}`;
-            if (condaEnv) {
-                // If the user provided an absolute path to conda.bat, use it
-                command = `"${condaPath}" run -n ${condaEnv} ${pythonCmd} ${ffParams}`;
-            }
-
-            console.log(`[FaceFusion] EXEC: ${command}`);
-            console.log(`[FaceFusion] CWD: ${activeCwd}`);
-
-            // Build cross-platform environment to ensure ffmpeg and brew paths are included on Mac
             const env = { ...process.env };
+            
+            if (isWin) {
+                // Critical: Ensure critical Windows variables are present
+                env.SystemRoot = process.env.SystemRoot || 'C:\\Windows';
+                env.SystemDrive = process.env.SystemDrive || 'C:';
+                env.ComSpec = process.env.ComSpec || 'C:\\Windows\\System32\\cmd.exe';
+                env.TEMP = process.env.TEMP || os.tmpdir();
+                env.TMP = process.env.TMP || os.tmpdir();
+
+                // Merge Path robustly
+                const extraWinPaths = [
+                    'C:\\Windows\\System32',
+                    'C:\\Windows',
+                    'C:\\Windows\\System32\\Wbem',
+                    'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\',
+                    'C:\\Windows\\System32\\OpenSSH\\',
+                    condaPath ? path.dirname(condaPath) : '',
+                    ffmpegPath ? path.dirname(ffmpegPath) : ''
+                ].filter(p => p);
+                
+                const currentPath = process.env.PATH || process.env.Path || '';
+                const allPaths = [...new Set([
+                    ...extraWinPaths,
+                    ...currentPath.split(';')
+                ])].filter(p => p).join(';');
+                
+                env.PATH = allPaths;
+                env.Path = allPaths;
+            }
+
             if (isMac) {
-                // Packaged Mac apps lose the user's terminal PATH. We must manually append typical Homebrew locations.
-                const extraPaths = ['/opt/homebrew/bin', '/usr/local/bin', '/opt/homebrew/sbin'];
+                // Packaged Mac apps lose the user's terminal PATH.
+                const extraPaths = ['/usr/bin', '/bin', '/usr/sbin', '/sbin', '/usr/local/bin', '/opt/homebrew/bin'];
                 const currentPath = env.PATH || '';
                 env.PATH = extraPaths.filter(p => !currentPath.includes(p)).join(':') + (currentPath ? `:${currentPath}` : '');
-                console.log(`[FaceFusion] Mac PATH augmented to include Homebrew: ${env.PATH}`);
             }
 
-            // Use facefusionDir as CWD if provided, and use shell: true for Windows & Mac
             const execOptions = { 
                 cwd: facefusionDir || undefined,
-                shell: true,
+                shell: isWin ? (env.ComSpec || true) : true,
                 env: env,
-                maxBuffer: 1024 * 1024 * 100 // 100MB buffer to prevent tqdm progress bars from hanging the process
+                maxBuffer: 1024 * 1024 * 100
             };
 
-            const childProcess = exec(command, execOptions, (error, stdout, stderr) => {
-                // Cleanup helper
-                const cleanup = () => {
-                    setTimeout(() => {
-                        try {
-                            if (fs.existsSync(sourcePath)) fs.unlinkSync(sourcePath);
-                            if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
-                            if (tempTargetPath && fs.existsSync(tempTargetPath)) {
-                                fs.unlinkSync(tempTargetPath);
-                                console.log('[FaceFusion] Cleaned up temp target');
-                            }
-                        } catch (e) {}
-                    }, 5000);
+            const cleanup = () => {
+                setTimeout(() => {
+                    try {
+                        if (fs.existsSync(sourcePath)) fs.unlinkSync(sourcePath);
+                        if (fs.existsSync(outputPath)) fs.unlinkSync(outputPath);
+                        if (tempTargetPath && fs.existsSync(tempTargetPath)) fs.unlinkSync(tempTargetPath);
+                    } catch (e) {}
+                }, 15000);
+            };
+
+            if (isDualSwap) {
+                console.log('[FaceFusion] 🛠️ Orchestrator Logic: 2-Pass Sequential Anchor');
+                
+                const cropLeftPath = path.join(tempDir, `crop_left_${timestamp}.jpg`);
+                const cropRightPath = path.join(tempDir, `crop_right_${timestamp}.jpg`);
+                const intermediatePath = path.join(tempDir, `intermediate_${timestamp}${targetExt}`);
+
+                // Step 2: Physical Isolation (The "Crops")
+                const imgMetadata = await sharp(sourceBuffer).metadata();
+                const extractCrop = async (box, outPath) => {
+                    const padding = 1.6; // Slightly more than 1.5 as requested, for safety
+                    const w = box.width * padding;
+                    const h = box.height * padding;
+                    const l = Math.max(0, box.x - (w - box.width) / 2);
+                    const t = Math.max(0, box.y - (h - box.height) / 2);
+
+                    await sharp(sourceBuffer)
+                        .extract({
+                            left: Math.round(Math.min(l, imgMetadata.width - 1)),
+                            top: Math.round(Math.min(t, imgMetadata.height - 1)),
+                            width: Math.round(Math.min(w, imgMetadata.width - l)),
+                            height: Math.round(Math.min(h, imgMetadata.height - t))
+                        })
+                        .toFile(outPath);
                 };
 
-                if (error) {
-                    console.error('[FaceFusion] Execution error:', error);
-                    console.error('[FaceFusion] stderr:', stderr);
-                    cleanup();
-                    resolve({ success: false, error: error.message });
-                    return;
-                }
+                await extractCrop(faces[0], cropLeftPath);
+                await extractCrop(faces[1], cropRightPath);
 
-                console.log('[FaceFusion] Command completed successfully');
+                // Step 3: Sequential Execution
+                // Pass 1: The Left Anchor
+                const normalizedCondaPath = isWin ? condaPath.replace(/\//g, '\\') : condaPath;
+                const cmd1Params = `headless-run ${commonParams} --processors face_swapper --face-swapper-model inswapper_128_fp16 --face-selector-order left-right --reference-face-position 0 --source-paths "${cropLeftPath}" --target-path "${absoluteTargetPath}" --output-path "${intermediatePath}"`;
+                const cmd1 = condaEnv ? `"${normalizedCondaPath}" run -n ${condaEnv} ${pythonCmd} ${cmd1Params}` : `${pythonCmd} ${cmd1Params}`;
                 
-                // 3. Read output file and convert to base64
-                if (fs.existsSync(outputPath)) {
-                    const outputBase64 = fs.readFileSync(outputPath, { encoding: 'base64' });
-                    const mimeType = targetExt.toLowerCase() === '.png' ? 'image/png' : 'image/jpeg';
-                    const dataUrl = `data:${mimeType};base64,${outputBase64}`;
-                    
-                    cleanup();
-                    resolve({ success: true, image: dataUrl });
-                } else {
-                    cleanup();
-                    resolve({ success: false, error: 'Output file not generated' });
-                }
-            });
+                console.log(`[FaceFusion] Pass 1 (Left): ${cmd1}`);
+                await execAsync(cmd1, execOptions);
 
-            // Stream logs back to the main terminal so we can see if it's downloading models or processing
-            childProcess.stdout.on('data', (data) => {
-                const text = data.toString();
-                if (text.trim().length > 0) process.stdout.write(`[FF] ${text}`);
-            });
-            childProcess.stderr.on('data', (data) => {
-                const text = data.toString();
-                // tqdm and processing updates print to stderr
-                if (text.trim().length > 0) process.stderr.write(`[FF-ERR] ${text}`);
-            });
+                // Pass 2: The Right Anchor (With Enhancer)
+                const cmd2Params = `headless-run ${commonParams} --processors face_swapper face_enhancer --face-swapper-model inswapper_128_fp16 --face-enhancer-model gfpgan_1.4 --face-selector-order right-left --reference-face-position 0 --source-paths "${cropRightPath}" --target-path "${intermediatePath}" --output-path "${outputPath}"`;
+                const cmd2 = condaEnv ? `"${normalizedCondaPath}" run -n ${condaEnv} ${pythonCmd} ${cmd2Params}` : `${pythonCmd} ${cmd2Params}`;
+                
+                console.log(`[FaceFusion] Pass 2 (Right): ${cmd2}`);
+                await execAsync(cmd2, execOptions);
+
+                // Cleanup crops
+                setTimeout(() => {
+                    try {
+                        if (fs.existsSync(cropLeftPath)) fs.unlinkSync(cropLeftPath);
+                        if (fs.existsSync(cropRightPath)) fs.unlinkSync(cropRightPath);
+                        if (fs.existsSync(intermediatePath)) fs.unlinkSync(intermediatePath);
+                    } catch(e) {}
+                }, 10000);
+
+            } else {
+                // Standard Single Pass Logic
+                const normalizedCondaPath = isWin ? condaPath.replace(/\//g, '\\') : condaPath;
+                const ffParams = `headless-run ${commonParams} --processors face_swapper face_enhancer --face-swapper-model inswapper_128_fp16 --face-enhancer-model gfpgan_1.4 --source-paths "${sourcePath}" --target-path "${absoluteTargetPath}" --output-path "${outputPath}"`;
+                const command = condaEnv ? `"${normalizedCondaPath}" run -n ${condaEnv} ${pythonCmd} ${ffParams}` : `${pythonCmd} ${ffParams}`;
+                
+                console.log(`[FaceFusion] EXEC: ${command}`);
+                await execAsync(command, execOptions);
+            }
+
+            // Read result
+            if (fs.existsSync(outputPath)) {
+                const outputBase64 = fs.readFileSync(outputPath, { encoding: 'base64' });
+                const mimeType = targetExt.toLowerCase() === '.png' ? 'image/png' : 'image/jpeg';
+                cleanup();
+                resolve({ success: true, image: `data:${mimeType};base64,${outputBase64}` });
+            } else {
+                cleanup();
+                resolve({ success: false, error: 'Output file not generated' });
+            }
+
         } catch (err) {
             console.error('[FaceFusion] Exception:', err);
             resolve({ success: false, error: err.message });

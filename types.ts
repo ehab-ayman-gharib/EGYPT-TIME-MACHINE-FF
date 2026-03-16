@@ -36,4 +36,9 @@ export interface FaceDetectionResult {
   femaleCount: number;
   childCount: number;
   totalPeople: number;
+  faces?: Array<{
+    box: { x: number; y: number; width: number; height: number };
+    gender: 'male' | 'female';
+    age: number;
+  }>;
 }
