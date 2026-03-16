@@ -83,18 +83,27 @@ function getAppConfig() {
             const configData = fs.readFileSync(configPath, 'utf-8');
             const parsedConfig = JSON.parse(configData);
 
-            // Resolve printer name based on platform
             const platform = process.platform;
-            let printerName = parsedConfig[platform];
+            const platformConfig = parsedConfig[platform];
+            
+            let printerName = "";
+            let condaEnv = "";
+            let condaPath = "conda";
+            let facefusionDir = "";
 
-            if (!printerName) {
-                printerName = parsedConfig.printerName || "";
+            if (typeof platformConfig === 'object' && platformConfig !== null) {
+                // New nested structure
+                printerName = platformConfig.printerName || "";
+                condaEnv = platformConfig.condaEnv || "";
+                condaPath = platformConfig.condaPath || "conda";
+                facefusionDir = platformConfig.facefusionDir || "";
+            } else {
+                // Backwards compatibility with legacy flat structure
+                printerName = parsedConfig[platform] || parsedConfig.printerName || "";
+                condaEnv = parsedConfig.condaEnv || "";
+                condaPath = parsedConfig.condaPath || "conda";
+                facefusionDir = parsedConfig.facefusionDir || "";
             }
-
-            // Get Conda info and FaceFusion Directory
-            const condaEnv = parsedConfig.condaEnv || "";
-            const condaPath = parsedConfig.condaPath || "conda"; // Default to just 'conda'
-            const facefusionDir = parsedConfig.facefusionDir || "";
 
             console.log(`[Config] Loaded - Printer: ${printerName}, Conda: ${condaEnv}, FF Dir: ${facefusionDir}`);
             return { printerName, condaEnv, condaPath, facefusionDir };
@@ -186,14 +195,22 @@ ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath }
     const targetExt = path.extname(targetPath) || '.jpg';
     const outputPath = path.join(tempDir, `ff_output_${timestamp}${targetExt}`);
     
-    // Ensure target path is absolute and accessible by external processes (like Python)
+    // File Path Normalization
+    // Fix any Windows-style slashes that might have leaked from the frontend
+    targetPath = path.normalize(targetPath.replace(/\\/g, '/'));
+
     // Ensure target path is absolute and accessible by external processes (like Python)
     let absoluteTargetPath = targetPath;
     let tempTargetPath = null;
 
     if (!path.isAbsolute(targetPath)) {
         // Find the template in the app structure
-        const resourcesPath = process.resourcesPath;
+        let resourcesPath = process.resourcesPath;
+        if (process.platform === 'darwin' && app.isPackaged) {
+            // macOS: Resources are inside the app bundle's Contents/Resources folder
+            resourcesPath = path.join(path.dirname(process.execPath), '..', 'Resources');
+        }
+
         const unpackedBase = path.join(resourcesPath, 'app.asar.unpacked');
         const asarBase = path.join(resourcesPath, 'app.asar');
         
@@ -283,9 +300,25 @@ ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath }
             fs.writeFileSync(sourcePath, Buffer.from(base64Data, 'base64'));
 
             // 2. Build command
+            const isWin = process.platform === 'win32';
+            const isMac = process.platform === 'darwin';
+            const activeCwd = facefusionDir || process.cwd();
+            
+            // Cross-Platform Python Binary Pathing
+            let pythonExecutable = "python";
+            if (isWin) {
+                pythonExecutable = path.join(activeCwd, 'venv', 'Scripts', 'python.exe');
+            } else if (isMac) {
+                pythonExecutable = path.join(activeCwd, 'venv', 'bin', 'python');
+            }
+
+            const pythonCmd = `"${pythonExecutable}" facefusion.py`;
+            
+            // Execution Provider Switching
+            const execProvider = isMac ? 'coreml' : 'cuda';
+
             // Note: We use --headless-run for FF 3.3.0
-            const pythonCmd = "python facefusion.py";
-            const ffParams = `headless-run --execution-providers cuda --processors face_swapper face_enhancer --face-swapper-model inswapper_128_fp16 --face-enhancer-model gfpgan_1.4 --face-detector-model retinaface --face-detector-score 0.1 --face-landmarker-score 0.1 --face-selector-mode one --source-paths "${sourcePath}" --target-path "${absoluteTargetPath}" --output-path "${outputPath}"`;
+            const ffParams = `headless-run --execution-providers ${execProvider} --processors face_swapper face_enhancer --face-swapper-model inswapper_128_fp16 --face-enhancer-model gfpgan_1.4 --face-detector-model retinaface --face-detector-score 0.1 --face-landmarker-score 0.1 --face-selector-mode one --source-paths "${sourcePath}" --target-path "${absoluteTargetPath}" --output-path "${outputPath}"`;
             
             let command = `${pythonCmd} ${ffParams}`;
             if (condaEnv) {
@@ -293,17 +326,28 @@ ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath }
                 command = `"${condaPath}" run -n ${condaEnv} ${pythonCmd} ${ffParams}`;
             }
 
-            const activeCwd = facefusionDir || process.cwd();
             console.log(`[FaceFusion] EXEC: ${command}`);
             console.log(`[FaceFusion] CWD: ${activeCwd}`);
 
-            // Use facefusionDir as CWD if provided, and use shell: true for Windows
+            // Build cross-platform environment to ensure ffmpeg and brew paths are included on Mac
+            const env = { ...process.env };
+            if (isMac) {
+                // Packaged Mac apps lose the user's terminal PATH. We must manually append typical Homebrew locations.
+                const extraPaths = ['/opt/homebrew/bin', '/usr/local/bin', '/opt/homebrew/sbin'];
+                const currentPath = env.PATH || '';
+                env.PATH = extraPaths.filter(p => !currentPath.includes(p)).join(':') + (currentPath ? `:${currentPath}` : '');
+                console.log(`[FaceFusion] Mac PATH augmented to include Homebrew: ${env.PATH}`);
+            }
+
+            // Use facefusionDir as CWD if provided, and use shell: true for Windows & Mac
             const execOptions = { 
                 cwd: facefusionDir || undefined,
-                shell: true 
+                shell: true,
+                env: env,
+                maxBuffer: 1024 * 1024 * 100 // 100MB buffer to prevent tqdm progress bars from hanging the process
             };
 
-            exec(command, execOptions, (error, stdout, stderr) => {
+            const childProcess = exec(command, execOptions, (error, stdout, stderr) => {
                 // Cleanup helper
                 const cleanup = () => {
                     setTimeout(() => {
@@ -326,7 +370,7 @@ ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath }
                     return;
                 }
 
-                console.log('[FaceFusion] Command completed');
+                console.log('[FaceFusion] Command completed successfully');
                 
                 // 3. Read output file and convert to base64
                 if (fs.existsSync(outputPath)) {
@@ -340,6 +384,17 @@ ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath }
                     cleanup();
                     resolve({ success: false, error: 'Output file not generated' });
                 }
+            });
+
+            // Stream logs back to the main terminal so we can see if it's downloading models or processing
+            childProcess.stdout.on('data', (data) => {
+                const text = data.toString();
+                if (text.trim().length > 0) process.stdout.write(`[FF] ${text}`);
+            });
+            childProcess.stderr.on('data', (data) => {
+                const text = data.toString();
+                // tqdm and processing updates print to stderr
+                if (text.trim().length > 0) process.stderr.write(`[FF-ERR] ${text}`);
             });
         } catch (err) {
             console.error('[FaceFusion] Exception:', err);
@@ -390,7 +445,7 @@ ipcMain.handle('print-image', async (event, { imageSrc, printerName }) => {
 
             console.log('[Printer] Executing Print command:', printCommand);
 
-            exec(printCommand, (error, stdout, stderr) => {
+            exec(printCommand, { shell: true }, (error, stdout, stderr) => {
                 console.log('[Printer] Print command completed');
 
                 if (error) {
