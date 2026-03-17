@@ -67,6 +67,7 @@
         "dmg"
       ],
       "icon": "public/icon.png",
+      "identity": null,
       "hardenedRuntime": true,
       "gatekeeperAssess": false,
       "entitlements": "electron/entitlements.mac.plist",
