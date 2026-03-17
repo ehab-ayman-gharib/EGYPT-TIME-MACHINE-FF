@@ -108,6 +108,14 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
           setIsDetecting(false);
           return;
         }
+
+        // UI Feedback: Too many people (Limit to 2)
+        if (faceData.totalPeople > 2) {
+          setDetectionError("Too many faces! Maximum 2 people allowed for this era.");
+          setTimeout(() => setDetectionError(null), 3500);
+          setIsDetecting(false);
+          return;
+        }
       } else {
         console.log('[Capture] STRICT BYPASS: Skipping detection for Snap a Memory');
       }
@@ -180,6 +188,19 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
           let faceData: FaceDetectionResult = { maleCount: 0, femaleCount: 1, childCount: 0, totalPeople: 1 };
           if (era?.id !== EraId.SNAP_A_MEMORY) {
             faceData = await detectFaces(img, modelsLoaded);
+
+            if (faceData.totalPeople === 0) {
+              setDetectionError("No faces detected in file!");
+              setTimeout(() => setDetectionError(null), 3500);
+              setIsDetecting(false);
+              return;
+            }
+            if (faceData.totalPeople > 2) {
+              setDetectionError("Too many faces in file! Max 2 allowed.");
+              setTimeout(() => setDetectionError(null), 3500);
+              setIsDetecting(false);
+              return;
+            }
           }
           
           onCapture(imageData, faceData);
@@ -204,6 +225,20 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
           ctx.drawImage(img, 0, 0, width, height);
           const imageData = canvas.toDataURL('image/jpeg', 0.9);
           const faceData = await detectFaces(img, modelsLoaded);
+          
+          if (faceData.totalPeople === 0) {
+            setDetectionError("No faces detected in file!");
+            setTimeout(() => setDetectionError(null), 3500);
+            setIsDetecting(false);
+            return;
+          }
+          if (faceData.totalPeople > 2) {
+            setDetectionError("Too many faces in file! Max 2 allowed.");
+            setTimeout(() => setDetectionError(null), 3500);
+            setIsDetecting(false);
+            return;
+          }
+
           onCapture(imageData, faceData);
         }
       }
