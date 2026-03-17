@@ -68,7 +68,13 @@
       "target": "dmg",
       "icon": "public/icon.png",
       "hardenedRuntime": true,
-      "gatekeeperAssess": false
+      "gatekeeperAssess": false,
+      "entitlements": "electron/entitlements.mac.plist",
+      "entitlementsInherit": "electron/entitlements.mac.inherit.plist",
+      "extendInfo": {
+        "NSCameraUsageDescription": "Egypt Time Machine needs access to your camera to take your photo and transform it into a historical portrait.",
+        "NSMicrophoneUsageDescription": "Microphone access for audio feedback or future features."
+      }
     }
   }
 }
