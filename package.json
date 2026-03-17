@@ -11,13 +11,12 @@
     "build": "vite build",
     "preview": "vite preview",
     "electron:dev": "cross-env NODE_ENV=development wait-on http://localhost:3000 && electron .",
-    "electron:build": "npm run build && electron-builder"
+    "electron:build": "npm run build && electron-builder",
+    "electron:build:mac": "npm run build && electron-builder --mac arm64"
   },
   "dependencies": {
     "@google/genai": "^1.32.0",
     "@tensorflow/tfjs": "1.7.4",
-    "@tensorflow/tfjs-node": "^4.22.0",
-    "canvas": "^3.2.1",
     "face-api.js": "^0.22.2",
     "lucide-react": "^0.557.0",
     "react": "^19.2.1",
@@ -47,8 +46,7 @@
     "asar": true,
     "asarUnpack": [
       "**/templates/**/*",
-      "**/node_modules/sharp/**/*",
-      "**/node_modules/canvas/**/*"
+      "**/node_modules/sharp/**/*"
     ],
     "files": [
       "dist/**/*",
@@ -65,7 +63,13 @@
       "icon": "public/icon.png"
     },
     "mac": {
-      "target": "dmg",
+      "target": {
+        "target": "dmg",
+        "arch": [
+          "arm64",
+          "x64"
+        ]
+      },
       "icon": "public/icon.png",
       "hardenedRuntime": true,
       "gatekeeperAssess": false,
