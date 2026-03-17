@@ -314,26 +314,18 @@ ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath, 
             const env = { ...process.env };
             
             if (isWin) {
-                // 1. Inherit the standard process environment
+                // 1. Inherit standard environment
                 Object.assign(env, process.env);
-
-                // 2. Fix critical Windows variables if they are missing
+                
+                // 2. Fix critical Windows variables
                 env.SystemRoot = process.env.SystemRoot || 'C:\\Windows';
                 env.SystemDrive = process.env.SystemDrive || 'C:';
                 env.ComSpec = process.env.ComSpec || 'C:\\Windows\\System32\\cmd.exe';
-                
-                // 3. Ensure PATH contains the basics needed for Conda to find 'python'
-                const systemPaths = [
-                    'C:\\Windows\\system32',
-                    'C:\\Windows',
-                    'C:\\Windows\\System32\\Wbem',
-                    'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\'
-                ];
 
-                const currentPath = process.env.PATH || process.env.Path || '';
-                env.PATH = [...new Set([...systemPaths, ...currentPath.split(';')])]
-                    .filter(p => p)
-                    .join(';');
+                // 3. NUCLEAR DELETE of PATH/Path to let Conda manage its own
+                delete env.PATH;
+                delete env.Path;
+                delete env.path;
             }
 
             if (isMac) {
@@ -373,19 +365,36 @@ ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath, 
                 // Step 2: Physical Isolation (The "Crops")
                 const imgMetadata = await sharp(sourceBuffer).metadata();
                 const extractCrop = async (box, outPath) => {
-                    const padding = 1.6; // Slightly more than 1.5 as requested, for safety
-                    const w = box.width * padding;
-                    const h = box.height * padding;
-                    const l = Math.max(0, box.x - (w - box.width) / 2);
-                    const t = Math.max(0, box.y - (h - box.height) / 2);
+                    // Increase padding to 2.0 for wide-angle shots
+                    const padding = 2.0;
+                    
+                    const centerX = box.x + box.width / 2;
+                    const centerY = box.y + box.height / 2;
+                    
+                    // Calculate the size of the square crop
+                    const size = Math.max(box.width, box.height) * padding;
+                    
+                    // Calculate initial top/left
+                    let left = Math.round(centerX - size / 2);
+                    let top = Math.round(centerY - size / 2);
+                    
+                    // Clamp to ensure the box stays inside image boundaries
+                    left = Math.max(0, Math.min(left, imgMetadata.width - size));
+                    top = Math.max(0, Math.min(top, imgMetadata.height - size));
+
+                    // Final dimension check to prevent "extract area is outside" errors
+                    const extractWidth = Math.min(Math.round(size), imgMetadata.width - left);
+                    const extractHeight = Math.min(Math.round(size), imgMetadata.height - top);
 
                     await sharp(sourceBuffer)
                         .extract({
-                            left: Math.round(Math.min(l, imgMetadata.width - 1)),
-                            top: Math.round(Math.min(t, imgMetadata.height - 1)),
-                            width: Math.round(Math.min(w, imgMetadata.width - l)),
-                            height: Math.round(Math.min(h, imgMetadata.height - t))
+                            left: left,
+                            top: top,
+                            width: extractWidth,
+                            height: extractHeight
                         })
+                        .resize(512, 512) // Standardize size for FaceFusion detector
+                        .jpeg({ quality: 95 })
                         .toFile(outPath);
                 };
 
