@@ -295,8 +295,8 @@ ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath, 
     const pythonCmd = pythonExecutable === "python" ? `python facefusion.py` : `"${pythonExecutable}" facefusion.py`;
 
     // FaceFusion expects 'yolo_face' not 'yoloface'
-    // Lowered detector score to 0.25 and landmarker to 0.05 to ensure second-pass faces are always caught in crops
-    const commonParams = `--execution-providers ${execProvider} --face-detector-model yolo_face --face-detector-score 0.25 --face-landmarker-score 0.05 --face-selector-mode one --reference-face-distance 1.0`;
+    // Lowered scores to absolute valid minimums (0.15 / 0.0) to force detection on difficult target templates
+    const commonParams = `--execution-providers ${execProvider} --face-detector-model yolo_face --face-detector-score 0.15 --face-landmarker-score 0.0 --face-selector-mode one --reference-face-distance 1.0`;
 
     return new Promise(async (resolve) => {
         try {
