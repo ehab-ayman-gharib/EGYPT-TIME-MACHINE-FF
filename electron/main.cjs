@@ -301,11 +301,36 @@ ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath, 
         try {
             // 1. Save source image
             const base64Data = sourceBase64.replace(/^data:image\/\w+;base64,/, '');
-            const sourceBuffer = Buffer.from(base64Data, 'base64');
+            let sourceBuffer = Buffer.from(base64Data, 'base64');
+            const timestamp = Date.now();
+            const sourcePath = path.join(tempDir, `ff_source_${timestamp}.png`);
+            
+            // PRE-FLIGHT RESCALING: Ensure stability for 4K+ images by normalizing to 2000px
+            let imgMetadata = await sharp(sourceBuffer).metadata();
+            let activeFaces = faces;
+
+            if (imgMetadata.width > 2048 || imgMetadata.height > 2048) {
+                const limit = 2048;
+                const scale = imgMetadata.width > imgMetadata.height ? limit / imgMetadata.width : limit / imgMetadata.height;
+                console.log(`[FaceFusion] 📏 4K+ Image Normalization: Rescaling from ${imgMetadata.width}px to ${limit}px for stability.`);
+                
+                sourceBuffer = await sharp(sourceBuffer).resize(limit, limit, { fit: 'inside' }).toBuffer();
+                imgMetadata = await sharp(sourceBuffer).metadata(); // Refresh metadata after resize
+                
+                if (faces) {
+                    activeFaces = faces.map(f => ({
+                        x: f.x * scale,
+                        y: f.y * scale,
+                        width: f.width * scale,
+                        height: f.height * scale
+                    }));
+                }
+            }
+
             fs.writeFileSync(sourcePath, sourceBuffer);
 
             // Check if we should use Orchestrator Logic (2-Pass Sequential Anchor)
-            const isDualSwap = faces && faces.length === 2 && 
+            const isDualSwap = activeFaces && activeFaces.length === 2 && 
                                (targetPath.includes('1M_1F') || 
                                 targetPath.includes('1F_1M') || 
                                 targetPath.includes('2M') || 
@@ -354,7 +379,6 @@ ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath, 
                     } catch (e) {}
                 }, 15000);
             };
-
             if (isDualSwap) {
                 console.log('[FaceFusion] 🛠️ Orchestrator Logic: 2-Pass Sequential Anchor');
                 
@@ -363,43 +387,98 @@ ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath, 
                 const intermediatePath = path.join(tempDir, `intermediate_${timestamp}${targetExt}`);
 
                 // Step 2: Physical Isolation (The "Crops")
-                const imgMetadata = await sharp(sourceBuffer).metadata();
-                const extractCrop = async (box, outPath) => {
-                    // Increase padding to 2.0 for wide-angle shots
-                    const padding = 2.0;
+                const extractCrop = async (targetIndex, allFaces, outPath) => {
+                    const targetFace = allFaces[targetIndex];
+                    // 2.2x padding ensures YOLO always has enough context for wide shots
+                    const padding = 2.2; 
+                    const imgW = Math.floor(imgMetadata.width);
+                    const imgH = Math.floor(imgMetadata.height);
                     
-                    const centerX = box.x + box.width / 2;
-                    const centerY = box.y + box.height / 2;
+                    const centerX = targetFace.x + targetFace.width / 2;
+                    const centerY = targetFace.y + targetFace.height / 2;
                     
-                    // Calculate the size of the square crop
-                    const size = Math.max(box.width, box.height) * padding;
+                    // 1. Calculate size
+                    const size = Math.floor(Math.max(targetFace.width, targetFace.height) * padding);
                     
-                    // Calculate initial top/left
-                    let left = Math.round(centerX - size / 2);
-                    let top = Math.round(centerY - size / 2);
+                    // 2. Calculate coordinates
+                    let left = Math.floor(centerX - size / 2);
+                    let top = Math.floor(centerY - size / 2);
                     
-                    // Clamp to ensure the box stays inside image boundaries
-                    left = Math.max(0, Math.min(left, imgMetadata.width - size));
-                    top = Math.max(0, Math.min(top, imgMetadata.height - size));
+                    // 3. Stricter Clamping
+                    left = Math.max(0, Math.min(left, imgW - size));
+                    top = Math.max(0, Math.min(top, imgH - size));
+                    
+                    const extractWidth = Math.max(1, Math.floor(Math.min(size, imgW - left)));
+                    const extractHeight = Math.max(1, Math.floor(Math.min(size, imgH - top)));
 
-                    // Final dimension check to prevent "extract area is outside" errors
-                    const extractWidth = Math.min(Math.round(size), imgMetadata.width - left);
-                    const extractHeight = Math.min(Math.round(size), imgMetadata.height - top);
+                    console.log(`[FaceFusion] 🧊 Extracting Crop [Target #${targetIndex}]: ${extractWidth}x${extractHeight} at [${left}, ${top}]`);
 
-                    await sharp(sourceBuffer)
-                        .extract({
-                            left: left,
-                            top: top,
-                            width: extractWidth,
-                            height: extractHeight
+                    // 4. Extract base image crop buffer
+                    const baseBuffer = await sharp(sourceBuffer)
+                        .extract({ left, top, width: extractWidth, height: extractHeight })
+                        .toBuffer();
+
+                    // 5. Build Blur Masks for neighbor faces
+                    // We use Heavy Gaussian Blur instead of solid blocks.
+                    // This is much safer for AI enhancers (GFPGAN) and prevents "Black Square" artifacts.
+                    const composites = [];
+                    for (let i = 0; i < allFaces.length; i++) {
+                        if (i === targetIndex) continue; // Skip target
+                        
+                        const face = allFaces[i];
+                        const blockPadding = 1.4; // Cover entire neighbor head area
+                        const blockW = Math.floor(face.width * blockPadding);
+                        const blockH = Math.floor(face.height * blockPadding);
+                        const blockX = Math.floor(face.x - (blockW - face.width) / 2);
+                        const blockY = Math.floor(face.y - (blockH - face.height) / 2);
+
+                        const rX = blockX - left;
+                        const rY = blockY - top;
+
+                        const interX = Math.max(0, rX);
+                        const interY = Math.max(0, rY);
+                        const interW = Math.min(rX + blockW, extractWidth) - interX;
+                        const interH = Math.min(rY + blockH, extractHeight) - interY;
+
+                        if (interW > 5 && interH > 5) {
+                            try {
+                                const blurredNeighbor = await sharp(baseBuffer)
+                                    .extract({ left: interX, top: interY, width: interW, height: interH })
+                                    .blur(20) // Heavy sigma 20 to completely break facial landmarks
+                                    .toBuffer();
+                                    
+                                composites.push({
+                                    input: blurredNeighbor,
+                                    left: interX,
+                                    top: interY
+                                });
+                            } catch (e) {
+                                console.warn(`[FaceFusion] Blur overlay failed for index ${i}:`, e.message);
+                            }
+                        }
+                    }
+
+                    let proc = sharp(baseBuffer);
+                    if (composites.length > 0) {
+                        proc = proc.composite(composites);
+                    }
+                    
+                    const maskedBuffer = await proc.toBuffer();
+
+                    // 6. Resize cleanly
+                    await sharp(maskedBuffer)
+                        .resize({
+                            width: 512,
+                            height: 512,
+                            fit: 'contain',
+                            background: { r: 0, g: 0, b: 0, alpha: 1 }
                         })
-                        .resize(512, 512) // Standardize size for FaceFusion detector
                         .jpeg({ quality: 95 })
                         .toFile(outPath);
                 };
 
-                await extractCrop(faces[0], cropLeftPath);
-                await extractCrop(faces[1], cropRightPath);
+                await extractCrop(0, activeFaces, cropLeftPath);
+                await extractCrop(1, activeFaces, cropRightPath);
 
                 // Step 3: Sequential Execution
                 // Pass 1: The Left Anchor
