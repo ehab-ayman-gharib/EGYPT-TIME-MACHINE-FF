@@ -91,7 +91,6 @@ function getAppConfig() {
             let condaEnv = "";
             let condaPath = "conda";
             let facefusionDir = "";
-            let ffmpegPath = "";
 
             if (typeof platformConfig === 'object' && platformConfig !== null) {
                 // New nested structure
@@ -99,7 +98,6 @@ function getAppConfig() {
                 condaEnv = platformConfig.condaEnv || "";
                 condaPath = platformConfig.condaPath || "conda";
                 facefusionDir = platformConfig.facefusionDir || "";
-                ffmpegPath = platformConfig.ffmpegPath || "";
             } else {
                 // Backwards compatibility with legacy flat structure
                 printerName = parsedConfig[platform] || parsedConfig.printerName || "";
@@ -109,13 +107,13 @@ function getAppConfig() {
             }
 
             console.log(`[Config] Loaded - Printer: ${printerName}, Conda: ${condaEnv}, FF Dir: ${facefusionDir}`);
-            return { printerName, condaEnv, condaPath, facefusionDir, ffmpegPath };
+            return { printerName, condaEnv, condaPath, facefusionDir };
         }
     } catch (err) {
         console.warn('[Config] Failed to read config:', err.message);
     }
 
-    return { printerName: "", condaEnv: "", condaPath: "conda", facefusionDir: "", ffmpegPath: "" };
+    return { printerName: "", condaEnv: "", condaPath: "conda", facefusionDir: "" };
 }
 
 // Helper function to find the best matching printer 
@@ -269,7 +267,6 @@ ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath, 
     const condaEnv = config.condaEnv; 
     const condaPath = path.normalize(config.condaPath);
     const facefusionDir = config.facefusionDir;
-    const ffmpegPath = config.ffmpegPath;
     const activeCwd = facefusionDir || process.cwd();
     const isWin = process.platform === 'win32';
     const isMac = process.platform === 'darwin';
@@ -294,9 +291,11 @@ ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath, 
         }
     }
 
-    const pythonCmd = `"${pythonExecutable}" facefusion.py`;
+    const pythonExecutableRaw = pythonExecutable; 
+    const pythonCmd = pythonExecutable === "python" ? `python facefusion.py` : `"${pythonExecutable}" facefusion.py`;
 
-    const commonParams = `--execution-providers ${execProvider} --face-detector-model retinaface --face-detector-score 0.1 --face-landmarker-score 0.1 --face-selector-mode one`;
+    // FaceFusion expects 'yolo_face' not 'yoloface'
+    const commonParams = `--execution-providers ${execProvider} --face-detector-model yolo_face --face-detector-score 0.3 --face-landmarker-score 0.1 --face-selector-mode one --reference-face-distance 1.0`;
 
     return new Promise(async (resolve) => {
         try {
@@ -315,32 +314,26 @@ ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath, 
             const env = { ...process.env };
             
             if (isWin) {
-                // Critical: Ensure critical Windows variables are present
+                // 1. Inherit the standard process environment
+                Object.assign(env, process.env);
+
+                // 2. Fix critical Windows variables if they are missing
                 env.SystemRoot = process.env.SystemRoot || 'C:\\Windows';
                 env.SystemDrive = process.env.SystemDrive || 'C:';
                 env.ComSpec = process.env.ComSpec || 'C:\\Windows\\System32\\cmd.exe';
-                env.TEMP = process.env.TEMP || os.tmpdir();
-                env.TMP = process.env.TMP || os.tmpdir();
-
-                // Merge Path robustly
-                const extraWinPaths = [
-                    'C:\\Windows\\System32',
+                
+                // 3. Ensure PATH contains the basics needed for Conda to find 'python'
+                const systemPaths = [
+                    'C:\\Windows\\system32',
                     'C:\\Windows',
                     'C:\\Windows\\System32\\Wbem',
-                    'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\',
-                    'C:\\Windows\\System32\\OpenSSH\\',
-                    condaPath ? path.dirname(condaPath) : '',
-                    ffmpegPath ? path.dirname(ffmpegPath) : ''
-                ].filter(p => p);
-                
+                    'C:\\Windows\\System32\\WindowsPowerShell\\v1.0\\'
+                ];
+
                 const currentPath = process.env.PATH || process.env.Path || '';
-                const allPaths = [...new Set([
-                    ...extraWinPaths,
-                    ...currentPath.split(';')
-                ])].filter(p => p).join(';');
-                
-                env.PATH = allPaths;
-                env.Path = allPaths;
+                env.PATH = [...new Set([...systemPaths, ...currentPath.split(';')])]
+                    .filter(p => p)
+                    .join(';');
             }
 
             if (isMac) {
@@ -356,6 +349,9 @@ ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath, 
                 env: env,
                 maxBuffer: 1024 * 1024 * 100
             };
+
+            console.log(`[FaceFusion] Running in CWD: ${facefusionDir || process.cwd()}`);
+            console.log(`[FaceFusion] System PATH for execution: ${env.PATH || env.Path}`);
 
             const cleanup = () => {
                 setTimeout(() => {
@@ -402,15 +398,61 @@ ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath, 
                 const cmd1Params = `headless-run ${commonParams} --processors face_swapper --face-swapper-model inswapper_128_fp16 --face-selector-order left-right --reference-face-position 0 --source-paths "${cropLeftPath}" --target-path "${absoluteTargetPath}" --output-path "${intermediatePath}"`;
                 const cmd1 = condaEnv ? `"${normalizedCondaPath}" run -n ${condaEnv} ${pythonCmd} ${cmd1Params}` : `${pythonCmd} ${cmd1Params}`;
                 
-                console.log(`[FaceFusion] Pass 1 (Left): ${cmd1}`);
-                await execAsync(cmd1, execOptions);
+                console.log(`[FaceFusion] >>> Pass 1 START (Left Anchor)`);
+                console.log(`[FaceFusion] EXEC: ${cmd1}`);
+                
+                const pass1Result = await new Promise((res) => {
+                    let stderrAccumulator = "";
+                    const proc = exec(cmd1, execOptions, (err) => {
+                        if (err) {
+                            console.error(`[FaceFusion] Pass 1 Failed with Error:`, err.message);
+                            res({ success: false, error: err.message, stderr: stderrAccumulator });
+                        } else {
+                            res({ success: true });
+                        }
+                    });
+                    proc.stdout.on('data', d => process.stdout.write(`[FF-P1] ${d}`));
+                    proc.stderr.on('data', d => {
+                        const text = d.toString();
+                        process.stderr.write(`[FF-P1-ERR] ${text}`);
+                        stderrAccumulator += text;
+                    });
+                });
+
+                if (!pass1Result.success) {
+                    throw new Error(`Pass 1 Failed: ${pass1Result.stderr || pass1Result.error}`);
+                }
+                console.log(`[FaceFusion] <<< Pass 1 COMPLETE`);
 
                 // Pass 2: The Right Anchor (With Enhancer)
                 const cmd2Params = `headless-run ${commonParams} --processors face_swapper face_enhancer --face-swapper-model inswapper_128_fp16 --face-enhancer-model gfpgan_1.4 --face-selector-order right-left --reference-face-position 0 --source-paths "${cropRightPath}" --target-path "${intermediatePath}" --output-path "${outputPath}"`;
                 const cmd2 = condaEnv ? `"${normalizedCondaPath}" run -n ${condaEnv} ${pythonCmd} ${cmd2Params}` : `${pythonCmd} ${cmd2Params}`;
                 
-                console.log(`[FaceFusion] Pass 2 (Right): ${cmd2}`);
-                await execAsync(cmd2, execOptions);
+                console.log(`[FaceFusion] >>> Pass 2 START (Right Anchor + Enhancer)`);
+                console.log(`[FaceFusion] EXEC: ${cmd2}`);
+
+                const pass2Result = await new Promise((res) => {
+                    let stderrAccumulator = "";
+                    const proc = exec(cmd2, execOptions, (err) => {
+                        if (err) {
+                            console.error(`[FaceFusion] Pass 2 Failed with Error:`, err.message);
+                            res({ success: false, error: err.message, stderr: stderrAccumulator });
+                        } else {
+                            res({ success: true });
+                        }
+                    });
+                    proc.stdout.on('data', d => process.stdout.write(`[FF-P2] ${d}`));
+                    proc.stderr.on('data', d => {
+                        const text = d.toString();
+                        process.stderr.write(`[FF-P2-ERR] ${text}`);
+                        stderrAccumulator += text;
+                    });
+                });
+
+                if (!pass2Result.success) {
+                    throw new Error(`Pass 2 Failed: ${pass2Result.stderr || pass2Result.error}`);
+                }
+                console.log(`[FaceFusion] <<< Pass 2 COMPLETE`);
 
                 // Cleanup crops
                 setTimeout(() => {
@@ -427,8 +469,31 @@ ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath, 
                 const ffParams = `headless-run ${commonParams} --processors face_swapper face_enhancer --face-swapper-model inswapper_128_fp16 --face-enhancer-model gfpgan_1.4 --source-paths "${sourcePath}" --target-path "${absoluteTargetPath}" --output-path "${outputPath}"`;
                 const command = condaEnv ? `"${normalizedCondaPath}" run -n ${condaEnv} ${pythonCmd} ${ffParams}` : `${pythonCmd} ${ffParams}`;
                 
+                console.log(`[FaceFusion] >>> START Single Pass Transformation`);
                 console.log(`[FaceFusion] EXEC: ${command}`);
-                await execAsync(command, execOptions);
+
+                const singlePassResult = await new Promise((res) => {
+                    let stderrAccumulator = "";
+                    const proc = exec(command, execOptions, (err) => {
+                        if (err) {
+                            console.error(`[FaceFusion] Single Pass Failed with Error:`, err.message);
+                            res({ success: false, error: err.message, stderr: stderrAccumulator });
+                        } else {
+                            res({ success: true });
+                        }
+                    });
+                    proc.stdout.on('data', d => process.stdout.write(`[FF] ${d}`));
+                    proc.stderr.on('data', d => {
+                        const text = d.toString();
+                        process.stderr.write(`[FF-ERR] ${text}`);
+                        stderrAccumulator += text;
+                    });
+                });
+
+                if (!singlePassResult.success) {
+                    throw new Error(`Face Swap Failed: ${singlePassResult.stderr || singlePassResult.error}`);
+                }
+                console.log(`[FaceFusion] <<< COMPLETE Single Pass Transformation`);
             }
 
             // Read result
