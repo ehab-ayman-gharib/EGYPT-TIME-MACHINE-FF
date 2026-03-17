@@ -427,10 +427,14 @@ ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath, 
                         if (i === targetIndex) continue; // Skip target
                         
                         const face = allFaces[i];
-                        const blockPadding = 1.4; // Cover entire neighbor head area
+                        const blockPadding = 1.3; // Surgical tightness to protect the target's face
                         const blockW = Math.floor(face.width * blockPadding);
                         const blockH = Math.floor(face.height * blockPadding);
-                        const blockX = Math.floor(face.x - (blockW - face.width) / 2);
+                        
+                        // DIRECTIONAL OFFSET: Push the blur mask 8% away from the target face center
+                        // This protects the target's jaw/ears while aggressively blurring the neighbor.
+                        const offsetX = face.x > targetFace.x ? (face.width * 0.08) : -(face.width * 0.08);
+                        const blockX = Math.floor(face.x - (blockW - face.width) / 2 + offsetX);
                         const blockY = Math.floor(face.y - (blockH - face.height) / 2);
 
                         const rX = blockX - left;
