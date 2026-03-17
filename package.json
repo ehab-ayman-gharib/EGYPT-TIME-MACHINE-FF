@@ -12,7 +12,7 @@
     "preview": "vite preview",
     "electron:dev": "cross-env NODE_ENV=development wait-on http://localhost:3000 && electron .",
     "electron:build": "npm run build && electron-builder",
-    "electron:build:mac": "npm run build && electron-builder --mac arm64"
+    "electron:build:mac": "npm run build && electron-builder --mac --arm64"
   },
   "dependencies": {
     "@google/genai": "^1.32.0",
@@ -63,13 +63,9 @@
       "icon": "public/icon.png"
     },
     "mac": {
-      "target": {
-        "target": "dmg",
-        "arch": [
-          "arm64",
-          "x64"
-        ]
-      },
+      "target": [
+        "dmg"
+      ],
       "icon": "public/icon.png",
       "hardenedRuntime": true,
       "gatekeeperAssess": false,
