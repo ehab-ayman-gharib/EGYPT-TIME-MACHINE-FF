@@ -89,23 +89,20 @@
 - **Template System**: Curated historical templates located in `public/templates/`.
 - **Randomization**: Automatically picks a random template from gender-specific folders (1M/1F) within era directories.
 - **ASAR Support**: Automatic manual extraction of templates from ASAR when running in packaged Electron environments.
-
 #### 5. **Orchestrator Logic: 2-Pass Sequential Anchor (Dual Portraits)**
-- **Purpose**: Solves gender-mismatch placement (e.g., Male on Right vs Female on Left) in historical templates.
-- **Brain**: 
-  - Detects all faces using `face-api.js`.
-  - Sorts faces by X-coordinate (left-to-right).
-  - Determines the target directory based on the sorted order:
-    - **1M_1F**: Male (Left) + Female (Right)
-    - **1F_1M**: Female (Left) + Male (Right)
-    - **2M**: Male (Left) + Male (Right)
-    - **2F**: Female (Left) + Female (Right)
-- **Physical Isolation**: Uses `sharp` in the Electron main process to create padded crops (1.6x) for each detected face.
+- **Purpose**: Solves gender-mismatch placement and face duplication in historical templates.
+- **Pre-Flight Stability (4K Support)**: Normalizes images > 2048px to prevent GPU memory crashes while scaling detection coordinates proportionally.
+- **Order of Operations (The "Surgical Prep")**:
+  1. **High-Res Smart Crop**: Extracts a 2.2x zoom buffer from the large original file. This "Smart Slice" keeps distant subjects high-fidelity.
+  2. **Neighbor Cloaking (The Blur)**: Locates neighbor faces within that slice and applies a **Heavy Gaussian Blur (Sigma 20)** with an **8% Directional Offset**. This "cloaks" them from the AI detector without leaving black artifacts.
+  3. **Proportional Upscale**: Resizes the pre-cleaned high-res crop to exactly 512px wide for optimal FaceFusion detection.
+- **Surgical Accuracy**: The blur destroys foreign landmarks (eyes/nose/mouth) so the AI physically cannot detect the neighbor, while the "flesh-tone" blurring prevents the Face Enhancer from creating dark artifacts.
 - **Sequential Execution**:
-  - **Pass 1 (Left)**: Swaps the left-most face onto the template using `left-right` ordering.
-  - **Pass 2 (Right)**: Swaps the right-most face onto the result of Pass 1 using `right-left` ordering and applies the `face_enhancer`.
+  - **Pass 1 (Left)**: Swaps the left-most face onto the template using `left-right` ordering and ultra-sensitive detection scores (`Detector 0.15`).
+  - **Pass 2 (Right)**: Swaps the right-most face onto the Pass 1 result using `right-left` ordering + `face_enhancer` + `face_swapper`.
+- **Detection Stability**: Landmarker score set to `0.0` to force detection on difficult, dark, or textured historical templates.
 
-#### 5. **Image Composition System**
+#### 6. **Image Composition System**
 - **Layered Approach**:
   1. **Base Layer**: Era-specific background (1800x2700px)
   2. **Middle Layer**: AI-generated/captured photo (Fitted to 1800x2700 canvas)

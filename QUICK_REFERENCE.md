@@ -8,7 +8,10 @@ An AI-powered photobooth that transforms user photos into historical Egyptian po
 
 ## 📱 Core Features
 
-| **Local Face Fusion** | Cross-platform (Win/Mac) single face swap for high fidelity |
+| **FaceSwap Logic** | 2-Pass Sequential Orchestration with Deep Blur Isolation |
+| **Wide Shot Support** | 4K stability + High-res tight cropping for distant subjects |
+| **Crowd Handling** | Surgical Gaussian Blur (Sigma 20) cloaks neighbors |
+| **Cross-Platform** | Windows (Conda/CUDA) and macOS (Venv/CoreML) optimized |
 | **5 Historical Eras** | Old Kingdom, Coptic, Islamic, Modern Egypt, Snap a Memory |
 | **AI Transformation** | Gemini 2.5 Flash Image generates historically accurate portraits |
 | **Face Detection** | TensorFlow.js detects gender/age for appropriate clothing |
@@ -110,6 +113,9 @@ npm run electron:build
 - **Temperature**: 0.5 (Optimal for identity preservation)
 - **Face Detection**: SSD MobileNet V1 / RetinaFace (FF)
 - **Execution Providers**: CUDA (Windows) / CoreML (macOS)
+- **4K Image Stability**: Pre-flight normalization (2048px limit)
+- **Worker Isolation**: Tight 2.2x High-res Crops + Gaussian Blur masks
+- **Detection Logic**: Ultra-Sensitive (Detector 0.15 / Landmarker 0.0)
 - **Max Retries**: 3 attempts
 - **Print Size**: 100mm x 148mm (4x6") - Professional Borderless
 - **Print Engine**: Shell Image Print (Win) / LP (Mac)

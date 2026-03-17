@@ -19,6 +19,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
   const [isDetecting, setIsDetecting] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [showFlash, setShowFlash] = useState(false);
+  const [detectionError, setDetectionError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -99,6 +100,14 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
       if (era?.id !== EraId.SNAP_A_MEMORY) {
         console.log('[Capture] Detection triggered for historical era');
         faceData = await detectFaces(canvas, modelsLoaded);
+
+        // UI Feedback: No faces detected
+        if (faceData.totalPeople === 0) {
+          setDetectionError("No faces detected! Please ensure you are clearly visible.");
+          setTimeout(() => setDetectionError(null), 3500);
+          setIsDetecting(false);
+          return;
+        }
       } else {
         console.log('[Capture] STRICT BYPASS: Skipping detection for Snap a Memory');
       }
@@ -302,6 +311,19 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
       {/* Flash Effect */}
       {showFlash && (
         <div className="absolute inset-0 z-[100] bg-white animate-flash-out pointer-events-none" />
+      )}
+
+      {/* Detection Error UI Message */}
+      {detectionError && (
+        <div className="absolute inset-x-0 top-32 z-[150] flex justify-center px-6 animate-slide-up">
+          <div className="bg-red-600/90 backdrop-blur-xl border border-red-400/50 px-8 py-4 rounded-2xl shadow-2xl flex items-center gap-4 text-white">
+            <AlertCircle className="w-6 h-6 shrink-0" />
+            <div className="flex flex-col">
+              <span className="font-bold brand-font tracking-widest text-sm uppercase">Notice</span>
+              <span className="text-white/90 text-sm font-medium">{detectionError}</span>
+            </div>
+          </div>
+        </div>
       )}
 
       {/* Header */}
