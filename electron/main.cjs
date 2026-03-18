@@ -15,7 +15,7 @@ function createWindow() {
             autoplayPolicy: 'no-user-gesture-required',
             devTools: true, // Ensure devtools is enabled
         },
-        fullscreen: false, // Set to false for easier debugging
+        fullscreen: true, // Set to true for fullscreen mode
         autoHideMenuBar: false,
     });
 

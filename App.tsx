@@ -121,8 +121,19 @@ const App: React.FC = () => {
     }
   };
 
+  const handleGlobalClick = () => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch((err) => {
+        console.warn(`Error attempting to enable fullscreen: ${err.message}`);
+      });
+    }
+  };
+
   return (
-    <div className="h-[100dvh] w-screen bg-slate-900 text-slate-100 flex flex-col overflow-hidden">
+    <div 
+      className="h-[100dvh] w-screen bg-slate-900 text-slate-100 flex flex-col overflow-hidden"
+      onClick={handleGlobalClick}
+    >
       <main className="flex-grow relative h-full w-full" key={sessionKey}>
         {renderScreen()}
         {currentScreen === AppScreen.PROCESSING && <LoadingScreen />}
