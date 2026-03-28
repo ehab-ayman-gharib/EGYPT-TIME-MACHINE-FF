@@ -1,3 +1,14 @@
+/**
+ * SPLASH SCREEN COMPONENT
+ * -----------------------
+ * The entry point for users. It features:
+ * 1. An "Idle State" (Atraction Loop) to draw people in.
+ * 2. An "Interaction Trigger" (Tap to Start).
+ * 3. A "Welcome Phase" with an introduction video.
+ * 4. An "Era Selection" menu to choose the historical context.
+ * 5. A Three.js particle system for magical visual effects.
+ */
+
 import React, { useEffect, useRef, useState } from 'react';
 import * as THREE from 'three';
 import { EraData, EraId } from '../types';
@@ -5,30 +16,31 @@ import { ERAS } from '../constants';
 import { Camera } from 'lucide-react';
 
 interface SplashScreenProps {
-  onStart: () => void;
   onSelectEra: (era: EraData) => void;
   isMuted: boolean;
   setIsMuted: (muted: boolean) => void;
 }
 
-export const SplashScreen: React.FC<SplashScreenProps> = ({ onStart, onSelectEra, isMuted, setIsMuted }) => {
+export const SplashScreen: React.FC<SplashScreenProps> = ({ onSelectEra, isMuted, setIsMuted }) => {
   const mountRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
-  const [isExiting, setIsExiting] = useState(false);
-  const [hasStarted, setHasStarted] = useState(false);
+  const [isExiting, setIsExiting] = useState(false);     // Triggers the wash-out animation
+  const [hasStarted, setHasStarted] = useState(false);   // Transitions from idle to welcome
   const isExitingRef = useRef(false);
 
+  /**
+   * AUDIO & FULLSCREEN UNLOCK
+   * Browsers block autoplay with sound. This function is called on the first user tap
+   * to unlock audio and ensure the app is in kiosk-style fullscreen.
+   */
   const unmuteVideo = () => {
-    // Enable Audio
     if (videoRef.current && isMuted) {
       videoRef.current.muted = false;
       setIsMuted(false);
     }
-
-    // Trigger Fullscreen
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen().catch((err) => {
-        console.warn(`Error attempting to enable full-screen mode: ${err.message}`);
+        console.warn(`[Fullscreen] Error: ${err.message}`);
       });
     }
   };
@@ -46,45 +58,45 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onStart, onSelectEra
 
     setIsExiting(true);
     isExitingRef.current = true;
+    
+    // Allow time for the CSS transition (1.8s) before moving to the next component
     setTimeout(() => {
       onSelectEra(era);
     }, 1800);
   };
 
+  /**
+   * THREE.JS BACKGROUND EFFECTS
+   * Renders a 3D particle field that reacts to the exit state.
+   */
   useEffect(() => {
     if (!mountRef.current) return;
 
-    // --- Scene Setup ---
     const width = mountRef.current.clientWidth;
     const height = mountRef.current.clientHeight;
 
     const scene = new THREE.Scene();
-    // Scene background should be transparent to see the image below
-
     const camera = new THREE.PerspectiveCamera(60, width / height, 0.1, 100);
     camera.position.z = 10;
-    camera.position.y = 0;
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
     renderer.setSize(width, height);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
     mountRef.current.appendChild(renderer.domElement);
 
-    // --- Lighting ---
     const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
     scene.add(ambientLight);
 
-    // --- Magical Particles ---
+    // Particle Generation
     const particlesGeo = new THREE.BufferGeometry();
-    const particleCount = 400; // Increased count for better look
+    const particleCount = 400; 
     const posArray = new Float32Array(particleCount * 3);
-
     for (let i = 0; i < particleCount * 3; i++) {
       posArray[i] = (Math.random() - 0.5) * 30;
     }
     particlesGeo.setAttribute('position', new THREE.BufferAttribute(posArray, 3));
 
-    // Create texture for glow
+    // Dynamic Glow Texture for bits
     const canvas = document.createElement('canvas');
     canvas.width = 32; canvas.height = 32;
     const ctx = canvas.getContext('2d');
@@ -110,25 +122,27 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onStart, onSelectEra
     const particleSystem = new THREE.Points(particlesGeo, particlesMat);
     scene.add(particleSystem);
 
-
-    // --- Animation Loop ---
     let animationId: number;
     let time = 0;
 
+    /**
+     * MAIN RENDERING LOOP
+     * Animates particle rotation and exit zoom.
+     */
     const animate = () => {
       animationId = requestAnimationFrame(animate);
       time += 0.01;
 
       const isExitingNow = isExitingRef.current;
-
-      // Animate Particles
       particleSystem.rotation.y = time * 0.05;
       particleSystem.rotation.x = time * 0.02;
 
       if (isExitingNow) {
+        // Zoom into the light on transition
         particlesMat.opacity -= 0.02;
         camera.position.z -= 0.1;
       } else {
+        // Subtle drift for idle state
         camera.position.x = Math.sin(time * 0.2) * 0.5;
         camera.position.y = Math.cos(time * 0.1) * 0.5;
         camera.lookAt(0, 0, 0);
@@ -162,7 +176,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onStart, onSelectEra
       className="h-full w-full relative overflow-hidden bg-black"
       onClick={handleStartInteraction}
     >
-      {/* Background Video Layer */}
+      {/* 1. BACKGROUND VIDEO LAYER - Switches between Idle Loop and Welcome Greeting */}
       <div
         className={`absolute inset-0 transition-all duration-[1800ms] ease-in-out ${isExiting ? 'opacity-0 scale-110 blur-2xl' : 'opacity-100 scale-100'}`}
       >
@@ -178,19 +192,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onStart, onSelectEra
         />
       </div>
 
-      {/* Intro Frame Layer */}
-      {/* <div
-        className={`absolute inset-0 transition-all duration-[2000ms] ease-in-out ${isExiting ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}
-      >
-        <img
-          src="./Splash-Screen/IntroFrame.png"
-          alt=""
-          draggable="false"
-          className="w-full h-full object-fill drop-shadow-[0_0_50px_rgba(0,0,0,0.8)]"
-        />
-      </div> */}
-
-      {/* Tap to Start Hint */}
+      {/* 2. OVERLAY HINTS - "Tap to Start" visible only in Idle State */}
       {!hasStarted && !isExiting && (
         <div className="absolute inset-0 flex flex-col items-center justify-center z-50 pointer-events-none">
           <div className="flex flex-col items-center gap-6 animate-pulse">
@@ -202,12 +204,11 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onStart, onSelectEra
                 </span>
               </div>
             </div>
-            <p className="text-white/70 text-sm uppercase tracking-[0.3em] font-light">Experience the Time Machine</p>
           </div>
         </div>
       )}
 
-      {/* Footer & Eras Layer */}
+      {/* 3. ERA SELECTION FOOTER - Appears after "Tap to Start" */}
       <div
         className={`absolute bottom-0 left-0 w-full z-10 transition-all duration-[2200ms] ease-in-out ${isExiting
           ? 'opacity-0 translate-y-10'
@@ -217,7 +218,6 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onStart, onSelectEra
           }`}
       >
         <div className="relative flex flex-col items-center justify-end w-full pb-8">
-          {/* Era Selection Row */}
           <div className="flex justify-center items-end gap-1 md:gap-4 mb-6 px-2 w-full max-w-7xl">
             {ERAS.map((era) => (
               <div
@@ -225,22 +225,16 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onStart, onSelectEra
                 className="flex flex-col items-center gap-1 group cursor-pointer transition-transform hover:scale-105 active:scale-95"
                 onClick={() => handleEraClick(era)}
               >
-                {/* Preview Image (Renders as is, already has border) */}
                 <div className="relative w-[18.5vw] h-[31vw] md:w-40 md:h-64 flex items-center justify-center">
                   <div className="w-full h-full flex items-center justify-center relative">
                     <img
                       src={era.previewImage}
                       alt={era.name}
-                      draggable="false"
-                      className="w-full h-full object-contain grayscale-[0.3] group-hover:grayscale-0 group-hover:scale-110 transition-all duration-700 ease-in-out"
+                      className="w-full h-full object-contain group-hover:scale-110 transition-all duration-700 ease-in-out"
                     />
-
-                    {/* Snap a Memory specific Camera icon overlay */}
                     {era.id === EraId.SNAP_A_MEMORY && (
                       <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none">
-                        <div className="bg-black/40 p-3 rounded-full backdrop-blur-sm group-hover:scale-110 transition-transform duration-500">
-                          <Camera className="w-8 h-8 md:w-12 md:h-12 text-yellow-500" />
-                        </div>
+                        <Camera className="w-8 h-8 md:w-12 md:h-12 text-yellow-500" />
                       </div>
                     )}
                   </div>
@@ -249,31 +243,19 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onStart, onSelectEra
             ))}
           </div>
 
-          {/* Footer Image Underlying everything */}
+          {/* Footer Branding Overlay */}
           <div className="absolute bottom-0 left-0 w-full pointer-events-none -z-10">
-            <img
-              src="./Splash-Screen/Splash-Footer.png"
-              alt=""
-              draggable="false"
-              className="w-full h-auto object-contain"
-            />
+            <img src="./Splash-Screen/Splash-Footer.png" alt="" className="w-full h-auto object-contain" />
           </div>
 
-          {/* Tap to Enter Pulsing Text */}
           <div className="mb-4">
-            <div className="relative">
-              <div className="absolute inset-0 bg-yellow-500/20 blur-xl rounded-lg animate-pulse"></div>
-              <div className="relative border-b border-t border-yellow-500/30 py-2 px-8">
-                <span className="text-white text-sm uppercase tracking-[0.4em] font-light animate-pulse whitespace-nowrap">Choose your era</span>
-              </div>
-            </div>
+            <span className="text-white text-sm uppercase tracking-[0.4em] font-light animate-pulse">Choose your era</span>
           </div>
         </div>
       </div>
 
-      {/* Particles Layer (Three.js) */}
+      {/* 4. THREE.JS PARTICLES LAYER */}
       <div ref={mountRef} className="absolute inset-0 z-[5] pointer-events-none" />
-
     </div>
   );
-};
+};

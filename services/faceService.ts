@@ -1,30 +1,35 @@
+/**
+ * FACE DETECTION SERVICE
+ * ----------------------
+ * Provides high-level functions for face detection using face-api.js (SSD Mobilenet V1).
+ * 
+ * CORE RESPONSIBILITIES:
+ * 1. Environment Patching: Bridging face-api.js with browser Canvas/Fetch implementations.
+ * 2. Model Loading: Downloading neural network weights from either local assets or a CDN.
+ * 3. Face Inference: Detecting faces, estimating age, and determining gender.
+ */
+
 import '@tensorflow/tfjs';
 import * as faceapi from 'face-api.js';
 import { FaceDetectionResult } from '../types';
 
-// ============================================================================
-// MODEL CONFIGURATION
-// ============================================================================
 const LOCAL_MODEL_URL = './models';
 const FALLBACK_MODEL_URL = 'https://cdn.jsdelivr.net/gh/cgarciagl/face-api.js@0.22.2/weights';
 
 let modelLoadPromise: Promise<boolean> | null = null;
 let backendPromise: Promise<void> | null = null;
 let envPatched = false;
-let tfFetchPatched = false;
 
-// Patch face-api.js environment with browser implementations
+/**
+ * 1. ENVIRONMENT PATCHING
+ * face-api.js requires a DOM environment (Canvas, fetch, etc.).
+ * In Electron/React, we must explicitly link the native browser APIs.
+ */
 const ensureEnvPatched = () => {
     if (envPatched) return;
-
-    const nativeFetch = window.fetch ? window.fetch.bind(window) : undefined;
-    if (!nativeFetch) {
-        console.warn('Browser fetch implementation missing; face-api.js may not load models correctly.');
-    }
-
     try {
         faceapi.env.monkeyPatch({
-            fetch: nativeFetch,
+            fetch: window.fetch.bind(window),
             Canvas: HTMLCanvasElement,
             Image: HTMLImageElement,
             createCanvasElement: () => document.createElement('canvas'),
@@ -32,133 +37,62 @@ const ensureEnvPatched = () => {
         });
         envPatched = true;
         console.log('✅ face-api.js environment patched');
-    } catch (error) {
-        console.warn('Failed to monkey patch face-api.js environment.', error);
+    } catch (err) {
+        console.warn('Environment patch failed:', err);
     }
 };
 
-// Ensure TensorFlow uses native fetch
-const ensureTfFetchPatched = () => {
-    if (tfFetchPatched) return;
-
-    const nativeFetch = window.fetch ? window.fetch.bind(window) : undefined;
-    if (!nativeFetch) return;
-
-    try {
-        const platformFetch = faceapi?.tf?.env().platform?.fetch;
-        if (platformFetch !== nativeFetch) {
-            faceapi.tf.env().platform.fetch = nativeFetch;
-        }
-        tfFetchPatched = true;
-        console.log('✅ TensorFlow fetch patched');
-    } catch (error) {
-        console.warn('Failed to override TensorFlow.js fetch implementation.', error);
-    }
-};
-
-// Initialize TensorFlow backend
+/**
+ * 2. GPU INITIALIZATION
+ * Configures TensorFlow.js to use the WebGL backend for hardware-accelerated inference.
+ * Falls back to CPU if WebGL is unavailable.
+ */
 const ensureBackendReady = async (): Promise<void> => {
-    ensureTfFetchPatched();
-
     if (!backendPromise) {
         backendPromise = (async () => {
             try {
                 await faceapi.tf.setBackend('webgl');
                 await faceapi.tf.ready();
-                console.log('✅ TensorFlow.js WebGL backend initialized');
-            } catch (error) {
-                console.warn('WebGL backend init failed, falling back to CPU backend', error);
+            } catch (err) {
+                console.warn('WebGL fallback to CPU');
                 await faceapi.tf.setBackend('cpu');
-                await faceapi.tf.ready();
-                console.log('✅ TensorFlow.js CPU backend initialized');
             }
-        })().catch((error) => {
-            backendPromise = null;
-            throw error;
-        });
+        })();
     }
-
     return backendPromise;
 };
 
-// Helper to check if a URL actually returns JSON (and not the React index.html fallback)
-const verifyModelUrl = async (baseUrl: string): Promise<boolean> => {
-    try {
-        const testUrl = `${baseUrl}/tiny_face_detector_model-weights_manifest.json`;
-        const response = await fetch(testUrl, { method: 'HEAD' });
-        const contentType = response.headers.get('content-type');
-
-        // If the server returns HTML (common in React apps for 404s), this URL is invalid for models
-        if (contentType && contentType.includes('text/html')) {
-            console.warn(`Model URL ${baseUrl} returned HTML. Treating as missing.`);
-            return false;
-        }
-
-        return response.ok;
-    } catch (e) {
-        return false;
-    }
-};
-
+/**
+ * 3. MODEL BOOTSTRAPPING
+ * Loads the required neural network models. 
+ * We use SSD Mobilenet V1 for detection (Mandatory) and 
+ * Age/Gender/Landmarks for auxiliary data (Recommended).
+ */
 export const loadFaceApiModels = async (): Promise<boolean> => {
     if (modelLoadPromise) return modelLoadPromise;
 
     modelLoadPromise = (async () => {
-        // 1. Patch environment first
         ensureEnvPatched();
-
-        // 2. Initialize TensorFlow backend
         await ensureBackendReady();
 
         const loadFromSource = async (baseUrl: string) => {
-            console.log(`Attempting to load models from: ${baseUrl}`);
-
-            // Verify availability first to avoid "silent" failures with HTML responses
-            const isAvailable = await verifyModelUrl(baseUrl);
-            if (!isAvailable) {
-                throw new Error(`Model manifest not found or invalid at ${baseUrl}`);
-            }
-
-            // Load the DETECTOR (Mandatory)
-            // Use SSD Mobilenet V1 for higher accuracy as requested
+            // SSD Mobilenet V1: high-accuracy detector
             await faceapi.nets.ssdMobilenetv1.loadFromUri(baseUrl);
-
-            // Verify it actually loaded
-            // @ts-ignore
-            if (!faceapi.nets.ssdMobilenetv1.params) {
-                throw new Error("SSD Mobilenet V1 loaded but params are empty");
-            }
-
-            // Load AUXILIARY models (Optional)
-            try {
-                await faceapi.nets.ageGenderNet.loadFromUri(baseUrl);
-                console.log('✅ AgeGender model loaded');
-            } catch (e) {
-                console.warn("AgeGender model failed to load (Optional)");
-            }
-
-            try {
-                await faceapi.nets.faceLandmark68Net.loadFromUri(baseUrl);
-                console.log('✅ FaceLandmark model loaded');
-            } catch (e) {
-                console.warn("Landmark model failed to load (Optional)");
-            }
+            
+            // Auxiliary nets (Optional)
+            try { await faceapi.nets.ageGenderNet.loadFromUri(baseUrl); } catch(e) {}
+            try { await faceapi.nets.faceLandmark68Net.loadFromUri(baseUrl); } catch(e) {}
         };
 
         try {
-            // Try Local First
             await loadFromSource(LOCAL_MODEL_URL);
-            console.log("✅ Models loaded from LOCAL source.");
             return true;
         } catch (localError) {
-            console.warn(`Local model load failed:`, localError);
             try {
-                // Fallback to CDN
+                // CDN Fallback if local assets are missing
                 await loadFromSource(FALLBACK_MODEL_URL);
-                console.log("✅ Models loaded from CDN.");
                 return true;
             } catch (cdnError) {
-                console.error("❌ CRITICAL: All model sources failed.", cdnError);
                 return false;
             }
         }
@@ -167,47 +101,31 @@ export const loadFaceApiModels = async (): Promise<boolean> => {
     return modelLoadPromise;
 };
 
-export const detectFaces = async (videoElement: HTMLVideoElement | HTMLImageElement | HTMLCanvasElement, isLoaded: boolean): Promise<FaceDetectionResult> => {
-    // Default safe fallback
+/**
+ * 4. FACE INFERENCE
+ * Analyzes an image (Video/Canvas/Img) and extracts metadata about the people in it.
+ */
+export const detectFaces = async (videoElement: any, isLoaded: boolean): Promise<FaceDetectionResult> => {
     const fallback: FaceDetectionResult = { maleCount: 0, femaleCount: 1, childCount: 0, totalPeople: 1 };
-
     if (!isLoaded) return fallback;
 
     try {
-        // Strict Check: Is the detector actually ready?
-        // @ts-ignore
-        if (!faceapi.nets.ssdMobilenetv1.isLoaded || !faceapi.nets.ssdMobilenetv1.params) {
-            console.warn("SSD Mobilenet V1 not ready during inference request.");
-            return fallback;
-        }
-
-        // Use SSD Mobilenet V1 Options for high accuracy
-        // minConfidence 0.5 filters out low quality "ghost" faces
+        // DETECTOR OPTIONS: minConfidence 0.5 helps avoid false positives ("GHOSTS").
         const options = new faceapi.SsdMobilenetv1Options({ minConfidence: 0.5 });
-
-        // Build task chain
+        
+        /**
+         * TASK CHAINING
+         * We chain 'detectFaces' with 'withFaceLandmarks' and 'withAgeAndGender' 
+         * to get full context for the FaceFusion orchestrator.
+         */
         let task: any = faceapi.detectAllFaces(videoElement, options);
+        
+        // Face Landmarks are REQUIRED for FaceAPI to correctly align faces for Age/Gender detection.
+        task = task.withFaceLandmarks().withAgeAndGender();
 
-        // Conditionally add auxiliary tasks ONLY if their models are loaded
-        // @ts-ignore
-        const hasLandmarks = !!faceapi.nets.faceLandmark68Net.params;
-        // @ts-ignore
-        const hasGender = !!faceapi.nets.ageGenderNet.params;
-
-        if (hasLandmarks) {
-            task = task.withFaceLandmarks();
-
-            // FaceAPI requires landmarks for age/gender detection to align the face
-            if (hasGender) {
-                task = task.withAgeAndGender();
-            }
-        } else if (hasGender) {
-            console.warn("Skipping Age/Gender detection because FaceLandmarks model is missing (required for alignment).");
-        }
-
-        // Execute
         const results = await task;
 
+        // Map raw results to our app-specific Type
         const faces: any[] = results.map((res: any) => ({
             box: {
                 x: res.detection.box.x,
@@ -224,19 +142,16 @@ export const detectFaces = async (videoElement: HTMLVideoElement | HTMLImageElem
         let childCount = 0;
 
         results.forEach((res: any) => {
-            const gender = res.gender || 'unknown';
-            const age = res.age ? Math.round(res.age) : 30; // Default to adult if unknown
-
-            if (age < 15) {
+            if (res.age < 15) {
                 childCount++;
             } else {
-                if (gender === 'male') maleCount++;
-                else femaleCount++; // Default to female
+                if (res.gender === 'male') maleCount++;
+                else femaleCount++;
             }
         });
 
         return { maleCount, femaleCount, childCount, totalPeople: results.length, faces };
-    } catch (error: any) {
-        return { maleCount: 0, femaleCount: 1, childCount: 0, totalPeople: 1 };
+    } catch (error) {
+        return fallback;
     }
 };

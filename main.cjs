@@ -54,11 +54,11 @@ if (app.isPackaged) {
 // Get printer configuration from file
 function getPrinterConfig() {
     const possiblePaths = [
-        path.join(app.getAppPath(), 'printer-config.json'),
-        path.join(process.cwd(), 'printer-config.json'),
-        path.join(__dirname, '../printer-config.json'),
-        path.join(__dirname, 'printer-config.json'),
-        path.join(app.getPath('exe'), '..', 'printer-config.json'),
+        path.join(app.getAppPath(), 'booth-config.json'),
+        path.join(process.cwd(), 'booth-config.json'),
+        path.join(__dirname, '../booth-config.json'),
+        path.join(__dirname, 'booth-config.json'),
+        path.join(app.getPath('exe'), '..', 'booth-config.json'),
     ];
 
     for (const configPath of possiblePaths) {

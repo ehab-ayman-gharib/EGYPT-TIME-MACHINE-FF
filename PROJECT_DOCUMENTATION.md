@@ -126,7 +126,7 @@
 - **Printer Selection**: 
   - Dynamic printer list retrieval.
   - Fuzzy matching for "DNP", "QW410", or "DS620" printers (also compatible with SELPHY).
-  - Remembers last used printer in `printer-config.json`.
+  - Remembers last used printer in `booth-config.json`.
 - **Print Specifications**:
   - Standard photobooth size: 100mm x 148mm (4x6 inches).
   - Target Resolution: **1800 x 2700 pixels** (450 DPI for ultra-sharpness).
@@ -835,7 +835,7 @@ if (era.id === EraId.OLD_EGYPT) {
 - Load from localhost (dev) or dist (production)
 
 ##### `getPrinterConfig()`
-- Reads `printer-config.json`
+- Reads `booth-config.json`
 - Returns saved printer name
 - Handles missing config gracefully
 
@@ -867,7 +867,7 @@ if (era.id === EraId.OLD_EGYPT) {
 
 ---
 
-#### `printer-config.json`
+#### `booth-config.json`
 **Purpose**: Store last used printer
 
 **Format**:
@@ -1075,7 +1075,7 @@ if (era.id === EraId.OLD_EGYPT) {
    - **macOS**: Uses `--execution-providers coreml`.
 5. **Output**: Returns generated image as base64 back to UI.
 
-**Configuration (`printer-config.json`)**:
+**Configuration (`booth-config.json`)**:
 - `condaEnv`: Name of the environment (e.g., "facefusion").
 - `condaPath`: Path to `conda` executable.
 - `facefusionDir`: Absolute path to FaceFusion installation directory.
@@ -1161,7 +1161,7 @@ npm run electron:dev
 **FaceFusion Setup (Required for Transformation)**:
 - Install [FaceFusion 3.3.0](https://github.com/facefusion/facefusion)
 - Create a Conda environment (recommended)
-- Update `printer-config.json` with your local paths:
+- Update `booth-config.json` with your local paths:
 ```json
 {
   "win32": {
@@ -1286,7 +1286,7 @@ public/
 **Included Files**:
 - `dist/` (built web app)
 - `electron/main.cjs`
-- `printer-config.json`
+- `booth-config.json`
 - `public/templates/` (Essential for FaceFusion)
 
 ---
@@ -1425,7 +1425,7 @@ public/
 
 **Printing Issues**:
 - Confirm printer is connected
-- Check printer-config.json
+- Check booth-config.json
 - Verify Electron version
 
 ---

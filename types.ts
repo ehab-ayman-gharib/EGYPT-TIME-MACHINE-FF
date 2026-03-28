@@ -1,6 +1,5 @@
 export enum AppScreen {
   SPLASH = 'SPLASH',
-  ERA_SELECTION = 'ERA_SELECTION',
   CAMERA = 'CAMERA',
   PROCESSING = 'PROCESSING',
   RESULT = 'RESULT',

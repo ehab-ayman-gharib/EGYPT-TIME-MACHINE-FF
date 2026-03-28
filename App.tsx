@@ -6,26 +6,37 @@ import { LoadingScreen } from './components/LoadingScreen';
 import { ResultScreen } from './components/ResultScreen';
 import { transformWithFaceFusion } from './services/faceFusionService';
 import { applyEraStamp } from './services/stampService';
-import { ERAS } from './constants';
 
+/**
+ * Main Application Component
+ * Manages the global state and screen navigation for the Egypt Time Machine Photobooth.
+ */
 const App: React.FC = () => {
-  const [currentScreen, setCurrentScreen] = useState<AppScreen>(AppScreen.SPLASH);
-  const [selectedEra, setSelectedEra] = useState<EraData | null>(null);
-  const [generatedImage, setGeneratedImage] = useState<string | null>(null);
-  const [generatedPrompt, setGeneratedPrompt] = useState<string>('');
-  const [faceDetectionResult, setFaceDetectionResult] = useState<FaceDetectionResult | null>(null);
-  const [sessionKey, setSessionKey] = useState(0);
-  const [isMuted, setIsMuted] = useState(true);
+  // Global State Management
+  const [currentScreen, setCurrentScreen] = useState<AppScreen>(AppScreen.SPLASH); // Tracks the active screen
+  const [selectedEra, setSelectedEra] = useState<EraData | null>(null);            // Stores the user's chosen era
+  const [generatedImage, setGeneratedImage] = useState<string | null>(null);       // Holds the final processing result image
+  const [generatedPrompt, setGeneratedPrompt] = useState<string>('');              // Stores the prompt used or generated description
+  const [faceDetectionResult, setFaceDetectionResult] = useState<FaceDetectionResult | null>(null); // Details of user's detected face
+  const [sessionKey, setSessionKey] = useState(0);                                 // Forces re-mounting of components on restart
+  const [isMuted, setIsMuted] = useState(true);                                    // Global audio mute state
 
-  const handleStart = () => {
-    setCurrentScreen(AppScreen.ERA_SELECTION);
-  };
 
+  /**
+   * Handles user selection of an era and transitions to the camera screen.
+   * @param era The selected historical era context
+   */
   const handleEraSelect = (era: EraData) => {
     setSelectedEra(era);
     setCurrentScreen(AppScreen.CAMERA);
   };
 
+  /**
+   * Core logic for processing a captured photo.
+   * Handles both "Snap a Memory" bypass and FaceFusion historical transformations.
+   * @param imageSrc Base64 string of the captured frame
+   * @param faceData Detection result containing face bounding box and landmarks
+   */
   const handleCapture = async (imageSrc: string, faceData: FaceDetectionResult) => {
     if (!selectedEra) return;
 
@@ -42,67 +53,85 @@ const App: React.FC = () => {
 
         let resultImage: string;
 
+        /**
+         * FLOW A: Snap a Memory (Instant Bypass)
+         * No AI required. We simply take the captured frame and proceed.
+         */
         if (selectedEra.id === EraId.SNAP_A_MEMORY) {
-          // "Snap a Memory" mode: STRICT BYPASS
-          // No AI, no detection required (faceData should be default fallback if skipped)
           resultImage = imageSrc;
           setGeneratedPrompt('Snap a Memory (Instant)');
-          // No artificial delay needed for "instant" feel, but keep a tiny bit if UX feels too jumpy
+          // Small delay for a smoother UX transition
           await new Promise(resolve => setTimeout(resolve, 300));
         } else {
-          // Historical eras: Run Local FaceFusion transformation
+          /**
+           * FLOW B: Era Transformation (Local AI)
+           * Sends the frame to FaceFusion for historical face swapping.
+           */
           const result = await transformWithFaceFusion(imageSrc, selectedEra, faceData);
           resultImage = result.image;
           setGeneratedPrompt(result.prompt);
         }
 
-        // Apply Era Stamp/Frame (Works for both AI and non-AI modes)
+        /**
+         * Post-Processing: Apply the era-specific stamp (the logo/frame).
+         */
         const stampedImage = await applyEraStamp(resultImage, selectedEra);
 
         setGeneratedImage(stampedImage);
         setCurrentScreen(AppScreen.RESULT);
-        return; // Success! Exit the function
+        return; // SUCCESS: Exit function
       } catch (error: any) {
         console.error(`Attempt ${attempts} failed:`, error);
+        
+        /**
+         * FAIL-SAFE: If all retry attempts are exhausted.
+         */
         if (attempts >= maxAttempts) {
-          // All retries failed
           alert(`Processing Error: ${error.message || error}`);
           console.error("All processing attempts failed. Staying on processing screen for debug.");
-          // For now, don't reset so we can see the console
-          // handleRestart();
-          // setCurrentScreen(AppScreen.SPLASH);
         } else {
-          // Wait a bit before retrying (optional delay)
+          // Wait briefly before the next automated retry
           await new Promise(resolve => setTimeout(resolve, 500));
         }
       }
     }
   };
 
+  /**
+   * Resets the application state to start a new session.
+   * Clears images, selections, and increments sessionKey to remount components.
+   */
   const handleRestart = () => {
     setGeneratedImage(null);
     setGeneratedPrompt('');
     setSelectedEra(null);
     setFaceDetectionResult(null);
     setSessionKey(prev => prev + 1);
-    setCurrentScreen(AppScreen.ERA_SELECTION);
+    setCurrentScreen(AppScreen.SPLASH);
   };
 
+  /**
+   * Allows the ResultScreen to update the generated image (e.g., if re-processed or modified).
+   */
   const handleUpdateImage = (newImage: string) => {
     setGeneratedImage(newImage);
   };
 
+  /**
+   * Renders the appropriate component based on the currentScreen state value.
+   */
   const renderScreen = () => {
     switch (currentScreen) {
       case AppScreen.SPLASH:
-        return <SplashScreen onStart={handleStart} onSelectEra={handleEraSelect} isMuted={isMuted} setIsMuted={setIsMuted} />;
-      case AppScreen.ERA_SELECTION:
-        // This screen is now merged with SPLASH
-        return <SplashScreen onStart={handleStart} onSelectEra={handleEraSelect} isMuted={isMuted} setIsMuted={setIsMuted} />;
+        return <SplashScreen onSelectEra={handleEraSelect} isMuted={isMuted} setIsMuted={setIsMuted} />;
       case AppScreen.CAMERA:
-        return <CameraCapture era={selectedEra} onCapture={handleCapture} onBack={() => setCurrentScreen(AppScreen.ERA_SELECTION)} />;
+        return <CameraCapture era={selectedEra} onCapture={handleCapture} onBack={() => setCurrentScreen(AppScreen.SPLASH)} />;
       case AppScreen.PROCESSING:
-        return <CameraCapture era={selectedEra} onCapture={handleCapture} onBack={() => setCurrentScreen(AppScreen.ERA_SELECTION)} isProcessing={true} />;
+        /**
+         * While processing, we render the CameraCapture component again with isProcessing={true}.
+         * This ensures the user continues to see their "frozen" capture rather than a blank screen.
+         */
+        return <CameraCapture era={selectedEra} onCapture={handleCapture} onBack={() => setCurrentScreen(AppScreen.SPLASH)} isProcessing={true} />;
       case AppScreen.RESULT:
         return (
           selectedEra && generatedImage ? (
@@ -117,10 +146,13 @@ const App: React.FC = () => {
           ) : <LoadingScreen />
         );
       default:
-        return <SplashScreen onStart={handleStart} />;
+        return <SplashScreen onSelectEra={handleEraSelect} isMuted={isMuted} setIsMuted={setIsMuted} />;
     }
   };
 
+  /**
+   * Enables fullscreen mode on first interaction to create a kiosk-like experience.
+   */
   const handleGlobalClick = () => {
     if (!document.fullscreenElement) {
       document.documentElement.requestFullscreen().catch((err) => {
@@ -130,12 +162,14 @@ const App: React.FC = () => {
   };
 
   return (
-    <div 
+    // Main Wrapper container ensuring full screen dimensions and dark mode defaults
+    <div
       className="h-[100dvh] w-screen bg-slate-900 text-slate-100 flex flex-col overflow-hidden"
       onClick={handleGlobalClick}
     >
       <main className="flex-grow relative h-full w-full" key={sessionKey}>
         {renderScreen()}
+        {/* Render LoadingScreen when currentScreen is PROCESSING */}
         {currentScreen === AppScreen.PROCESSING && <LoadingScreen />}
       </main>
     </div>

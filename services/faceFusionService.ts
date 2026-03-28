@@ -1,8 +1,17 @@
+/**
+ * FACEFUSION SERVICE
+ * ------------------
+ * Handles the communication between the React frontend and the Electron main process
+ * for AI image processing.
+ * 
+ * CORE FUNCTIONALITY:
+ * 1. Analyzes face detection results (gender counts and positions).
+ * 2. Maps the session to a specific template folder (e.g., '1M_1F' for one male and one female).
+ * 3. Sorts faces left-to-right to ensure the correct "Identity" is swapped onto the correct "Template" face.
+ */
+
 import { EraData, FaceDetectionResult, EraId } from '../types';
 
-/**
- * Mapping of Era IDs to directory names as per FaceFusion asset structure
- */
 const ERA_NAME_MAP: Record<string, string> = {
   [EraId.OLD_EGYPT]: 'Old Kingdom',
   [EraId.COPTIC_EGYPT]: 'Coptic',
@@ -10,9 +19,6 @@ const ERA_NAME_MAP: Record<string, string> = {
   [EraId.MODERN_EGYPT]: 'Modern'
 };
 
-/**
- * Interface for Electron IPC (provided via window.ipcRenderer or similar)
- */
 declare global {
   interface Window {
     ipcRenderer: {
@@ -21,9 +27,6 @@ declare global {
   }
 }
 
-/**
- * Triggers local FaceFusion transformation via Electron IPC
- */
 export const transformWithFaceFusion = async (
   imageSrc: string,
   era: EraData,
@@ -31,21 +34,22 @@ export const transformWithFaceFusion = async (
 ): Promise<{ image: string; prompt: string }> => {
   console.log(`[FaceFusion] Starting transformation for Era: ${era.id}`);
 
-  // 1. Orchestrator Logic: Detection & Sorting
+  /**
+   * 1. GENDER & MULTI-FACE ORCHESTRATION
+   * The backend expects templates organized by gender folder combinations.
+   */
   let genderFolder = faceData.maleCount > faceData.femaleCount ? '1M' : '1F';
   let sortedFaceBoxes: any[] = [];
 
+  // Handle Dual-Face Swaps (2 People)
   if (faceData.faces && faceData.faces.length >= 2) {
-      // Step B: Sort by x coordinate (left-to-right)
+      // SORTING IS CRITICAL: Sort by x-coordinate (left-to-right).
+      // This allows the FaceFusion backend to pair Face[0] with the leftmost template face.
       const sorted = [...faceData.faces].sort((a, b) => a.box.x - b.box.x);
       const face1 = sorted[0];
       const face2 = sorted[1];
 
-      // Construct folder name based on sorted genders
-      // M + F -> 1M_1F
-      // F + M -> 1F_1M
-      // M + M -> 2M
-      // F + F -> 2F
+      // Folder Mapping Logic:
       const g1 = face1.gender === 'male' ? 'M' : 'F';
       const g2 = face2.gender === 'male' ? 'M' : 'F';
 
@@ -54,17 +58,14 @@ export const transformWithFaceFusion = async (
       else if (g1 === 'M' && g2 === 'M') genderFolder = '2M';
       else if (g1 === 'F' && g2 === 'F') genderFolder = '2F';
 
-      // Take the two primary faces for the dual-swap
       sortedFaceBoxes = [face1.box, face2.box];
   }
 
   const eraFolderName = ERA_NAME_MAP[era.id] || era.id;
   const targetPath = `templates/${eraFolderName}/${genderFolder}`;
   
-  console.log(`[FaceFusion] Folder: ${genderFolder}, Sorted Faces: ${sortedFaceBoxes.length}`);
-
   try {
-    // 3. Obtain ipcRenderer (support both Dev and Electron environment)
+    // 2. Obtain Electron IPC (supports different bridge styles)
     let ipc;
     if ((window as any).require) {
       ipc = (window as any).require('electron').ipcRenderer;
@@ -72,20 +73,17 @@ export const transformWithFaceFusion = async (
       ipc = (window as any).ipcRenderer;
     }
 
-    if (!ipc) {
-      throw new Error('Electron IPC not available. Are you running in a browser?');
-    }
+    if (!ipc) throw new Error('Electron IPC not available');
 
-    // 4. Call Electron IPC
+    // 3. EXECUTE TRANSFORMATION
+    // This call is ASYNC and can take 2-10 seconds depending on hardware.
     const result = await ipc.invoke('execute-face-fusion', {
       sourceBase64: imageSrc,
       targetPath: targetPath,
       faces: sortedFaceBoxes
     });
 
-    if (!result.success) {
-      throw new Error(result.error || 'FaceFusion transformation failed');
-    }
+    if (!result.success) throw new Error(result.error || 'FaceFusion failed');
 
     const displayGender = faceData.maleCount > faceData.femaleCount ? 'male' : 'female';
     return {

@@ -54,8 +54,8 @@
     ],
     "extraResources": [
       {
-        "from": "printer-config.json",
-        "to": "printer-config.json"
+        "from": "booth-config.json",
+        "to": "booth-config.json"
       }
     ],
     "win": {
