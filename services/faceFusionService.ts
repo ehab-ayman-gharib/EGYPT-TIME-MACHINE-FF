@@ -49,16 +49,37 @@ export const transformWithFaceFusion = async (
       const face1 = sorted[0];
       const face2 = sorted[1];
 
-      // Folder Mapping Logic:
+      // 1. Identify gender of each source face
       const g1 = face1.gender === 'male' ? 'M' : 'F';
       const g2 = face2.gender === 'male' ? 'M' : 'F';
 
-      if (g1 === 'M' && g2 === 'F') genderFolder = '1M_1F';
-      else if (g1 === 'F' && g2 === 'M') genderFolder = '1F_1M';
-      else if (g1 === 'M' && g2 === 'M') genderFolder = '2M';
-      else if (g1 === 'F' && g2 === 'F') genderFolder = '2F';
+      // 2. Mixed-Gender Randomization & Reordering:
+      // If we have one Male and one Female, we shuffle between 1M_1F and 1F_1M folders
+      // to maximize template variety. We then align the source faces to the target folder's order.
+      const hasMixedPair = (g1 === 'M' && g2 === 'F') || (g1 === 'F' && g2 === 'M');
 
-      sortedFaceBoxes = [face1.box, face2.box];
+      if (hasMixedPair) {
+          const useMaleFirst = Math.random() > 0.5;
+          const maleFace = g1 === 'M' ? face1 : face2;
+          const femaleFace = g1 === 'F' ? face1 : face2;
+
+          if (useMaleFirst) {
+              genderFolder = '1M_1F'; // Target template has Male on left, Female on right
+              sortedFaceBoxes = [maleFace.box, femaleFace.box];
+          } else {
+              genderFolder = '1F_1M'; // Target template has Female on left, Male on right
+              sortedFaceBoxes = [femaleFace.box, maleFace.box];
+          }
+          console.log(`🎲 [FaceFusion] Dual-Face Shuffle: g1=${g1}(L), g2=${g2}(R) -> Mapping to ${genderFolder}`);
+      } else {
+          // Same-gender or default left-to-right logic
+          if (g1 === 'M' && g2 === 'M') genderFolder = '2M';
+          else if (g1 === 'F' && g2 === 'F') genderFolder = '2F';
+          else if (g1 === 'M') genderFolder = '1M_1F'; // Fallback
+          else genderFolder = '1F_1M'; // Fallback
+          
+          sortedFaceBoxes = [face1.box, face2.box];
+      }
   }
 
   const eraFolderName = ERA_NAME_MAP[era.id] || era.id;
