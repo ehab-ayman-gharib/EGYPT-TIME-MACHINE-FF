@@ -27,7 +27,7 @@ function createWindow() {
             autoplayPolicy: 'no-user-gesture-required', // Essential for auto-playing attraction videos
             devTools: true,
         },
-        fullscreen: true,               // Start in fullscreen for the photobooth experience
+        fullscreen: false,              // DISABLED for testing/debugging
         autoHideMenuBar: false,
     });
 
@@ -49,10 +49,12 @@ function createWindow() {
     // Load appropriate URL/File based on environment
     if (isDevEnv) {
         mainWindow.loadURL('http://localhost:3000'); // Vite dev server
-        mainWindow.webContents.openDevTools();
     } else {
         mainWindow.loadFile(path.join(__dirname, '../dist/index.html')); // Production build
     }
+
+    // Force Open DevTools even in production for test verification
+    mainWindow.webContents.openDevTools();
 
     // Post-load setup: Printer discovery and Shortcuts
     mainWindow.webContents.on('did-finish-load', async () => {
@@ -157,7 +159,7 @@ ipcMain.handle('get-printers', async () => {
 // B. EXECUTE FACEFUSION (The core AI transformation)
 // This handler orchestrates the call to the local python-based FaceFusion instance.
 ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath, faces }) => {
-    console.log('[FaceFusion] Processing start...');
+    console.log('🚀 [FaceFusion] Workflow Started | Target Area:', targetPath);
     const os = require('os');
     const { exec } = require('child_process');
     const { promisify } = require('util');
@@ -211,7 +213,7 @@ ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath, 
             if (validImages.length > 0) {
                 const randomImage = validImages[Math.floor(Math.random() * validImages.length)];
                 foundPath = path.join(foundPath, randomImage);
-                console.log(`[FaceFusion] Randomized target selected: ${randomImage}`);
+                console.log(`🎲 [FaceFusion] Randomized Target Seed: ${randomImage}`);
             } else {
                 console.warn(`[FaceFusion] Warning: No valid images found in folder: ${foundPath}`);
             }
@@ -317,7 +319,9 @@ ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath, 
                 // Single Pass (Standard Logic)
                 const ffParams = `headless-run ${commonParams} --processors face_swapper face_enhancer --face-swapper-model inswapper_128_fp16 --face-enhancer-model gfpgan_1.4 --source-paths "${sourcePath}" --target-path "${absoluteTargetPath}" --output-path "${outputPath}"`;
                 const command = config.condaEnv ? `"${config.condaPath}" run -n ${config.condaEnv} ${pythonCmd} ${ffParams}` : `${pythonCmd} ${ffParams}`;
+                console.log('⚙️ [FaceFusion] Executing AI Command:', command);
                 await execAsync(command, execOptions);
+                console.log('✅ [FaceFusion] Execution finished successfully');
             }
 
             // Step 3: Result Retrieval

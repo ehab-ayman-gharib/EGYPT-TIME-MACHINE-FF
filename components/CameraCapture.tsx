@@ -153,9 +153,55 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
 
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (!file) return;
+    if (!file || !canvasRef.current) return;
+    
     setIsDetecting(true);
-    // ... file processing logic ...
+    
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const img = new Image();
+      img.onload = async () => {
+        const canvas = canvasRef.current!;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        // BOOTH OUTPUT SPEC: 1080x1920 Portrait
+        const canvasWidth = 1080;
+        const canvasHeight = 1920;
+        canvas.width = canvasWidth;
+        canvas.height = canvasHeight;
+
+        // Draw image to fill portrait frame (Cover style)
+        const scale = Math.max(canvasWidth / img.width, canvasHeight / img.height);
+        const drawWidth = img.width * scale;
+        const drawHeight = img.height * scale;
+        const x = (canvasWidth - drawWidth) / 2;
+        const y = (canvasHeight - drawHeight) / 2;
+
+        ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+        ctx.drawImage(img, x, y, drawWidth, drawHeight);
+
+        const imageData = canvas.toDataURL('image/jpeg', 0.9);
+        
+        let faceData: FaceDetectionResult = { maleCount: 0, femaleCount: 1, childCount: 0, totalPeople: 1 };
+        if (era?.id !== EraId.SNAP_A_MEMORY) {
+          console.log('[Upload] Running AI Detection...');
+          faceData = await detectFaces(canvas, modelsLoaded);
+
+          if (faceData.totalPeople === 0) {
+            setDetectionError("No faces detected in this photo!");
+            setTimeout(() => setDetectionError(null), 3500);
+            setIsDetecting(false);
+            return;
+          }
+        }
+
+        onCapture(imageData, faceData);
+        setIsDetecting(false);
+      };
+      img.src = e.target?.result as string;
+    };
+    reader.readAsDataURL(file);
   };
 
   if (error) {

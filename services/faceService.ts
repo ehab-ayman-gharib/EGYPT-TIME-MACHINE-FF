@@ -51,11 +51,15 @@ const ensureBackendReady = async (): Promise<void> => {
     if (!backendPromise) {
         backendPromise = (async () => {
             try {
+                console.log('⏳ [Face-API] Initializing TensorFlow Backend (WebGL)...');
                 await faceapi.tf.setBackend('webgl');
                 await faceapi.tf.ready();
+                console.log('✅ [Face-API] TensorFlow Backend Ready (WebGL)');
             } catch (err) {
-                console.warn('WebGL fallback to CPU');
+                console.warn('⚠️ [Face-API] WebGL failed, falling back to CPU:', err);
                 await faceapi.tf.setBackend('cpu');
+                await faceapi.tf.ready();
+                console.log('✅ [Face-API] TensorFlow Backend Ready (CPU)');
             }
         })();
     }
@@ -76,23 +80,36 @@ export const loadFaceApiModels = async (): Promise<boolean> => {
         await ensureBackendReady();
 
         const loadFromSource = async (baseUrl: string) => {
+            console.log(`⏳ [Face-API] Loading models from: ${baseUrl}`);
             // SSD Mobilenet V1: high-accuracy detector
             await faceapi.nets.ssdMobilenetv1.loadFromUri(baseUrl);
+            console.log('✅ [Face-API] SSD Mobilenet V1 Loaded');
             
             // Auxiliary nets (Optional)
-            try { await faceapi.nets.ageGenderNet.loadFromUri(baseUrl); } catch(e) {}
-            try { await faceapi.nets.faceLandmark68Net.loadFromUri(baseUrl); } catch(e) {}
+            try { 
+                await faceapi.nets.ageGenderNet.loadFromUri(baseUrl); 
+                console.log('✅ [Face-API] Age/Gender Net Loaded');
+            } catch(e) { console.warn('❌ [Face-API] Age/Gender Net failed (Optional)'); }
+            
+            try { 
+                await faceapi.nets.faceLandmark68Net.loadFromUri(baseUrl); 
+                console.log('✅ [Face-API] Landmarks Net Loaded');
+            } catch(e) { console.warn('❌ [Face-API] Landmarks Net failed (Optional)'); }
         };
 
         try {
             await loadFromSource(LOCAL_MODEL_URL);
+            console.log('🎉 [Face-API] Initialized successfully from Local Models');
             return true;
         } catch (localError) {
+            console.warn(`⚠️ [Face-API] Local models failed at ${LOCAL_MODEL_URL}. Attempting CDN fallback...`);
             try {
                 // CDN Fallback if local assets are missing
                 await loadFromSource(FALLBACK_MODEL_URL);
+                console.log('🎉 [Face-API] Initialized successfully from CDN Fallback');
                 return true;
             } catch (cdnError) {
+                console.error('🛑 [Face-API] ALL model sources failed.', cdnError);
                 return false;
             }
         }
