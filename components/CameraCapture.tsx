@@ -113,14 +113,15 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
           setIsDetecting(false);
           return;
         }
-        if (faceData.totalPeople > 2) {
-          setDetectionError("Too many people! This experience is optimized for 1-2 people.");
+        if (faceData.totalPeople > 3) {
+          setDetectionError("Too many people! This experience is optimized for 1-3 people.");
           setTimeout(() => setDetectionError(null), 3500);
           setIsDetecting(false);
           return;
         }
       }
-
+      // Callback to parent component, passing the captured image and face data
+      //handleCapture in App.tsx is the function that handles the captured image and face data
       onCapture(imageData, faceData);
     }
     setIsDetecting(false);
@@ -154,9 +155,9 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
   const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file || !canvasRef.current) return;
-    
+
     setIsDetecting(true);
-    
+
     const reader = new FileReader();
     reader.onload = async (e) => {
       const img = new Image();
@@ -182,7 +183,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
         ctx.drawImage(img, x, y, drawWidth, drawHeight);
 
         const imageData = canvas.toDataURL('image/jpeg', 0.9);
-        
+
         let faceData: FaceDetectionResult = { maleCount: 0, femaleCount: 1, childCount: 0, totalPeople: 1 };
         if (era?.id !== EraId.SNAP_A_MEMORY) {
           console.log('[Upload] Running AI Detection...');
@@ -190,6 +191,12 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
 
           if (faceData.totalPeople === 0) {
             setDetectionError("No faces detected in this photo!");
+            setTimeout(() => setDetectionError(null), 3500);
+            setIsDetecting(false);
+            return;
+          }
+          if (faceData.totalPeople > 3) {
+            setDetectionError("Too many people! This photo should have 1-3 people.");
             setTimeout(() => setDetectionError(null), 3500);
             setIsDetecting(false);
             return;
@@ -280,10 +287,10 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
               {isDetecting ? <RefreshCw className="w-8 h-8 text-white animate-spin" /> : <div className="w-16 h-16 bg-white rounded-full" />}
             </div>
           </button>
-          
+
           <div className="w-[56px]" />
         </div>
       )}
     </div>
   );
-};
+};

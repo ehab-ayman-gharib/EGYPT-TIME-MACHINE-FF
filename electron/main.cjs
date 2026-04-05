@@ -158,7 +158,7 @@ ipcMain.handle('get-printers', async () => {
 
 // B. EXECUTE FACEFUSION (The core AI transformation)
 // This handler orchestrates the call to the local python-based FaceFusion instance.
-ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath, faces }) => {
+ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath, faces, isGroup }) => {
     console.log('🚀 [FaceFusion] Workflow Started | Target Area:', targetPath);
     const os = require('os');
     const { exec } = require('child_process');
@@ -178,6 +178,7 @@ ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath, 
     // Resolve Target Image (Handle ASAR unpacking if necessary)
     let absoluteTargetPath = targetPath;
     let tempTargetPath = null;
+    let foundPath = targetPath;
 
     if (!path.isAbsolute(targetPath)) {
         let resourcesPath = process.resourcesPath;
@@ -195,7 +196,7 @@ ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath, 
             path.join(__dirname, '../public', targetPath)
         ];
 
-        let foundPath = possiblePaths.find(p => fs.existsSync(p));
+        foundPath = possiblePaths.find(p => fs.existsSync(p));
         if (!foundPath) foundPath = path.join(__dirname, '../public', targetPath);
 
         /**
@@ -283,45 +284,91 @@ ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath, 
              * 1. Extract Crop 1 (Left Person) -> Blur Neighbor -> Run FF
              * 2. Extract Crop 2 (Right Person) -> Blur Neighbor -> Run FF on Pass 1 output
              */
-            if (isDualSwap) {
-                console.log('[FaceFusion] Starting 2-Pass Orchestration...');
-                const cropLeftPath = path.join(tempDir, `crop_left_${timestamp}.jpg`);
-                const cropRightPath = path.join(tempDir, `crop_right_${timestamp}.jpg`);
-                const intermediatePath = path.join(tempDir, `intermediate_${timestamp}${targetExt}`);
+            if (faces && faces.length >= 1) {
+                console.log(`🎯 [FaceFusion] Starting Surgical AI Mapping (${faces.length} People)...`);
+                
+                // STEP 3: Target Template Analysis (The Handshake)
+                // We call the renderer to find the "slots" in the historical portrait
+                const isDev = !app.isPackaged;
+                const publicPath = isDev ? 'http://localhost:3000' : `file://${path.join(__dirname, '../dist').replace(/\\/g, '/')}`;
+                
+                // Relative template path for the webview to fetch
+                const relativeTemplatePath = foundPath.split('public')[1] || foundPath.split('dist')[1] || foundPath;
+                const templateUrl = `${publicPath}${relativeTemplatePath.replace(/\\/g, '/')}`;
+                
+                console.log(`🔍 [Handshake] Analyzing slots in: ${templateUrl}`);
+                const targetSlots = await mainWindow.webContents.executeJavaScript(`window.analyzeTemplate("${templateUrl}")`);
+                
+                if (!targetSlots || targetSlots.length < faces.length) {
+                    throw new Error(`Failed to find all ${faces.length} slots in template. Found: ${targetSlots?.length || 0}`);
+                }
 
-                // Helper to create masked crops
-                const extractCrop = async (targetIndex, outPath) => {
-                    const targetFace = faces[targetIndex];
-                    const size = Math.floor(Math.max(targetFace.width, targetFace.height) * 2.2);
-                    const left = Math.max(0, Math.floor(targetFace.x + targetFace.width/2 - size/2));
-                    const top = Math.max(0, Math.floor(targetFace.y + targetFace.height/2 - size/2));
+                // STEP 4: Surgical Isolation
+                const templateBuffer = fs.readFileSync(foundPath);
+                const templateMetadata = await sharp(templateBuffer).metadata();
+                const processedTiles = [];
+
+                for (let i = 0; i < faces.length; i++) {
+                    const slot = targetSlots[i];
+                    const sourceFace = faces[i];
                     
+                    // FaceFusion Command wants a Source Image (we use the extracted face from Source)
+                    const sourceFacePath = path.join(tempDir, `ff_src_face_${timestamp}_${i}.png`);
+                    const sourceBox = sourceFace.box;
                     await sharp(sourceBuffer)
-                        .extract({ left, top, width: Math.min(size, imgMetadata.width - left), height: Math.min(size, imgMetadata.height - top) })
-                        .resize(512, 512, { fit: 'contain' })
-                        .toFile(outPath);
-                };
+                        .extract({ 
+                            left: Math.floor(sourceBox.x), 
+                            top: Math.floor(sourceBox.y), 
+                            width: Math.floor(sourceBox.width), 
+                            height: Math.floor(sourceBox.height) 
+                        })
+                        .resize(512, 512, { fit: 'inside' })
+                        .toFile(sourceFacePath);
 
-                await extractCrop(0, cropLeftPath);
-                await extractCrop(1, cropRightPath);
+                    // SURGICAL CROP (Target Tile) with Padding
+                    const padding = 0.25; // 25% padding
+                    const extractWidth = Math.floor(slot.width * (1 + padding * 2));
+                    const extractHeight = Math.floor(slot.height * (1 + padding * 2));
+                    const extractLeft = Math.max(0, Math.floor(slot.x - slot.width * padding));
+                    const extractTop = Math.max(0, Math.floor(slot.y - slot.height * padding));
 
-                // Pass 1: Left Actor
-                const cmd1Params = `headless-run ${commonParams} --processors face_swapper --face-swapper-model inswapper_128_fp16 --face-selector-order left-right --reference-face-position 0 --source-paths "${cropLeftPath}" --target-path "${absoluteTargetPath}" --output-path "${intermediatePath}"`;
-                const cmd1 = config.condaEnv ? `"${config.condaPath}" run -n ${config.condaEnv} ${pythonCmd} ${cmd1Params}` : `${pythonCmd} ${cmd1Params}`;
-                await execAsync(cmd1, execOptions);
+                    const tileInputPath = path.join(tempDir, `ff_tile_in_${timestamp}_${i}.jpg`);
+                    const tileOutputPath = path.join(tempDir, `ff_tile_out_${timestamp}_${i}.jpg`);
 
-                // Pass 2: Right Actor + Enhancer
-                const cmd2Params = `headless-run ${commonParams} --processors face_swapper face_enhancer --face-swapper-model inswapper_128_fp16 --face-enhancer-model gfpgan_1.4 --face-selector-order right-left --reference-face-position 0 --source-paths "${cropRightPath}" --target-path "${intermediatePath}" --output-path "${outputPath}"`;
-                const cmd2 = config.condaEnv ? `"${config.condaPath}" run -n ${config.condaEnv} ${pythonCmd} ${cmd2Params}` : `${pythonCmd} ${cmd2Params}`;
-                await execAsync(cmd2, execOptions);
+                    await sharp(templateBuffer)
+                        .extract({ 
+                            left: extractLeft, 
+                            top: extractTop, 
+                            width: Math.min(extractWidth, templateMetadata.width - extractLeft), 
+                            height: Math.min(extractHeight, templateMetadata.height - extractTop) 
+                        })
+                        .toFile(tileInputPath);
+
+                    // STEP 5: Isolated AI Execution
+                    const ffParams = `headless-run ${commonParams} --processors face_swapper face_enhancer --face-swapper-model inswapper_128_fp16 --face-enhancer-model gfpgan_1.4 --source-paths "${sourceFacePath}" --target-path "${tileInputPath}" --output-path "${tileOutputPath}"`;
+                    const command = config.condaEnv ? `"${config.condaPath}" run -n ${config.condaEnv} ${pythonCmd} ${ffParams}` : `${pythonCmd} ${ffParams}`;
+                    
+                    console.log(`⚙️ [FaceFusion] Pass ${i+1}/${faces.length} Tile Swap...`);
+                    await execAsync(command, execOptions);
+
+                    processedTiles.push({
+                        input: tileOutputPath,
+                        left: extractLeft,
+                        top: extractTop
+                    });
+
+                    // Cleanup Source Crop
+                    if (fs.existsSync(sourceFacePath)) fs.unlinkSync(sourceFacePath);
+                }
+
+                // STEP 6: Final Assembly (Composition)
+                console.log(`🧩 [Assembly] Compositing ${faces.length} face(s) back to high-res template...`);
+                await sharp(templateBuffer)
+                    .composite(processedTiles)
+                    .toFile(outputPath);
 
             } else {
-                // Single Pass (Standard Logic)
-                const ffParams = `headless-run ${commonParams} --processors face_swapper face_enhancer --face-swapper-model inswapper_128_fp16 --face-enhancer-model gfpgan_1.4 --source-paths "${sourcePath}" --target-path "${absoluteTargetPath}" --output-path "${outputPath}"`;
-                const command = config.condaEnv ? `"${config.condaPath}" run -n ${config.condaEnv} ${pythonCmd} ${ffParams}` : `${pythonCmd} ${ffParams}`;
-                console.log('⚙️ [FaceFusion] Executing AI Command:', command);
-                await execAsync(command, execOptions);
-                console.log('✅ [FaceFusion] Execution finished successfully');
+                throw new Error("No faces provided for processing.");
             }
 
             // Step 3: Result Retrieval
@@ -338,8 +385,21 @@ ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath, 
         } finally {
             // Cleanup temp files after a reasonable buffer
             setTimeout(() => {
-                [sourcePath, outputPath, tempTargetPath].forEach(p => p && fs.existsSync(p) && fs.unlinkSync(p));
-            }, 30000);
+                const filesToCleanup = [sourcePath, outputPath, tempTargetPath];
+                // Add any face tiles if they exist
+                if (faces && faces.length >= 1) {
+                    for (let i = 0; i < faces.length; i++) {
+                        filesToCleanup.push(path.join(tempDir, `ff_tile_in_${timestamp}_${i}.jpg`));
+                        filesToCleanup.push(path.join(tempDir, `ff_tile_out_${timestamp}_${i}.jpg`));
+                        filesToCleanup.push(path.join(tempDir, `ff_src_face_${timestamp}_${i}.png`));
+                    }
+                }
+                filesToCleanup.forEach(p => {
+                    if (p && fs.existsSync(p)) {
+                        try { fs.unlinkSync(p); } catch (e) {}
+                    }
+                });
+            }, 35000);
         }
     });
 });

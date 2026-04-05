@@ -1,17 +1,59 @@
 /**
  * FACEFUSION SERVICE
  * ------------------
- * Handles the communication between the React frontend and the Electron main process
- * for AI image processing.
+ * This service acts as the orchestration layer between the React UI and the 
+ * Electron Backend for AI face transformation. It handles gender analysis,
+ * environment mapping, and group portrait ordering.
  * 
- * CORE FUNCTIONALITY:
- * 1. Analyzes face detection results (gender counts and positions).
- * 2. Maps the session to a specific template folder (e.g., '1M_1F' for one male and one female).
- * 3. Sorts faces left-to-right to ensure the correct "Identity" is swapped onto the correct "Template" face.
+ * CORE RESPONSIBILITIES:
+ * 1. Gender Accounting: Counts males/females to select the correct template subfolder.
+ * 2. Identity Mapping: Sorts detected faces (L-to-R) to align identities with template characters.
+ * 3. IPC Bridge: Communicates with 'electron/main.cjs' to execute the FaceFusion CLI.
+ * 4. Template Analysis: Provides a global helper for the backend to locate face positions in templates.
  */
 
 import { EraData, FaceDetectionResult, EraId } from '../types';
+import * as faceapi from 'face-api.js';
 
+/**
+ * GLOBAL HELPER: analyzeTemplate
+ * -----------------------------
+ * This function is exposed to the window object so that the Electron Main Process 
+ * can "call back" into the browser context. 
+ * 
+ * WHY: Face-API.js requires a DOM/Canvas environment to detect faces. By running this 
+ * in the renderer, the backend can identify where "face slots" are in any template 
+ * (.jpg) without needing a heavy Node-based AI setup.
+ * 
+ * @param templateUrl - Absolute URL or path to the template image.
+ * @returns Array of face box coordinates sorted horizontally.
+ */
+(window as any).analyzeTemplate = async (templateUrl: string) => {
+  try {
+    const img = await faceapi.fetchImage(templateUrl);
+    // SSD Mobilenet V1 is used here for high-accuracy slot detection
+    const detections = await faceapi.detectAllFaces(img, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.35 }));
+
+    // CRITICAL: Sort slots from Left-to-Right by x-coordinate.
+    // This ensures Source Face 1 (left) maps to Template Slot 1 (left).
+    return detections
+      .sort((a, b) => a.box.x - b.box.x)
+      .map(d => ({
+        x: d.box.x,
+        y: d.box.y,
+        width: d.box.width,
+        height: d.box.height
+      }));
+  } catch (err) {
+    console.error('[AnalyzeTemplate] Error during template analysis:', err);
+    return [];
+  }
+};
+
+/**
+ * ERA_NAME_MAP
+ * Maps Internal Era IDs to their corresponding folder names on the file system.
+ */
 const ERA_NAME_MAP: Record<string, string> = {
   [EraId.OLD_EGYPT]: 'Old Kingdom',
   [EraId.COPTIC_EGYPT]: 'Coptic',
@@ -27,66 +69,120 @@ declare global {
   }
 }
 
+/**
+ * transformWithFaceFusion
+ * -----------------------
+ * Main entry point for starting an AI transformation.
+ * 
+ * @param imageSrc - The source photo captured from the camera (Data URL).
+ * @param era - The historical period selected by the user.
+ * @param faceData - Results from the initial face-api detection pass.
+ */
 export const transformWithFaceFusion = async (
   imageSrc: string,
   era: EraData,
   faceData: FaceDetectionResult
 ): Promise<{ image: string; prompt: string }> => {
-  console.log(`[FaceFusion] Starting transformation for Era: ${era.id}`);
+  console.log(`🚀 [FaceFusion] Transformation Start | Era: ${era.id} | People: ${faceData.faces?.length}`);
+
+  // 1. GENDER & MULTI-FACE ORCHESTRATION
+  const numFaces = faceData.faces?.length || 0;
+  
+  // Default: Handle single-person mapping
+  let genderFolder = faceData.maleCount > faceData.femaleCount ? '1M' : '1F';
+  let sortedFaces: any[] = [];
+  const rawFaces = [...(faceData.faces || [])].sort((a, b) => a.box.x - b.box.x);
+  const shuffle = (array: any[]) => [...array].sort(() => Math.random() - 0.5);
 
   /**
-   * 1. GENDER & MULTI-FACE ORCHESTRATION
-   * The backend expects templates organized by gender folder combinations.
+   * CASE: 1 PERSON (Single-Face Mode)
    */
-  let genderFolder = faceData.maleCount > faceData.femaleCount ? '1M' : '1F';
-  let sortedFaceBoxes: any[] = [];
+  if (numFaces === 1) {
+    sortedFaces = rawFaces;
+  }
+  /**
+   * CASE: 2 PEOPLE (Dual-Face Mode)
+   */
+  else if (numFaces === 2) {
+    const face1 = rawFaces[0];
+    const face2 = rawFaces[1];
+    const g1 = face1.gender === 'male' ? 'M' : 'F';
+    const g2 = face2.gender === 'male' ? 'M' : 'F';
 
-  // Handle Dual-Face Swaps (2 People)
-  if (faceData.faces && faceData.faces.length >= 2) {
-      // SORTING IS CRITICAL: Sort by x-coordinate (left-to-right).
-      // This allows the FaceFusion backend to pair Face[0] with the leftmost template face.
-      const sorted = [...faceData.faces].sort((a, b) => a.box.x - b.box.x);
-      const face1 = sorted[0];
-      const face2 = sorted[1];
-
-      // 1. Identify gender of each source face
-      const g1 = face1.gender === 'male' ? 'M' : 'F';
-      const g2 = face2.gender === 'male' ? 'M' : 'F';
-
-      // 2. Mixed-Gender Randomization & Reordering:
-      // If we have one Male and one Female, we shuffle between 1M_1F and 1F_1M folders
-      // to maximize template variety. We then align the source faces to the target folder's order.
-      const hasMixedPair = (g1 === 'M' && g2 === 'F') || (g1 === 'F' && g2 === 'M');
-
-      if (hasMixedPair) {
-          const useMaleFirst = Math.random() > 0.5;
-          const maleFace = g1 === 'M' ? face1 : face2;
-          const femaleFace = g1 === 'F' ? face1 : face2;
-
-          if (useMaleFirst) {
-              genderFolder = '1M_1F'; // Target template has Male on left, Female on right
-              sortedFaceBoxes = [maleFace.box, femaleFace.box];
-          } else {
-              genderFolder = '1F_1M'; // Target template has Female on left, Male on right
-              sortedFaceBoxes = [femaleFace.box, maleFace.box];
-          }
-          console.log(`🎲 [FaceFusion] Dual-Face Shuffle: g1=${g1}(L), g2=${g2}(R) -> Mapping to ${genderFolder}`);
+    const hasMixedPair = (g1 === 'M' && g2 === 'F') || (g1 === 'F' && g2 === 'M');
+    
+    if (hasMixedPair) {
+      const useMaleFirst = Math.random() > 0.5;
+      const maleFace = g1 === 'M' ? face1 : face2;
+      const femaleFace = g1 === 'F' ? face1 : face2;
+      
+      if (useMaleFirst) {
+        genderFolder = '1M_1F';
+        sortedFaces = [maleFace, femaleFace];
       } else {
-          // Same-gender or default left-to-right logic
-          if (g1 === 'M' && g2 === 'M') genderFolder = '2M';
-          else if (g1 === 'F' && g2 === 'F') genderFolder = '2F';
-          else if (g1 === 'M') genderFolder = '1M_1F'; // Fallback
-          else genderFolder = '1F_1M'; // Fallback
-          
-          sortedFaceBoxes = [face1.box, face2.box];
+        genderFolder = '1F_1M';
+        sortedFaces = [femaleFace, maleFace];
       }
+      console.log(`🎲 [FaceFusion] Dual Mixed Shuffle -> Folder: ${genderFolder}`);
+    } else {
+      if (g1 === 'M' && g2 === 'M') {
+        genderFolder = '2M';
+        sortedFaces = shuffle(rawFaces);
+      } else if (g1 === 'F' && g2 === 'F') {
+        genderFolder = '2F';
+        sortedFaces = shuffle(rawFaces);
+      } else {
+        genderFolder = g1 === 'M' ? '1M_1F' : '1F_1M';
+        sortedFaces = rawFaces;
+      }
+    }
+  } 
+  
+  /**
+   * CASE: 3 PEOPLE (Triple-Face Mode)
+   * ---------------------------------
+   * Implements "Dynamic Group Mapping" based on user requirements.
+   */
+  else if (numFaces === 3) {
+    const sorted = [...(faceData.faces || [])].sort((a, b) => a.box.x - b.box.x);
+    const mFaces = sorted.filter(f => f.gender === 'male');
+    const fFaces = sorted.filter(f => f.gender === 'female');
+    const shuffle = (array: any[]) => [...array].sort(() => Math.random() - 0.5);
+
+    // Folder identification based on user's directory structure
+    if (faceData.maleCount === 3) genderFolder = '3M';
+    else if (faceData.femaleCount === 3) genderFolder = '3F';
+    else if (faceData.maleCount === 2) genderFolder = '2M_1F';
+    else if (faceData.femaleCount === 2) genderFolder = '2F_1M';
+    else genderFolder = '3M'; // Global fallback
+
+    /**
+     * MIXED-GENDER RANDOMIZATION (Triplets)
+     * Shuffles users of the same gender into available template slots.
+     */
+    if (faceData.maleCount === 3) sortedFaces = shuffle(mFaces);
+    else if (faceData.femaleCount === 3) sortedFaces = shuffle(fFaces);
+    else if (faceData.maleCount === 2) {
+      const sm = shuffle(mFaces);
+      // Map to template order: [M1, M2, F1]
+      sortedFaces = [sm[0], sm[1], fFaces[0]];
+    } else if (faceData.femaleCount === 2) {
+      const sf = shuffle(fFaces);
+      // Map to template order: [F1, F2, M1]
+      sortedFaces = [sf[0], sf[1], mFaces[0]];
+    } else {
+      sortedFaces = sorted;
+    }
+    console.log(`🎲 [FaceFusion] Triple-Face Identity Scramble -> Folder: ${genderFolder}`);
   }
 
+  // Construct the final file-system path for Electron to search
   const eraFolderName = ERA_NAME_MAP[era.id] || era.id;
   const targetPath = `templates/${eraFolderName}/${genderFolder}`;
-  
+
   try {
-    // 2. Obtain Electron IPC (supports different bridge styles)
+    // 2. Obtain Electron IPC
+    // Handles both standard Electron and typical dev environments.
     let ipc;
     if ((window as any).require) {
       ipc = (window as any).require('electron').ipcRenderer;
@@ -94,25 +190,34 @@ export const transformWithFaceFusion = async (
       ipc = (window as any).ipcRenderer;
     }
 
-    if (!ipc) throw new Error('Electron IPC not available');
+    if (!ipc) {
+      console.error('[FaceFusion] Failed to acquire Electron IPC Renderer.');
+      throw new Error('Electron IPC not available. Are you running in a browser?');
+    }
 
-    // 3. EXECUTE TRANSFORMATION
-    // This call is ASYNC and can take 2-10 seconds depending on hardware.
+    /**
+     * 3. EXECUTE TRANSFORMATION
+     * Executes the surgical tile isolation workflow for all person counts.
+     */
     const result = await ipc.invoke('execute-face-fusion', {
       sourceBase64: imageSrc,
       targetPath: targetPath,
-      faces: sortedFaceBoxes
+      faces: sortedFaces
     });
 
-    if (!result.success) throw new Error(result.error || 'FaceFusion failed');
+    if (!result.success) {
+      throw new Error(result.error || 'The AI transformation engine encountered an error.');
+    }
 
     const displayGender = faceData.maleCount > faceData.femaleCount ? 'male' : 'female';
+    
     return {
       image: result.image,
-      prompt: `Historical portrait: ${era.name} (${displayGender})`
+      prompt: `Historical portrait from ${era.name} era (${displayGender} lead)`
     };
+
   } catch (error) {
-    console.error('[FaceFusion] Service error:', error);
+    console.error('[FaceFusion] Service Pipeline Error:', error);
     throw error;
   }
 };
