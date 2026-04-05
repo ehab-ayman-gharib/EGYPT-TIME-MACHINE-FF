@@ -238,12 +238,17 @@ ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath, 
     const isMac = process.platform === 'darwin';
     const execProvider = isMac ? 'coreml' : 'cuda';
     
-    // Determine Python Binary
-    let pythonExecutable = isMac 
-        ? path.join(activeCwd, 'venv', 'bin', 'python')
-        : (config.condaEnv ? "python" : path.join(activeCwd, 'venv', 'Scripts', 'python.exe'));
+    // Determine Python Binary & Environment Paths
+    const envBase = config.condaEnv && config.condaPath
+        ? path.join(path.dirname(config.condaPath), '..', 'envs', config.condaEnv)
+        : null;
 
-    const pythonCmd = pythonExecutable === "python" ? `python facefusion.py` : `"${pythonExecutable}" facefusion.py`;
+    const scriptPath = path.join(activeCwd, 'facefusion.py');
+    const pythonExecutable = envBase 
+        ? path.join(envBase, 'python.exe')
+        : path.join(activeCwd, 'venv', 'Scripts', 'python.exe');
+
+    const pythonCmd = `"${pythonExecutable}" "${scriptPath}"`;
     
     // FaceFusion Tuning Parameters
     // Using YOLO_FACE and extreme score tolerance for historical portrait compatibility
@@ -254,6 +259,11 @@ ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath, 
             // Step 1: Prepare Source Image
             const base64Data = sourceBase64.replace(/^data:image\/\w+;base64,/, '');
             let sourceBuffer = Buffer.from(base64Data, 'base64');
+            
+            // NORMALIZATION: Respect EXIF orientation tags BEFORE extracting faces.
+            // This ensures backend coordinates match frontend display.
+            sourceBuffer = await sharp(sourceBuffer).rotate().toBuffer();
+            
             const imgMetadata = await sharp(sourceBuffer).metadata();
             
             // PRE-FLIGHT RESCALING: Limit source image to 2048px for processing stability
@@ -261,14 +271,31 @@ ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath, 
                 sourceBuffer = await sharp(sourceBuffer).resize(2048, 2048, { fit: 'inside' }).toBuffer();
             }
             fs.writeFileSync(sourcePath, sourceBuffer);
+            
+            // "DEEP BREATH" DELAY (For Windows Stability)
+            // Giving the OS 500ms to flush the 4K image to disk and release file locks 
+            // before the AI engine tries to read it. Prevents sharing violations.
+            await new Promise(r => setTimeout(r, 500));
 
             // Step 2: Determine Strategy (Dual Swap for groups vs Single Swap)
             const isDualSwap = faces && faces.length === 2 && targetPath.match(/1M_1F|1F_1M|2M|2F/);
             const env = { ...process.env };
             
-            // Environment Sanitization for Windows/Mac
-            if (isWin) {
-                delete env.PATH; delete env.Path; // Let Conda resolve paths
+            // MANUAL CONDA ACTIVATION (Stability Fix)
+            // If using Conda, we manually prepend its BIN folders to the PATH.
+            // This bypasses the unstable 'conda run' batch script while keeping DLL access (cuDNN/CUDA).
+            if (isWin && envBase) {
+                const condaPaths = [
+                    envBase,
+                    path.join(envBase, 'Scripts'),
+                    path.join(envBase, 'Library', 'bin'),
+                    path.join(envBase, 'Library', 'usr', 'bin'),
+                    path.join(envBase, 'Library', 'mingw-w64', 'bin')
+                ];
+                const pathSeparator = isWin ? ';' : ':';
+                const pathKey = isWin ? 'Path' : 'PATH';
+                env[pathKey] = [...condaPaths, process.env[pathKey] || ''].join(pathSeparator);
+                console.log('💉 [FaceFusion] Manual Environment Injected to PATH');
             }
 
             const execOptions = { 
@@ -303,24 +330,43 @@ ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath, 
                     throw new Error(`Failed to find all ${faces.length} slots in template. Found: ${targetSlots?.length || 0}`);
                 }
 
-                // STEP 4: Surgical Isolation
+                /**
+                 * STEP 4: Surgical Isolation
+                 * We extract head tiles from the source and target using a coordinate-safe scaling approach.
+                 */
                 const templateBuffer = fs.readFileSync(foundPath);
                 const templateMetadata = await sharp(templateBuffer).metadata();
                 const processedTiles = [];
+                const localMetadata = await sharp(sourceBuffer).metadata();
+                const scaleX = localMetadata.width / imgMetadata.width;
+                const scaleY = localMetadata.height / imgMetadata.height;
 
                 for (let i = 0; i < faces.length; i++) {
                     const slot = targetSlots[i];
                     const sourceFace = faces[i];
-                    
-                    // FaceFusion Command wants a Source Image (we use the extracted face from Source)
-                    const sourceFacePath = path.join(tempDir, `ff_src_face_${timestamp}_${i}.png`);
                     const sourceBox = sourceFace.box;
+
+                    // Pad the source crop (add context like forehead/hair) to help AI detection.
+                    const pad = 0.25; 
+                    const sw = sourceBox.width * scaleX;
+                    const sh = sourceBox.height * scaleY;
+                    const sl = sourceBox.x * scaleX;
+                    const st = sourceBox.y * scaleY;
+
+                    const srcExtractWidth = Math.min(Math.floor(sw * (1 + pad * 2)), localMetadata.width);
+                    const srcExtractHeight = Math.min(Math.floor(sh * (1 + pad * 2)), localMetadata.height);
+                    const srcExtractLeft = Math.max(0, Math.floor(sl - sw * pad));
+                    const srcExtractTop = Math.max(0, Math.floor(st - sh * pad));
+
+                    // FaceFusion Command wants a Source Image (we use the extracted head tile)
+                    const sourceFacePath = path.join(tempDir, `ff_src_face_${timestamp}_${i}.png`);
+                    
                     await sharp(sourceBuffer)
                         .extract({ 
-                            left: Math.floor(sourceBox.x), 
-                            top: Math.floor(sourceBox.y), 
-                            width: Math.floor(sourceBox.width), 
-                            height: Math.floor(sourceBox.height) 
+                            left: srcExtractLeft, 
+                            top: srcExtractTop, 
+                            width: Math.min(srcExtractWidth, localMetadata.width - srcExtractLeft), 
+                            height: Math.min(srcExtractHeight, localMetadata.height - srcExtractTop) 
                         })
                         .resize(512, 512, { fit: 'inside' })
                         .toFile(sourceFacePath);
@@ -344,12 +390,28 @@ ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath, 
                         })
                         .toFile(tileInputPath);
 
-                    // STEP 5: Isolated AI Execution
+                    // STEP 5: Isolated AI Execution (with Auto-Retry)
                     const ffParams = `headless-run ${commonParams} --processors face_swapper face_enhancer --face-swapper-model inswapper_128_fp16 --face-enhancer-model gfpgan_1.4 --source-paths "${sourceFacePath}" --target-path "${tileInputPath}" --output-path "${tileOutputPath}"`;
-                    const command = config.condaEnv ? `"${config.condaPath}" run -n ${config.condaEnv} ${pythonCmd} ${ffParams}` : `${pythonCmd} ${ffParams}`;
+                    const command = `${pythonCmd} ${ffParams}`;
                     
                     console.log(`⚙️ [FaceFusion] Pass ${i+1}/${faces.length} Tile Swap...`);
-                    await execAsync(command, execOptions);
+                    
+                    // Robust execution with retry logic for GPU cold-starts
+                    let attempt = 0;
+                    const maxAttempts = 2;
+                    let success = false;
+
+                    while (attempt < maxAttempts && !success) {
+                        try {
+                            await execAsync(command, execOptions);
+                            success = true;
+                        } catch (err) {
+                            attempt++;
+                            console.warn(`⚠️ [FaceFusion] Pass ${i+1}, Attempt ${attempt} failed. ${attempt < maxAttempts ? 'Retrying...' : 'Aborting.'}`);
+                            if (attempt < maxAttempts) await new Promise(r => setTimeout(r, 1500));
+                            else throw err;
+                        }
+                    }
 
                     processedTiles.push({
                         input: tileOutputPath,

@@ -137,15 +137,17 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
     if (countdown > 0) {
       const timer = setTimeout(() => setCountdown(prev => (prev !== null ? prev - 1 : null)), 1000);
       return () => clearTimeout(timer);
-    } else if (countdown === 0) {
+    } else if (countdown === 0 && !isProcessing) {
       setShowFlash(true); // Trigger white screen flash
       const captureTimer = setTimeout(() => {
-        handleCaptureImmediate();
-        setTimeout(() => { setShowFlash(false); setCountdown(null); }, 500);
+        if (!isProcessing) {
+          handleCaptureImmediate();
+          setTimeout(() => { setShowFlash(false); setCountdown(null); }, 500);
+        }
       }, 50);
       return () => clearTimeout(captureTimer);
     }
-  }, [countdown, handleCaptureImmediate]);
+  }, [countdown, handleCaptureImmediate, isProcessing]);
 
   const startCaptureSequence = () => {
     if (countdown !== null || isDetecting) return;

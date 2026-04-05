@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { AppScreen, EraData, FaceDetectionResult, EraId } from './types';
 import { SplashScreen } from './components/SplashScreen';
 import { CameraCapture } from './components/CameraCapture';
@@ -37,7 +37,7 @@ const App: React.FC = () => {
    * @param imageSrc Base64 string of the captured frame
    * @param faceData Detection result containing face bounding box and landmarks
    */
-  const handleCapture = async (imageSrc: string, faceData: FaceDetectionResult) => {
+  const handleCapture = useCallback(async (imageSrc: string, faceData: FaceDetectionResult) => {
     if (!selectedEra) return;
 
     setFaceDetectionResult(faceData);
@@ -53,49 +53,32 @@ const App: React.FC = () => {
 
         let resultImage: string;
 
-        /**
-         * FLOW A: Snap a Memory (Instant Bypass)
-         * No AI required. We simply take the captured frame and proceed.
-         */
         if (selectedEra.id === EraId.SNAP_A_MEMORY) {
           resultImage = imageSrc;
           setGeneratedPrompt('Snap a Memory (Instant)');
-          // Small delay for a smoother UX transition
           await new Promise(resolve => setTimeout(resolve, 300));
         } else {
-          /**
-           * FLOW B: Era Transformation (Local AI)
-           * Sends the frame to FaceFusion for historical face swapping.
-           */
           const result = await transformWithFaceFusion(imageSrc, selectedEra, faceData);
           resultImage = result.image;
           setGeneratedPrompt(result.prompt);
         }
 
-        /**
-         * Post-Processing: Apply the era-specific stamp (the logo/frame).
-         */
         const stampedImage = await applyEraStamp(resultImage, selectedEra);
 
         setGeneratedImage(stampedImage);
         setCurrentScreen(AppScreen.RESULT);
-        return; // SUCCESS: Exit function
+        return; 
       } catch (error: any) {
         console.error(`Attempt ${attempts} failed:`, error);
         
-        /**
-         * FAIL-SAFE: If all retry attempts are exhausted.
-         */
         if (attempts >= maxAttempts) {
           alert(`Processing Error: ${error.message || error}`);
-          console.error("All processing attempts failed. Staying on processing screen for debug.");
         } else {
-          // Wait briefly before the next automated retry
           await new Promise(resolve => setTimeout(resolve, 500));
         }
       }
     }
-  };
+  }, [selectedEra]);
 
   /**
    * Resets the application state to start a new session.
