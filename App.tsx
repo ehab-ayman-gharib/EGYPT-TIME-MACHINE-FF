@@ -72,9 +72,19 @@ const App: React.FC = () => {
       } catch (error: any) {
         console.error(`Attempt ${attempts} failed:`, error);
 
-        if (attempts >= maxAttempts) {
-          alert(`Processing Error: ${error.message || error}`);
+        // FATAL ERROR HANDLING: If genders mismatch or too many attempts fail, return to splash
+        const isGenderMismatch = error.message?.includes('GENDER_MISMATCH');
+        
+        if (isGenderMismatch || attempts >= maxAttempts) {
+          const errorMsg = isGenderMismatch 
+            ? "Mismatched characters detected in historical templates. Returning to start."
+            : `AI engine encountered a persistent error: ${error.message || error}`;
+            
+          alert(errorMsg);
+          handleRestart();
+          return;
         } else {
+          // Graceful retry for transient errors (connection, GPU fluke)
           await new Promise(resolve => setTimeout(resolve, 500));
         }
       }

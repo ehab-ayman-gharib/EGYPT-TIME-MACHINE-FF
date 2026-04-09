@@ -1,54 +1,51 @@
-Egypt Time Machine is an AI-powered photobooth transforming user photos into historical Egyptian portraits. The app uses a local FaceFusion 3.3.0 engine for historical transformations while maintaining a native "instant" capture mode for contemporary souvenirs.
+# Egypt Time Machine - Technical Requirements
 
-✨ Features List
-Core Features
-Local AI Transformation: Uses FaceFusion 3.3.0 with RetinaFace and GFPGAN 1.4 for high-fidelity historical results.
+Egypt Time Machine is an AI-powered photobooth transforming user photos into historical Egyptian portraits. The app uses a local FaceFusion 3.3.0 engine for high-fidelity transformations while maintaining a native "instant" capture mode for contemporary souvenirs.
 
-Snap a Memory (Direct Mode): A zero-AI, zero-detection bypass that captures the user's photo and immediately applies a decorative frame.
+## ✨ Core Features
+- **Local AI Transformation**: Uses FaceFusion 3.3.0 with YOLO_FACE and GFPGAN 1.4 for group-aware historical results.
+- **Snap a Memory (Direct Mode)**: A zero-AI, zero-detection bypass that captures the user's photo and immediately applies a decorative frame.
+- **Intelligent Face Detection**: Powered by face-api.js (SSD MobileNet V1) for demographic analysis and template mapping.
+- **DNP Printing**: Composed at 1800 x 2700 px (300+ DPI) for DNP DP-QW410 professional printers.
 
-Intelligent Face Detection: Powered by face-api.js (SSD MobileNet V1) exclusively for historical era selection.
+## 🔄 AI Transformation Workflow (Surgical Tiling)
+To ensure perfect group portraits of up to 3 people, the system follows a high-precision multi-pass approach:
 
-DNP Printing: Composed at 1800 x 2700 px for DNP DP-QW410 professional printers.
+1. **Gender-Aware Template Selection (The Smart Scan)**
+   - The system lists all templates in the target era folder and shuffles them.
+   - It performs an AI analysis on up to **3 candidates** using `face-api.js`.
+   - It selects a template **only** if the character gender distribution (e.g., 2M, 1F) exactly matches the current user group.
+   - If no match is found after 3 tries, it triggers a **GENDER_MISMATCH_FATAL** error to reset the session safely.
 
-🔄 Application Workflow
-1. Detection Phase (Conditional)
-Historical Eras: face-api.js analyzes the capture to categorize gender and age.
+2. **Identity Mapping**
+   - User faces are matched to template characters by gender (e.g., female user → female slot) rather than horizontal position.
+   - Within the same gender, identities are scrambled to ensure variety in different sessions.
 
-Snap a Memory: STRICT BYPASS. No detection logic or demographics analysis should be triggered.
+3. **Surgical Isolation**
+   - Each face is processed as an individual "tile" rather than a full-image swap.
+   - The system extracts the head area from the high-res 4K original, processes it through FaceFusion, and seamlessly composites it back into the historical painting.
+   - This eliminates "ghosting" or "double faces" common in multi-person AI swaps.
 
-2. Processing Phase
-Historical Eras: Selects a 9:16 target from the gender-specific subfolder and executes the FaceFusion CLI.
+4. **Generation Command**
+   `python facefusion.py headless-run --execution-providers cuda --processors face_swapper face_enhancer --face-swapper-model inswapper_128_fp16 --face-enhancer-model gfpgan_1.4 --face-detector-model yolo_face --face-detector-score 0.15 --face-landmarker-score 0.0 --face-selector-mode one --reference-face-distance 1.0`
 
-Snap a Memory: STRICT BYPASS. The raw captured image is passed directly to the result state without modification.
+## 💻 Asset Structure (Template Mapping)
+Templates are organized by person count and gender composition:
 
-3. Generation Command (Historical Only)
-python facefusion.py headless-run --execution-providers cuda --processors face_swapper face_enhancer --face-swapper-model inswapper_128_fp16 --face-enhancer-model gfpgan_1.4 --face-detector-model retinaface --face-detector-score 0.1 --face-landmarker-score 0.1 --face-selector-mode one --source-paths [user_photo] --target-path [template] --output-path [result].
+```
+public/Targets/{EraName}/
+├── 1M/          # Single Male
+├── 1F/          # Single Female
+├── 2M/          # Pair of Males
+├── 2F/          # Pair of Females
+├── 1M_1F/       # Mixed Pair
+├── 3M/          # Triple Males
+├── 3F/          # Triple Females
+├── 2M_1F/       # Mixed Triple
+└── 2F_1M/       # Mixed Triple
+```
 
-🛡️ The "Snap a Memory" Bypass (Protected Logic)
-To maintain the current high-speed performance of the non-AI mode, the following rules must be strictly enforced:
-
-No AI Processing: Do not call any Python or Gemini services.
-
-No Demographic Analysis: Skip face-api.js entirely to save CPU/GPU cycles.
-
-Existing Composition: Keep the current stampService.ts logic as is—the captured photo is simply layered between the background and the era-specific frame.
-
-💻 Technical Implementation Notes for AI Tools
-Asset Structure (Template Mapping)
-The historical templates must follow this directory structure to allow dynamic selection based on detection results:
-
-Plaintext
-public/
-├── Backgrounds/     
-├── Frames/          
-├── Targets/         
-│   ├── {EraName}/       # e.g., Old-Kingdom, Coptic, Islamic
-│   │   ├── male/        # Male body templates (768x1344)
-│   │   └── female/      # Female body templates (768x1344)
-└── models/          # face-api.js weights (Not used for Snap a Memory)
-IPC Bridge (Electron)
-Only trigger execute-face-fusion for historical era.id values.
-
-The target-path is constructed dynamically: Targets/${era}/${gender}/template_01.jpg.
-
-Snap a Memory should transition from CAMERA to RESULT screen in <1 second.
+## 🛡️ The "Snap a Memory" Bypass
+- **No AI Processing**: Do not call any Python or FaceFusion services.
+- **No Demographic Analysis**: Skip `face-api.js` entirely for this mode.
+- **Instant Speed**: Must transition from CAMERA to RESULT in < 1 second.

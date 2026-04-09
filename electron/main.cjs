@@ -198,38 +198,6 @@ ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath, 
 
         foundPath = possiblePaths.find(p => fs.existsSync(p));
         if (!foundPath) foundPath = path.join(__dirname, '../public', targetPath);
-
-        /**
-         * TARGET RANDOMIZATION
-         * --------------------
-         * If the found path is a directory (e.g., 'templates/Modern/1M'), 
-         * we list all image files and pick one at random. This prevents
-         * a predictable/monotonous experience for users.
-         */
-        if (foundPath && fs.existsSync(foundPath) && fs.statSync(foundPath).isDirectory()) {
-            const allFiles = fs.readdirSync(foundPath);
-            const imageExtensions = ['.jpg', '.jpeg', '.png', '.webp'];
-            const validImages = allFiles.filter(file => imageExtensions.includes(path.extname(file).toLowerCase()));
-
-            if (validImages.length > 0) {
-                const randomImage = validImages[Math.floor(Math.random() * validImages.length)];
-                foundPath = path.join(foundPath, randomImage);
-                console.log(`🎲 [FaceFusion] Randomized Target Seed: ${randomImage}`);
-            } else {
-                console.warn(`[FaceFusion] Warning: No valid images found in folder: ${foundPath}`);
-            }
-        }
-
-        // ASAR Protection: Extract if inside compressed ASAR
-        // FaceFusion (the python process) cannot read files directly from inside the .asar archive.
-        if (foundPath && foundPath.includes('.asar') && !foundPath.includes('.asar.unpacked')) {
-            const finalExt = path.extname(foundPath) || '.jpg';
-            tempTargetPath = path.join(tempDir, `ff_target_${timestamp}${finalExt}`);
-            fs.writeFileSync(tempTargetPath, fs.readFileSync(foundPath));
-            absoluteTargetPath = tempTargetPath;
-        } else {
-            absoluteTargetPath = foundPath;
-        }
     }
 
     const config = getAppConfig();
@@ -251,118 +219,144 @@ ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath, 
     const pythonCmd = `"${pythonExecutable}" "${scriptPath}"`;
     
     // FaceFusion Tuning Parameters
-    // Using YOLO_FACE and extreme score tolerance for historical portrait compatibility
     const commonParams = `--execution-providers ${execProvider} --face-detector-model yolo_face --face-detector-score 0.15 --face-landmarker-score 0.0 --face-selector-mode one --reference-face-distance 1.0`;
+
+    // env for exec
+    const env = { ...process.env };
+    if (isWin && envBase) {
+        const condaPaths = [
+            envBase,
+            path.join(envBase, 'Scripts'),
+            path.join(envBase, 'Library', 'bin'),
+            path.join(envBase, 'Library', 'usr', 'bin'),
+            path.join(envBase, 'Library', 'mingw-w64', 'bin')
+        ];
+        const pathSeparator = ';';
+        const pathKey = 'Path';
+        env[pathKey] = [...condaPaths, process.env[pathKey] || ''].join(pathSeparator);
+    }
+
+    const execOptions = { 
+        cwd: activeCwd, 
+        shell: isWin ? (env.ComSpec || true) : true, 
+        env: env, 
+        maxBuffer: 1024 * 1024 * 100 
+    };
 
     return new Promise(async (resolve) => {
         try {
             // Step 1: Prepare Source Image
             const base64Data = sourceBase64.replace(/^data:image\/\w+;base64,/, '');
             let sourceBuffer = Buffer.from(base64Data, 'base64');
-            
-            // NORMALIZATION: Respect EXIF orientation tags BEFORE extracting faces.
-            // This ensures backend coordinates match frontend display.
             sourceBuffer = await sharp(sourceBuffer).rotate().toBuffer();
-            
             const imgMetadata = await sharp(sourceBuffer).metadata();
             
-            // PRE-FLIGHT RESCALING: Limit source image to 2048px for processing stability
             if (imgMetadata.width > 2048 || imgMetadata.height > 2048) {
                 sourceBuffer = await sharp(sourceBuffer).resize(2048, 2048, { fit: 'inside' }).toBuffer();
             }
             fs.writeFileSync(sourcePath, sourceBuffer);
-            
-            // "DEEP BREATH" DELAY (For Windows Stability)
-            // Giving the OS 500ms to flush the 4K image to disk and release file locks 
-            // before the AI engine tries to read it. Prevents sharing violations.
             await new Promise(r => setTimeout(r, 500));
 
-            // Step 2: Determine Strategy (Dual Swap for groups vs Single Swap)
-            const isDualSwap = faces && faces.length === 2 && targetPath.match(/1M_1F|1F_1M|2M|2F/);
-            const env = { ...process.env };
-            
-            // MANUAL CONDA ACTIVATION (Stability Fix)
-            // If using Conda, we manually prepend its BIN folders to the PATH.
-            // This bypasses the unstable 'conda run' batch script while keeping DLL access (cuDNN/CUDA).
-            if (isWin && envBase) {
-                const condaPaths = [
-                    envBase,
-                    path.join(envBase, 'Scripts'),
-                    path.join(envBase, 'Library', 'bin'),
-                    path.join(envBase, 'Library', 'usr', 'bin'),
-                    path.join(envBase, 'Library', 'mingw-w64', 'bin')
-                ];
-                const pathSeparator = isWin ? ';' : ':';
-                const pathKey = isWin ? 'Path' : 'PATH';
-                env[pathKey] = [...condaPaths, process.env[pathKey] || ''].join(pathSeparator);
-                console.log('💉 [FaceFusion] Manual Environment Injected to PATH');
-            }
-
-            const execOptions = { 
-                cwd: activeCwd, 
-                shell: isWin ? (env.ComSpec || true) : true, 
-                env: env, 
-                maxBuffer: 1024 * 1024 * 100 
-            };
-
-            /**
-             * ORCHESTRATOR LOGIC: 2-Pass Sequential Anchor
-             * Used for 2-person shots to ensure the AI swaps both faces correctly without confusion.
-             * 1. Extract Crop 1 (Left Person) -> Blur Neighbor -> Run FF
-             * 2. Extract Crop 2 (Right Person) -> Blur Neighbor -> Run FF on Pass 1 output
-             */
             if (faces && faces.length >= 1) {
-                console.log(`🎯 [FaceFusion] Starting Surgical AI Mapping (${faces.length} People)...`);
-                
-                // STEP 3: Target Template Analysis (The Handshake)
-                // We call the renderer to find the "slots" in the historical portrait
-                const isDev = !app.isPackaged;
-                const publicPath = isDev ? 'http://localhost:3000' : `file://${path.join(__dirname, '../dist').replace(/\\/g, '/')}`;
-                
-                // Relative template path for the webview to fetch
-                const relativeTemplatePath = foundPath.split('public')[1] || foundPath.split('dist')[1] || foundPath;
-                const templateUrl = `${publicPath}${relativeTemplatePath.replace(/\\/g, '/')}`;
-                
-                console.log(`🔍 [Handshake] Analyzing slots in: ${templateUrl}`);
-                const targetSlots = await mainWindow.webContents.executeJavaScript(`window.analyzeTemplate("${templateUrl}")`);
-                
-                if (!targetSlots || targetSlots.length < faces.length) {
-                    throw new Error(`Failed to find all ${faces.length} slots in template. Found: ${targetSlots?.length || 0}`);
-                }
-
-                // STEP 4: Gender-Aware Identity Mapping
-                // We match our source users to target slots based on gender to ensure 
-                // correct role assignment even if the template layout isn't standard L-to-R.
-                const mappedFaces = [];
-                let availableUserFaces = [...faces];
-
-                console.log('🧠 [Mapping] Executing Gender-Aware Slot Assignment...');
-                
-                for (let i = 0; i < targetSlots.length; i++) {
-                    const slot = targetSlots[i];
-                    
-                    // Priority 1: Match Gender
-                    let matchIndex = availableUserFaces.findIndex(f => f.gender === slot.gender);
-                    
-                    // Priority 2: Fallback to first available if no gender match
-                    if (matchIndex === -1 && availableUserFaces.length > 0) {
-                        console.warn(`[Mapping] No gender match for Slot ${i+1} (${slot.gender}). Using fallback.`);
-                        matchIndex = 0; 
-                    }
-
-                    if (matchIndex !== -1) {
-                        const matchedUser = availableUserFaces.splice(matchIndex, 1)[0];
-                        mappedFaces.push({ user: matchedUser, slot: slot });
-                        console.log(`✅ [Mapping] Slot ${i+1} (${slot.gender}) -> User (${matchedUser.gender})`);
-                    }
-                }
-
                 /**
-                 * STEP 5: Surgical Isolation
-                 * We extract head tiles from the source and target using a coordinate-safe scaling approach.
+                 * TEMPLATE SELECTION & MAPPING LOOP
+                 * ---------------------------------
+                 * We attempt to find a compatible template by trying up to 3 random files
+                 * from the target folder. A compatible template is one where the detected
+                 * face slots match the genders of our source users.
                  */
-                const templateBuffer = fs.readFileSync(foundPath);
-                const templateMetadata = await sharp(templateBuffer).metadata();
+                let templateBuffer = null;
+                let templateMetadata = null;
+                let mappedFaces = [];
+                let templateAttempts = 0;
+                const maxTemplateAttempts = 3;
+                let finalFoundPath = "";
+
+                while (templateAttempts < maxTemplateAttempts) {
+                    templateAttempts++;
+                    let currentTryPath = foundPath;
+
+                    // 1. Random Image Selection (within current folder if foundPath is a dir)
+                    if (fs.existsSync(foundPath) && fs.statSync(foundPath).isDirectory()) {
+                        const allFiles = fs.readdirSync(foundPath);
+                        const imageExtensions = ['.jpg', '.jpeg', '.png', '.webp'];
+                        const validImages = allFiles.filter(file => imageExtensions.includes(path.extname(file).toLowerCase()));
+
+                        if (validImages.length > 0) {
+                            const randomImage = validImages[Math.floor(Math.random() * validImages.length)];
+                            currentTryPath = path.join(foundPath, randomImage);
+                        } else {
+                            throw new Error(`No valid images found in folder: ${foundPath}`);
+                        }
+                    }
+
+                    console.log(`🎲 [FaceFusion] Template Attempt ${templateAttempts}/${maxTemplateAttempts}: ${path.basename(currentTryPath)}`);
+
+                    // 2. ASAR Protection & Normalization
+                    let absoluteTryPath = currentTryPath;
+                    if (currentTryPath.includes('.asar') && !currentTryPath.includes('.asar.unpacked')) {
+                        const finalExt = path.extname(currentTryPath) || '.jpg';
+                        const tempTarg = path.join(tempDir, `ff_target_try_${timestamp}_${templateAttempts}${finalExt}`);
+                        fs.writeFileSync(tempTarg, fs.readFileSync(currentTryPath));
+                        absoluteTryPath = tempTarg;
+                    }
+
+                    // 3. Handshake: Analyze Slots
+                    const isDev = !app.isPackaged;
+                    const publicPath = isDev ? 'http://localhost:3000' : `file://${path.join(__dirname, '../dist').replace(/\\/g, '/')}`;
+                    const relativeTemplatePath = absoluteTryPath.split('public')[1] || absoluteTryPath.split('dist')[1] || absoluteTryPath;
+                    const templateUrl = absoluteTryPath.startsWith('http') ? absoluteTryPath : `${publicPath}${relativeTemplatePath.replace(/\\/g, '/')}`;
+                    
+                    let targetSlots = [];
+                    try {
+                        targetSlots = await mainWindow.webContents.executeJavaScript(`window.analyzeTemplate("${templateUrl}")`);
+                    } catch (err) {
+                        console.warn(`[Handshake] Analysis failed for ${templateUrl}:`, err.message);
+                        continue;
+                    }
+
+                    if (!targetSlots || targetSlots.length < faces.length) {
+                        console.warn(`[Mapping] Template ${path.basename(currentTryPath)} has insufficient slots (${targetSlots?.length || 0} vs required ${faces.length}). Skipping...`);
+                        continue;
+                    }
+
+                    // 4. Gender-Aware Identity Mapping
+                    const currentMappedFaces = [];
+                    let availableUserFaces = [...faces];
+                    let mismatchFound = false;
+
+                    for (let i = 0; i < targetSlots.length; i++) {
+                        const slot = targetSlots[i];
+                        let matchIndex = availableUserFaces.findIndex(f => f.gender === slot.gender);
+                        
+                        if (matchIndex === -1 && availableUserFaces.length > 0) {
+                            console.warn(`[Mapping] GENDER MISMATCH in ${path.basename(currentTryPath)}: Slot ${i+1} (${slot.gender}) has no user match.`);
+                            mismatchFound = true;
+                            break; 
+                        }
+
+                        if (matchIndex !== -1) {
+                            const matchedUser = availableUserFaces.splice(matchIndex, 1)[0];
+                            currentMappedFaces.push({ user: matchedUser, slot: slot });
+                        }
+                    }
+
+                    if (!mismatchFound && currentMappedFaces.length >= faces.length) {
+                        mappedFaces = currentMappedFaces;
+                        finalFoundPath = absoluteTryPath;
+                        templateBuffer = fs.readFileSync(absoluteTryPath);
+                        templateMetadata = await sharp(templateBuffer).metadata();
+                        console.log(`✅ [FaceFusion] Found compatible template: ${path.basename(absoluteTryPath)}`);
+                        break;
+                    }
+                }
+
+                if (!finalFoundPath || mappedFaces.length === 0) {
+                    console.error('🛑 [FaceFusion] GENDER_MISMATCH: Failed to find a compatible template after multiple attempts.');
+                    throw new Error("GENDER_MISMATCH");
+                }
+
+                // STEP 5: Surgical Isolation & Transformation
                 const processedTiles = [];
                 const localMetadata = await sharp(sourceBuffer).metadata();
                 const scaleX = localMetadata.width / imgMetadata.width;
@@ -418,13 +412,12 @@ ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath, 
                         })
                         .toFile(tileInputPath);
 
-                    // STEP 5: Isolated AI Execution (with Auto-Retry)
+                    // Isolated AI Execution (with Auto-Retry)
                     const ffParams = `headless-run ${commonParams} --processors face_swapper face_enhancer --face-swapper-model inswapper_128_fp16 --face-enhancer-model gfpgan_1.4 --source-paths "${sourceFacePath}" --target-path "${tileInputPath}" --output-path "${tileOutputPath}"`;
                     const command = `${pythonCmd} ${ffParams}`;
                     
-                    console.log(`⚙️ [FaceFusion] Pass ${i+1}/${faces.length} Tile Swap...`);
+                    console.log(`⚙️ [FaceFusion] Pass ${i+1}/${mappedFaces.length} Tile Swap...`);
                     
-                    // Robust execution with retry logic for GPU cold-starts
                     let attempt = 0;
                     const maxAttempts = 2;
                     let success = false;
@@ -447,12 +440,11 @@ ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath, 
                         top: extractTop
                     });
 
-                    // Cleanup Source Crop
                     if (fs.existsSync(sourceFacePath)) fs.unlinkSync(sourceFacePath);
                 }
 
-                // STEP 6: Final Assembly (Composition)
-                console.log(`🧩 [Assembly] Compositing ${faces.length} face(s) back to high-res template...`);
+                // Final Assembly
+                console.log(`🧩 [Assembly] Compositing ${mappedFaces.length} face(s) back to high-res template...`);
                 await sharp(templateBuffer)
                     .composite(processedTiles)
                     .toFile(outputPath);

@@ -89,18 +89,28 @@
 - **Template System**: Curated historical templates located in `public/templates/`.
 - **Randomization**: Automatically picks a random template from gender-specific folders (1M/1F) within era directories.
 - **ASAR Support**: Automatic manual extraction of templates from ASAR when running in packaged Electron environments.
-#### 5. **Orchestrator Logic: 2-Pass Sequential Anchor (Dual Portraits)**
-- **Purpose**: Solves gender-mismatch placement and face duplication in historical templates.
+#### 5. **Orchestrator Logic: Surgical Tiling (Multi-Face Precision)**
+- **Purpose**: Eliminates ghosting, doubling, and gender-missmatch in group portraits.
 - **Pre-Flight Stability (4K Support)**: Normalizes images > 2048px to prevent GPU memory crashes while scaling detection coordinates proportionally.
-- **Order of Operations (The "Surgical Prep")**:
-  1. **High-Res Smart Crop**: Extracts a 2.2x zoom buffer from the large original file. This "Smart Slice" keeps distant subjects high-fidelity.
-  2. **Neighbor Cloaking (The Blur)**: Locates neighbor faces within that slice and applies a **Heavy Gaussian Blur (Sigma 20)** with an **8% Directional Offset**. This "cloaks" them from the AI detector without leaving black artifacts.
-  3. **Proportional Upscale**: Resizes the pre-cleaned high-res crop to exactly 512px wide for optimal FaceFusion detection.
-- **Surgical Accuracy**: The blur destroys foreign landmarks (eyes/nose/mouth) so the AI physically cannot detect the neighbor, while the "flesh-tone" blurring prevents the Face Enhancer from creating dark artifacts.
-- **Sequential Execution**:
-  - **Pass 1 (Left)**: Swaps the left-most face onto the template using `left-right` ordering and ultra-sensitive detection scores (`Detector 0.15`).
-  - **Pass 2 (Right)**: Swaps the right-most face onto the Pass 1 result using `right-left` ordering + `face_enhancer` + `face_swapper`.
-- **Detection Stability**: Landmarker score set to `0.0` to force detection on difficult, dark, or textured historical templates.
+- **Step 1: Gender-Aware Perfect-Match Selector**:
+  - The system lists all templates in the target era/composition folder and shuffles them.
+  - It analyzes up to **3 candidate templates** in real-time.
+  - It selects a template **only if** the detected character genders (e.g., 2M, 1F) exactly match the user group.
+  - If zero matches are found after 3 tries, it throws a `GENDER_MISMATCH_FATAL` error to reset the session.
+- **Step 2: Identity-to-Slot Mapping**:
+  - User faces are mapped to template character slots based on detected gender (Female user → Female slot) rather than horizontal position.
+  - This handles "anomalous" templates where the woman might be on the left or in the middle at random.
+- **Step 3: Surgical Head-Tile Extraction**:
+  - Instead of swapping the whole image, the system extracts high-resolution "tiles" of just the head areas.
+  - Each tile is processed individually through FaceFusion 3.3.0.
+- **Step 4: Seamless Re-Composition**:
+  - The processed tiles are layered back onto the original high-resolution painting without touching the surrounding pixels.
+  - **Result**: Perfect, sharp face replacements that preserve the original historical painting's brushstrokes and lighting.
+
+#### 6. **FaceFusion Tuning Parameters**
+- **Model**: `yolo_face` (Detector) + `inswapper_128_fp16` (Swapper) + `gfpgan_1.4` (Enhancer).
+- **Scores**: Detector Score: `0.15` | Landmarker Score: `0.0` (Forces detection on dark historical faces).
+- **Selector**: `one` (Surgical mode) | Distance: `1.0` (Max tolerance).
 
 #### 6. **Image Composition System**
 - **Layered Approach**:
@@ -206,12 +216,11 @@
 │    → 1 second delay for UX consistency                          │
 │                                                                  │
 │  IF Historical Era (Old/Coptic/Islamic/Modern):                 │
-│    → Select random scenery (anti-repetition logic)              │
-│    → Choose clothing based on gender/age                        │
-│    → Build AI prompt with identity preservation rules           │
-│    → Send to Gemini 2.5 Flash Image API                         │
-│    → Retry up to 3 times on failure                             │
-│    → Increment dashboard analytics counter                      │
+│    → Execute "Smart Scan" Template Search (Max 3 retries)        │
+│    → Verify exact Gender Distribution Match                      │
+│    → Perform Surgical Tiling Face Swap (YOLO_FACE)               │
+│    → Enhance with GFPGAN 1.4                                     │
+│    → Increment dashboard analytics counter                       │
 └────────────────────────┬────────────────────────────────────────┘
                          │
                          ▼
@@ -375,8 +384,8 @@ services/
 │
 ├── faceFusionService.ts
 │   └── transformWithFaceFusion()
-│       ├── Gender mapping (male/female → 1M/1F)
-│       ├── Era path mapping
+│       ├── Identity scrambling by gender
+│       ├── Era folder mapping (1M, 2M, 2M_1F, etc.)
 │       └── IPC call to 'execute-face-fusion'
 │
 └── stampService.ts
