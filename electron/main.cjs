@@ -330,8 +330,35 @@ ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath, 
                     throw new Error(`Failed to find all ${faces.length} slots in template. Found: ${targetSlots?.length || 0}`);
                 }
 
+                // STEP 4: Gender-Aware Identity Mapping
+                // We match our source users to target slots based on gender to ensure 
+                // correct role assignment even if the template layout isn't standard L-to-R.
+                const mappedFaces = [];
+                let availableUserFaces = [...faces];
+
+                console.log('🧠 [Mapping] Executing Gender-Aware Slot Assignment...');
+                
+                for (let i = 0; i < targetSlots.length; i++) {
+                    const slot = targetSlots[i];
+                    
+                    // Priority 1: Match Gender
+                    let matchIndex = availableUserFaces.findIndex(f => f.gender === slot.gender);
+                    
+                    // Priority 2: Fallback to first available if no gender match
+                    if (matchIndex === -1 && availableUserFaces.length > 0) {
+                        console.warn(`[Mapping] No gender match for Slot ${i+1} (${slot.gender}). Using fallback.`);
+                        matchIndex = 0; 
+                    }
+
+                    if (matchIndex !== -1) {
+                        const matchedUser = availableUserFaces.splice(matchIndex, 1)[0];
+                        mappedFaces.push({ user: matchedUser, slot: slot });
+                        console.log(`✅ [Mapping] Slot ${i+1} (${slot.gender}) -> User (${matchedUser.gender})`);
+                    }
+                }
+
                 /**
-                 * STEP 4: Surgical Isolation
+                 * STEP 5: Surgical Isolation
                  * We extract head tiles from the source and target using a coordinate-safe scaling approach.
                  */
                 const templateBuffer = fs.readFileSync(foundPath);
@@ -341,12 +368,11 @@ ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath, 
                 const scaleX = localMetadata.width / imgMetadata.width;
                 const scaleY = localMetadata.height / imgMetadata.height;
 
-                for (let i = 0; i < faces.length; i++) {
-                    const slot = targetSlots[i];
-                    const sourceFace = faces[i];
+                for (let i = 0; i < mappedFaces.length; i++) {
+                    const { user: sourceFace, slot } = mappedFaces[i];
                     const sourceBox = sourceFace.box;
 
-                    console.log(`👤 [FaceFusion] Processing Person ${i + 1}/${faces.length} | Gender: ${sourceFace.gender} | Mapping to Slot ${i + 1} at [x:${slot.x}, y:${slot.y}]`);
+                    console.log(`👤 [FaceFusion] Transformation Pass ${i + 1}/${mappedFaces.length} | User Gender: ${sourceFace.gender} | Slot Gender: ${slot.gender}`);
 
                     // Pad the source crop (add context like forehead/hair) to help AI detection.
                     const pad = 0.25; 

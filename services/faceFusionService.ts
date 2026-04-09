@@ -31,18 +31,20 @@ import * as faceapi from 'face-api.js';
 (window as any).analyzeTemplate = async (templateUrl: string) => {
   try {
     const img = await faceapi.fetchImage(templateUrl);
-    // SSD Mobilenet V1 is used here for high-accuracy slot detection
-    const detections = await faceapi.detectAllFaces(img, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.35 }));
+    // Use high-accuracy detection with gender estimation for slot mapping
+    const detections = await faceapi.detectAllFaces(img, new faceapi.SsdMobilenetv1Options({ minConfidence: 0.35 }))
+                                   .withFaceLandmarks()
+                                   .withAgeAndGender();
 
-    // CRITICAL: Sort slots from Left-to-Right by x-coordinate.
-    // This ensures Source Face 1 (left) maps to Template Slot 1 (left).
+    // Sort slots from Left-to-Right by x-coordinate for consistent index referencing
     return detections
-      .sort((a, b) => a.box.x - b.box.x)
+      .sort((a, b) => a.detection.box.x - b.detection.box.x)
       .map(d => ({
-        x: d.box.x,
-        y: d.box.y,
-        width: d.box.width,
-        height: d.box.height
+        x: d.detection.box.x,
+        y: d.detection.box.y,
+        width: d.detection.box.width,
+        height: d.detection.box.height,
+        gender: d.gender // 'male' or 'female'
       }));
   } catch (err) {
     console.error('[AnalyzeTemplate] Error during template analysis:', err);
@@ -144,36 +146,23 @@ export const transformWithFaceFusion = async (
    * Implements "Dynamic Group Mapping" based on user requirements.
    */
   else if (numFaces === 3) {
-    const sorted = [...(faceData.faces || [])].sort((a, b) => a.box.x - b.box.x);
-    const mFaces = sorted.filter(f => f.gender === 'male');
-    const fFaces = sorted.filter(f => f.gender === 'female');
-    const shuffle = (array: any[]) => [...array].sort(() => Math.random() - 0.5);
+    const mFaces = rawFaces.filter(f => f.gender === 'male');
+    const fFaces = rawFaces.filter(f => f.gender === 'female');
+    
+    // Identity Scrambling: Randomize order within gender groups
+    // The backend now handles slot matching, so we just provide a randomized pool
+    // to ensure users switch roles (M1/M2) even on the same template.
+    const shuffledPool = [...shuffle(mFaces), ...shuffle(fFaces)];
+    sortedFaces = shuffledPool;
 
-    // Folder identification based on user's directory structure
+    // Determine Folder for the backend
     if (faceData.maleCount === 3) genderFolder = '3M';
     else if (faceData.femaleCount === 3) genderFolder = '3F';
     else if (faceData.maleCount === 2) genderFolder = '2M_1F';
     else if (faceData.femaleCount === 2) genderFolder = '2F_1M';
-    else genderFolder = '3M'; // Global fallback
+    else genderFolder = '3M';
 
-    /**
-     * MIXED-GENDER RANDOMIZATION (Triplets)
-     * Shuffles users of the same gender into available template slots.
-     */
-    if (faceData.maleCount === 3) sortedFaces = shuffle(mFaces);
-    else if (faceData.femaleCount === 3) sortedFaces = shuffle(fFaces);
-    else if (faceData.maleCount === 2) {
-      const sm = shuffle(mFaces);
-      // Map to template order: [M1, M2, F1]
-      sortedFaces = [sm[0], sm[1], fFaces[0]];
-    } else if (faceData.femaleCount === 2) {
-      const sf = shuffle(fFaces);
-      // Map to template order: [F1, F2, M1]
-      sortedFaces = [sf[0], sf[1], mFaces[0]];
-    } else {
-      sortedFaces = sorted;
-    }
-    console.log(`🎲 [FaceFusion] Triple-Face Identity Scramble -> Folder: ${genderFolder}`);
+    console.log(`🎲 [FaceFusion] Triple-Face Shuffled Pool -> Folder: ${genderFolder}`);
   }
 
   // Construct the final file-system path for Electron to search
