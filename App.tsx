@@ -58,6 +58,7 @@ const App: React.FC = () => {
           setGeneratedPrompt('Snap a Memory (Instant)');
           await new Promise(resolve => setTimeout(resolve, 300));
         } else {
+          // Face Fusion 
           const result = await transformWithFaceFusion(imageSrc, selectedEra, faceData);
           resultImage = result.image;
           setGeneratedPrompt(result.prompt);
@@ -67,10 +68,10 @@ const App: React.FC = () => {
 
         setGeneratedImage(stampedImage);
         setCurrentScreen(AppScreen.RESULT);
-        return; 
+        return;
       } catch (error: any) {
         console.error(`Attempt ${attempts} failed:`, error);
-        
+
         if (attempts >= maxAttempts) {
           alert(`Processing Error: ${error.message || error}`);
         } else {

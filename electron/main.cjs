@@ -346,6 +346,8 @@ ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath, 
                     const sourceFace = faces[i];
                     const sourceBox = sourceFace.box;
 
+                    console.log(`👤 [FaceFusion] Processing Person ${i + 1}/${faces.length} | Gender: ${sourceFace.gender} | Mapping to Slot ${i + 1} at [x:${slot.x}, y:${slot.y}]`);
+
                     // Pad the source crop (add context like forehead/hair) to help AI detection.
                     const pad = 0.25; 
                     const sw = sourceBox.width * scaleX;
