@@ -114,18 +114,10 @@ export const transformWithFaceFusion = async (
     const hasMixedPair = (g1 === 'M' && g2 === 'F') || (g1 === 'F' && g2 === 'M');
     
     if (hasMixedPair) {
-      const useMaleFirst = Math.random() > 0.5;
-      const maleFace = g1 === 'M' ? face1 : face2;
-      const femaleFace = g1 === 'F' ? face1 : face2;
-      
-      if (useMaleFirst) {
-        genderFolder = '1M_1F';
-        sortedFaces = [maleFace, femaleFace];
-      } else {
-        genderFolder = '1F_1M';
-        sortedFaces = [femaleFace, maleFace];
-      }
-      console.log(`🎲 [FaceFusion] Dual Mixed Shuffle -> Folder: ${genderFolder}`);
+      genderFolder = '1M_1F';
+      // Order doesn't matter for the folder, and main.cjs handles slot mapping by gender
+      sortedFaces = rawFaces;
+      console.log(`🎲 [FaceFusion] Dual Mixed Pair -> Folder: ${genderFolder}`);
     } else {
       if (g1 === 'M' && g2 === 'M') {
         genderFolder = '2M';
@@ -134,7 +126,8 @@ export const transformWithFaceFusion = async (
         genderFolder = '2F';
         sortedFaces = shuffle(rawFaces);
       } else {
-        genderFolder = g1 === 'M' ? '1M_1F' : '1F_1M';
+        // Fallback (redundant with hasMixedPair check but safe)
+        genderFolder = '1M_1F';
         sortedFaces = rawFaces;
       }
     }
