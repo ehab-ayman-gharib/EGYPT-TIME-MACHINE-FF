@@ -32,6 +32,9 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
   const [countdown, setCountdown] = useState<number | null>(null);
   const [showFlash, setShowFlash] = useState(false);
   const [detectionError, setDetectionError] = useState<string | null>(null);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
+  const [previewFaceData, setPreviewFaceData] = useState<FaceDetectionResult | null>(null);
+  const [processingCountdown, setProcessingCountdown] = useState<number | null>(null);
 
   /**
    * 1. CAMERA & AI INITIALIZATION
@@ -69,7 +72,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
    * Captures the current video frame, rotates it 90deg, and runs face detection.
    */
   const handleCaptureImmediate = useCallback(async () => {
-    if (!videoRef.current || !canvasRef.current || isDetecting) return;
+    if (!videoRef.current || !canvasRef.current) return;
     setIsDetecting(true);
 
     const video = videoRef.current;
@@ -120,12 +123,14 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
           return;
         }
       }
-      // Callback to parent component, passing the captured image and face data
-      //handleCapture in App.tsx is the function that handles the captured image and face data
-      onCapture(imageData, faceData);
+
+      // Show preview with face data
+      setPreviewImage(imageData);
+      setPreviewFaceData(faceData);
+      setProcessingCountdown(5);
+      setIsDetecting(false);
     }
-    setIsDetecting(false);
-  }, [era, modelsLoaded, onCapture, isDetecting]);
+  }, [era, modelsLoaded]);
 
   /**
    * 3. COUNTDOWN ORCHESTRATION
@@ -148,6 +153,38 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
       return () => clearTimeout(captureTimer);
     }
   }, [countdown, handleCaptureImmediate, isProcessing]);
+
+  /**
+   * 4. PROCESSING COUNTDOWN (5 seconds before sending to AI)
+   */
+  useEffect(() => {
+    if (processingCountdown === null) return;
+
+    if (processingCountdown > 0) {
+      const timer = setTimeout(() => setProcessingCountdown(prev => (prev !== null ? prev - 1 : null)), 1000);
+      return () => clearTimeout(timer);
+    } else {
+      // Time's up (0) - proceed with processing
+      if (previewImage && previewFaceData) {
+        onCapture(previewImage, previewFaceData);
+        setPreviewImage(null);
+        setPreviewFaceData(null);
+        setProcessingCountdown(null);
+      }
+    }
+  }, [processingCountdown, previewImage, previewFaceData, onCapture]);
+
+  /**
+   * 5. RETAKE LOGIC
+   * Clears preview and resets to camera mode
+   */
+  const handleRetake = () => {
+    setPreviewImage(null);
+    setPreviewFaceData(null);
+    setProcessingCountdown(null);
+    // Reset file input so the same file can be selected again
+    if (fileInputRef.current) fileInputRef.current.value = '';
+  };
 
   const startCaptureSequence = () => {
     if (countdown !== null || isDetecting) return;
@@ -205,7 +242,10 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
           }
         }
 
-        onCapture(imageData, faceData);
+        // Show preview for uploaded images too
+        setPreviewImage(imageData);
+        setPreviewFaceData(faceData);
+        setProcessingCountdown(5);
         setIsDetecting(false);
       };
       img.src = e.target?.result as string;
@@ -238,7 +278,42 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
         <canvas ref={canvasRef} className="hidden" />
       </div>
 
-      {/* 2. OVERLAYS (AI Loading, Countdown, Flash, Error Messages) */}
+      {/* 2. PREVIEW SCREEN (After capture, before processing) */}
+      {previewImage && processingCountdown !== null && (
+        <div className="fixed inset-0 z-[100] flex flex-col items-center justify-center bg-[#070b14] p-2">
+          {/* Main Preview Container - Maximized size */}
+          <div className="relative w-[95vw] max-w-[800px] aspect-[9/16] max-h-[82vh] rounded-[4rem] overflow-hidden shadow-[0_0_100px_rgba(0,0,0,0.7)] border-[12px] border-[#1e293b]">
+            <img src={previewImage} alt="Preview" className="w-full h-full object-cover" />
+            <div className="absolute inset-x-0 bottom-0 h-48 bg-gradient-to-t from-black/50 to-transparent pointer-events-none" />
+          </div>
+
+          {/* Countdown Badge - Scaled Up */}
+          <div className="mt-8 mb-5">
+            <div className="px-8 py-3 bg-[#1e293b]/90 backdrop-blur-md rounded-full border border-white/10 flex items-center gap-2 shadow-2xl">
+              <span className="text-white/70 text-[13px] font-bold tracking-[0.08em] uppercase">
+                Starting AI in
+              </span>
+              <span className="text-white text-base font-black min-w-[1.8rem] text-center">
+                {processingCountdown} s
+              </span>
+            </div>
+          </div>
+
+          {/* Retake Button - Scaled Up */}
+          <button
+            onClick={handleRetake}
+            className="group relative px-14 py-6 bg-[#2563eb] hover:bg-[#3b82f6] rounded-[2.5rem] text-white font-black tracking-[0.15em] text-base flex items-center justify-center gap-5 transition-all duration-300 active:scale-95 shadow-[0_15px_40px_rgba(37,99,235,0.45)]"
+          >
+            <RefreshCw size={26} className={`transition-transform duration-700 group-hover:rotate-180 ${processingCountdown === 0 ? 'animate-spin' : ''}`} />
+            <span className="uppercase">Retake Photo</span>
+            
+            {/* Subtle inner glow */}
+            <div className="absolute inset-0 rounded-[2.5rem] border border-white/20 pointer-events-none" />
+          </button>
+        </div>
+      )}
+
+      {/* 3. OVERLAYS (AI Loading, Countdown, Flash, Error Messages) */}
       {!modelsLoaded && !error && era?.id !== EraId.SNAP_A_MEMORY && (
         <div className="absolute inset-0 z-[60] flex flex-col items-center justify-center bg-slate-900/80 backdrop-blur-sm">
           <RefreshCw className="w-12 h-12 text-yellow-500 animate-spin mb-4" />
@@ -267,7 +342,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
       )}
 
       {/* 3. HEADER CONTROLS */}
-      {!isProcessing && (
+      {!isProcessing && !previewImage && (
         <div className="absolute top-0 left-0 right-0 p-6 z-20 flex items-center">
           <button onClick={onBack} className="w-12 h-12 flex items-center justify-center bg-black/20 backdrop-blur-md rounded-full text-white">
             <ChevronLeft size={24} />
@@ -276,7 +351,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
       )}
 
       {/* 4. FOOTER CONTROLS (Shutter, Upload) */}
-      {!isProcessing && (
+      {!isProcessing && !previewImage && (
         <div className="absolute bottom-0 left-0 right-0 p-10 pb-16 z-20 flex justify-center items-center gap-8 bg-gradient-to-t from-black/80 to-transparent">
           <input type="file" ref={fileInputRef} onChange={handleFileSelect} accept="image/*" className="hidden" />
           <button onClick={() => fileInputRef.current?.click()} className="p-4 bg-white/20 backdrop-blur-md rounded-full text-white">
