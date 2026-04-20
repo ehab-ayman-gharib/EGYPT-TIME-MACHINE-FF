@@ -48,7 +48,8 @@
     "asar": true,
     "asarUnpack": [
       "**/templates/**/*",
-      "**/node_modules/sharp/**/*"
+      "**/node_modules/sharp/**/*",
+      "**/facefusion/**/*"
     ],
     "files": [
       "dist/**/*",

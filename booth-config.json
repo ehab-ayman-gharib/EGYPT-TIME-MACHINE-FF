@@ -3,12 +3,12 @@
         "printerName": "DP-QW410",
         "condaEnv": "facefusion",
         "condaPath": "E:/miniconda3/condabin/conda.bat",
-        "facefusionDir": "E:/FF-Photobooth/Project/backend_ai/facefusion"
+        "facefusionDir": ""
     },
     "darwin": {
         "printerName": "Dai_Nippon_Printing_DP_QW410",
         "condaEnv": "",
         "condaPath": "",
-        "facefusionDir": "/Users/it5dvr/FF-Photobooth/backend_ai/facefusion"
+        "facefusionDir": ""
     }
 }

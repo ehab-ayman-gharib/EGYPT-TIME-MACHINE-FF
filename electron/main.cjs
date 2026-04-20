@@ -27,8 +27,8 @@ function createWindow() {
             autoplayPolicy: 'no-user-gesture-required', // Essential for auto-playing attraction videos
             devTools: true,
         },
-        fullscreen: false,              // DISABLED for testing/debugging
-        autoHideMenuBar: false,
+        fullscreen: true,
+        autoHideMenuBar: true,
     });
 
     // Permission Handlers: Ensure the app can access the camera and other hardware without popups
@@ -53,8 +53,10 @@ function createWindow() {
         mainWindow.loadFile(path.join(__dirname, '../dist/index.html')); // Production build
     }
 
-    // Force Open DevTools even in production for test verification
-    mainWindow.webContents.openDevTools();
+    // Open DevTools only in development mode
+    if (isDevEnv) {
+        mainWindow.webContents.openDevTools();
+    }
 
     // Post-load setup: Printer discovery and Shortcuts
     mainWindow.webContents.on('did-finish-load', async () => {
@@ -201,7 +203,15 @@ ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath, 
     }
 
     const config = getAppConfig();
-    const activeCwd = config.facefusionDir || process.cwd();
+    let activeCwd = config.facefusionDir;
+    
+    if (!activeCwd) {
+        if (app.isPackaged) {
+            activeCwd = path.join(process.resourcesPath, 'app.asar.unpacked', 'dist', 'facefusion');
+        } else {
+            activeCwd = path.join(__dirname, '../public/facefusion');
+        }
+    }
     const isWin = process.platform === 'win32';
     const isMac = process.platform === 'darwin';
     const execProvider = isMac ? 'coreml' : 'cuda';
@@ -213,8 +223,8 @@ ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath, 
 
     const scriptPath = path.join(activeCwd, 'facefusion.py');
     const pythonExecutable = envBase 
-        ? path.join(envBase, 'python.exe')
-        : path.join(activeCwd, 'venv', 'Scripts', 'python.exe');
+        ? path.join(envBase, isWin ? 'python.exe' : 'bin/python')
+        : path.join(activeCwd, 'venv', isWin ? 'Scripts' : 'bin', isWin ? 'python.exe' : 'python');
 
     const pythonCmd = `"${pythonExecutable}" "${scriptPath}"`;
     
@@ -223,6 +233,13 @@ ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath, 
 
     // env for exec
     const env = { ...process.env };
+    
+    // Fix for macOS packaged apps where process.env.PATH might be missing or minimal
+    if (isMac) {
+        const macPath = '/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin';
+        env.PATH = env.PATH ? `${env.PATH}:${macPath}` : macPath;
+    }
+
     if (isWin && envBase) {
         const condaPaths = [
             envBase,
