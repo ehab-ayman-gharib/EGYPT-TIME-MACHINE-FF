@@ -1080,14 +1080,19 @@ Before running the app, FaceFusion and its virtual environment must be provision
 **Workflow**:
 1. **Source Capture**: UI saves captured frame as base64.
 2. **Template Mapping**: `faceFusionService.ts` determines target path (e.g., `templates/Old Kingdom/1M`).
-3. **Execution**:
+3. **Sequential Rotation**:
+   - The main process tracks the `lastUsedTemplateIndex` for the current era path.
+   - It cycles through available templates alphabetically.
+   - The rotation **resets to 0** if the user switches to a different era or group size.
+4. **Execution**:
    - UI invokes IPC with `sourceBase64` and `targetPath`.
    - Main process normalizes paths and extracts templates from ASAR if necessary.
    - Command triggers `facefusion.py headless-run`.
-4. **Platform Optimization**:
-   - **Windows**: Uses Conda environment and `--execution-providers cuda`.
+5. **Platform Optimization**:
+   - **Windows**: Uses Conda environment detection and `--execution-providers cuda`.
    - **macOS**: Uses local `venv` and `--execution-providers coreml`.
-5. **Output**: Returns generated image as base64 back to UI.
+6. **Output**: Returns generated image as base64 back to UI.
+
 
 **Configuration (`booth-config.json`)**:
 - `condaEnv`: Name of the environment (e.g., "facefusion").

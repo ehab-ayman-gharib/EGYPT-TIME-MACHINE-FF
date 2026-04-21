@@ -14,6 +14,14 @@ const sharp = require('sharp');
 let mainWindow = null;
 
 /**
+ * STATE MANAGEMENT FOR TEMPLATE ROTATION
+ * Ensures templates are used in order and reset when switching eras.
+ */
+let lastUsedEraPath = "";
+let lastUsedTemplateIndex = -1;
+
+
+/**
  * 1. WINDOW INITIALIZATION
  * Creates the main application window and configures permissions for camera access.
  */
@@ -344,29 +352,43 @@ ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath, 
                 let templateBuffer = null;
                 let templateMetadata = null;
                 let mappedFaces = [];
-                let templateAttempts = 0;
-                const maxTemplateAttempts = 3;
                 let finalFoundPath = "";
+
+                // 1. Sequential Era Reset & File Listing
+                if (foundPath !== lastUsedEraPath) {
+                    console.log(`🔄 [FaceFusion] Era changed from ${lastUsedEraPath} to ${foundPath}. Resetting rotation.`);
+                    lastUsedEraPath = foundPath;
+                    lastUsedTemplateIndex = -1;
+                }
+
+                let validImages = [];
+                if (fs.existsSync(foundPath) && fs.statSync(foundPath).isDirectory()) {
+                    const allFiles = fs.readdirSync(foundPath);
+                    const imageExtensions = ['.jpg', '.jpeg', '.png', '.webp'];
+                    validImages = allFiles
+                        .filter(file => imageExtensions.includes(path.extname(file).toLowerCase()))
+                        .sort((a, b) => a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' })); // Sort alphabetically/numerically
+                }
+
+                /**
+                 * TEMPLATE SELECTION LOOP
+                 * -----------------------
+                 * We cycle through the valid images in the folder starting from the next index.
+                 * We stop at the first compatible template (matching gender slots).
+                 */
+                const maxTemplateAttempts = Math.min(validImages.length, 5); // Try up to 5 sequentially
+                let templateAttempts = 0;
 
                 while (templateAttempts < maxTemplateAttempts) {
                     templateAttempts++;
-                    let currentTryPath = foundPath;
+                    
+                    // Increment and Wrap Index
+                    lastUsedTemplateIndex = (lastUsedTemplateIndex + 1) % validImages.length;
+                    const selectedImage = validImages[lastUsedTemplateIndex];
+                    let currentTryPath = path.join(foundPath, selectedImage);
 
-                    // 1. Random Image Selection (within current folder if foundPath is a dir)
-                    if (fs.existsSync(foundPath) && fs.statSync(foundPath).isDirectory()) {
-                        const allFiles = fs.readdirSync(foundPath);
-                        const imageExtensions = ['.jpg', '.jpeg', '.png', '.webp'];
-                        const validImages = allFiles.filter(file => imageExtensions.includes(path.extname(file).toLowerCase()));
+                    console.log(`⚙️ [FaceFusion] Rotation Step ${templateAttempts}: Using template index ${lastUsedTemplateIndex} (${selectedImage})`);
 
-                        if (validImages.length > 0) {
-                            const randomImage = validImages[Math.floor(Math.random() * validImages.length)];
-                            currentTryPath = path.join(foundPath, randomImage);
-                        } else {
-                            throw new Error(`No valid images found in folder: ${foundPath}`);
-                        }
-                    }
-
-                    console.log(`🎲 [FaceFusion] Template Attempt ${templateAttempts}/${maxTemplateAttempts}: ${path.basename(currentTryPath)}`);
 
                     // 2. ASAR Protection & Normalization
                     let absoluteTryPath = currentTryPath;
