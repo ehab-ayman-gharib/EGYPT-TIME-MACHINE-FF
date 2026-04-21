@@ -1072,6 +1072,11 @@ if (era.id === EraId.OLD_EGYPT) {
 **IPC Channel**: `execute-face-fusion`
 **Backend Engine**: Python-based FaceFusion 3.3.0
 
+**Provisioning (Initial Setup)**:
+Before running the app, FaceFusion and its virtual environment must be provisioned. We provide platform-specific scripts to automate this:
+- **macOS**: Run `./provision-facefusion.sh` (Creates a local `venv` with Apple Silicon optimizations).
+- **Windows**: Run `provision-facefusion.bat` (Creates a Conda environment named `facefusion` with CUDA support).
+
 **Workflow**:
 1. **Source Capture**: UI saves captured frame as base64.
 2. **Template Mapping**: `faceFusionService.ts` determines target path (e.g., `templates/Old Kingdom/1M`).
@@ -1080,14 +1085,15 @@ if (era.id === EraId.OLD_EGYPT) {
    - Main process normalizes paths and extracts templates from ASAR if necessary.
    - Command triggers `facefusion.py headless-run`.
 4. **Platform Optimization**:
-   - **Windows**: Uses `--execution-providers cuda`.
-   - **macOS**: Uses `--execution-providers coreml`.
+   - **Windows**: Uses Conda environment and `--execution-providers cuda`.
+   - **macOS**: Uses local `venv` and `--execution-providers coreml`.
 5. **Output**: Returns generated image as base64 back to UI.
 
 **Configuration (`booth-config.json`)**:
 - `condaEnv`: Name of the environment (e.g., "facefusion").
-- `condaPath`: Path to `conda` executable.
+- `condaPath`: Absolute path to `conda.bat` (e.g., "E:/miniconda3/condabin/conda.bat").
 - `facefusionDir`: Absolute path to FaceFusion installation directory.
+
 
 ---
 

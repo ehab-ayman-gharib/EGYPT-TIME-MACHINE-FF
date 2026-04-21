@@ -53,7 +53,11 @@
     ],
     "files": [
       "dist/**/*",
-      "electron/**/*"
+      "electron/**/*",
+      "!**/facefusion/.git",
+      "!**/facefusion/**/__pycache__",
+      "!**/facefusion/.github",
+      "!**/facefusion/tests"
     ],
     "extraResources": [
       {
@@ -62,7 +66,7 @@
       }
     ],
     "win": {
-      "target": "portable",
+      "target": "zip",
       "icon": "public/icon.png"
     },
     "mac": {

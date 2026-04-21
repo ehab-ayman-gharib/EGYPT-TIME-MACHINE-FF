@@ -133,7 +133,55 @@ function getAppConfig() {
 }
 
 /**
- * 3. PRINTER HELPER
+ * 3. CONDA DETECTION HELPER
+ * Automatically locates the Conda installation directory on Windows.
+ */
+function detectCondaPath(configuredPath) {
+    const fs = require('fs');
+    const { execSync } = require('child_process');
+
+    // 1. Check if configured path exists
+    if (configuredPath && fs.existsSync(configuredPath)) return configuredPath;
+
+    // 2. Try common installation paths
+    const commonPaths = [
+        path.join(process.env.USERPROFILE, 'miniconda3', 'condabin', 'conda.bat'),
+        path.join(process.env.USERPROFILE, 'anaconda3', 'condabin', 'conda.bat'),
+        'C:\\ProgramData\\miniconda3\\condabin\\conda.bat',
+        'C:\\ProgramData\\anaconda3\\condabin\\conda.bat',
+        'D:\\miniconda3\\condabin\\conda.bat',
+        'E:\\miniconda3\\condabin\\conda.bat'
+    ];
+
+    for (const p of commonPaths) {
+        if (fs.existsSync(p)) {
+            console.log(`[Conda] Auto-detected at: ${p}`);
+            return p;
+        }
+    }
+
+    // 3. Try 'where' command
+    try {
+        const whereResult = execSync('where conda', { encoding: 'utf-8' }).split('\n')[0].trim();
+        if (whereResult && fs.existsSync(whereResult)) {
+            // Ensure we point to condabin/conda.bat if possible for better activation
+            const binDir = path.dirname(whereResult);
+            const batPath = path.join(binDir, 'conda.bat');
+            const condaBinPath = path.join(path.dirname(binDir), 'condabin', 'conda.bat');
+            
+            if (fs.existsSync(condaBinPath)) return condaBinPath;
+            if (fs.existsSync(batPath)) return batPath;
+            return whereResult;
+        }
+    } catch (e) {
+        // 'where' failed, conda might not be in PATH
+    }
+
+    return "conda"; // Fallback to global command
+}
+
+/**
+ * 4. PRINTER HELPER
  * Attempts to intelligently match a configured printer name with available system printers.
  */
 function findBestPrinter(configuredName, availablePrinters) {
@@ -214,17 +262,28 @@ ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath, 
     }
     const isWin = process.platform === 'win32';
     const isMac = process.platform === 'darwin';
+    
+    // Platform-specific execution providers (CoreML for Mac Silicon, CUDA for Windows NVIDIA)
     const execProvider = isMac ? 'coreml' : 'cuda';
     
-    // Determine Python Binary & Environment Paths
-    const envBase = config.condaEnv && config.condaPath
-        ? path.join(path.dirname(config.condaPath), '..', 'envs', config.condaEnv)
-        : null;
+    // Auto-detect Conda Path if on Windows
+    const effectiveCondaPath = isWin ? detectCondaPath(config.condaPath) : config.condaPath;
+
+    /**
+     * 5. PYTHON ENVIRONMENT ORCHESTRATION
+     * Windows: Uses Conda environment (typically 'facefusion')
+     * Mac: Uses local venv (typically in './public/facefusion/venv')
+     */
+    let envBase = null;
+    if (isWin && config.condaEnv && effectiveCondaPath && path.isAbsolute(effectiveCondaPath)) {
+        // Resolve Conda Environment Path (assuming standard layout)
+        envBase = path.join(path.dirname(effectiveCondaPath), '..', 'envs', config.condaEnv);
+    }
 
     const scriptPath = path.join(activeCwd, 'facefusion.py');
     const pythonExecutable = envBase 
-        ? path.join(envBase, isWin ? 'python.exe' : 'bin/python')
-        : path.join(activeCwd, 'venv', isWin ? 'Scripts' : 'bin', isWin ? 'python.exe' : 'python');
+        ? path.join(envBase, 'python.exe') // Windows Conda Path
+        : path.join(activeCwd, 'venv', isWin ? 'Scripts' : 'bin', isWin ? 'python.exe' : 'python'); // Local venv Fallback
 
     const pythonCmd = `"${pythonExecutable}" "${scriptPath}"`;
     
