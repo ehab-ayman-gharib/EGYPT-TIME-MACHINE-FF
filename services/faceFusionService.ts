@@ -14,6 +14,7 @@
 
 import { EraData, FaceDetectionResult, EraId } from '../types';
 import * as faceapi from 'face-api.js';
+import { generateHistoricalImage } from './geminiService';
 
 /**
  * GLOBAL HELPER: analyzeTemplate
@@ -90,6 +91,11 @@ export const transformWithFaceFusion = async (
   // 1. GENDER & MULTI-FACE ORCHESTRATION
   const numFaces = faceData.faces?.length || 0;
   
+  if (numFaces > 3 || faceData.childCount > 0) {
+    console.log(`[FaceFusionService] Routing to Gemini | Faces: ${numFaces} | Children: ${faceData.childCount}`);
+    return await generateHistoricalImage(imageSrc, era, faceData);
+  }
+
   // Default: Handle single-person mapping
   let genderFolder = faceData.maleCount > faceData.femaleCount ? '1M' : '1F';
   let sortedFaces: any[] = [];
