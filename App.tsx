@@ -10,7 +10,7 @@ import { ScreenSaver } from './components/ScreenSaver';
 
 const { ipcRenderer } = window.require('electron');
 const CLOUDINARY_CLOUD_NAME = "dniredeim"; // Default based on project context, update if different
-const IDLE_TIMEOUT = 120000; // 2 minutes
+const IDLE_TIMEOUT = 20000; // 2 minutes
 
 /**
  * Main Application Component
@@ -204,7 +204,7 @@ const App: React.FC = () => {
         // 1. Fetch tagged images list from Cloudinary
         // Note: The client-side list API must be enabled in Cloudinary settings
         const response = await fetch(`https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/list/Screen-Saver.json`);
-        
+
         if (response.status === 401) {
           throw new Error('Unauthorized: Please enable "Resource List" in your Cloudinary Security settings.');
         }
@@ -222,7 +222,7 @@ const App: React.FC = () => {
 
         if (cloudinaryCount > 0) {
           setIsSyncing(true);
-          
+
           const imageData = cloudinaryImages.map((img: any) => ({
             id: img.public_id,
             url: `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload/v${img.version}/${img.public_id}.${img.format}`
