@@ -10,6 +10,7 @@ const { app, BrowserWindow, ipcMain, globalShortcut } = require('electron');
 const path = require('path');
 const fs = require('fs');
 const sharp = require('sharp');
+const https = require('https');
 
 let mainWindow = null;
 
@@ -34,6 +35,7 @@ function createWindow() {
             contextIsolation: false,    // Disables isolation for easier communication (non-standard but used here)
             autoplayPolicy: 'no-user-gesture-required', // Essential for auto-playing attraction videos
             devTools: true,
+            webSecurity: false,         // Required to load local images via file:// protocol
         },
         fullscreen: true,
         autoHideMenuBar: true,
@@ -606,6 +608,103 @@ ipcMain.handle('print-image', async (event, { imageSrc, printerName }) => {
         }
     });
 });
+
+// D. SCREEN SAVER SERVICE
+const SCREEN_SAVER_DIR = path.join(app.isPackaged ? process.resourcesPath : path.join(__dirname, '..'), 'Screen-Saver');
+
+// Ensure folder exists on startup
+if (!fs.existsSync(SCREEN_SAVER_DIR)) {
+    try {
+        fs.mkdirSync(SCREEN_SAVER_DIR, { recursive: true });
+        console.log('[ScreenSaver] Created directory:', SCREEN_SAVER_DIR);
+    } catch (err) {
+        console.error('[ScreenSaver] Failed to create directory:', err);
+    }
+}
+
+ipcMain.handle('get-screensaver-info', async () => {
+    try {
+        if (!fs.existsSync(SCREEN_SAVER_DIR)) return { count: 0, files: [] };
+        const files = fs.readdirSync(SCREEN_SAVER_DIR).filter(f => /\.(jpg|jpeg|png|webp|gif)$/i.test(f));
+        return { 
+            count: files.length, 
+            files: files.map(f => path.join(SCREEN_SAVER_DIR, f)) 
+        };
+    } catch (err) {
+        console.error('[ScreenSaver] Error reading info:', err);
+        return { count: 0, files: [] };
+    }
+});
+
+ipcMain.handle('sync-screensaver-images', async (event, images) => {
+    // 'images' is an array of { id: string, url: string }
+    console.log(`[ScreenSaver] Starting differential sync for ${images.length} images...`);
+    
+    try {
+        const existingFiles = fs.readdirSync(SCREEN_SAVER_DIR);
+        const remoteIds = images.map(img => `${img.id.replace(/[\/\\]/g, '_')}.jpg`);
+        
+        // 1. Identify orphans (files locally but not on remote)
+        const toDelete = existingFiles.filter(file => !remoteIds.includes(file) && file.endsWith('.jpg'));
+        
+        // 2. Identify missing (remote but not local)
+        const toDownload = images.filter(img => {
+            const fileName = `${img.id.replace(/[\/\\]/g, '_')}.jpg`;
+            return !existingFiles.includes(fileName);
+        });
+
+        console.log(`[ScreenSaver] Sync Plan: ${toDownload.length} to download, ${toDelete.length} to delete, ${images.length - toDownload.length} already up to date.`);
+
+        if (toDownload.length === 0 && toDelete.length === 0) {
+            console.log('[ScreenSaver] Everything is already in sync.');
+            return { success: true, count: images.length };
+        }
+
+        // 3. Perform deletions
+        for (const file of toDelete) {
+            try {
+                fs.unlinkSync(path.join(SCREEN_SAVER_DIR, file));
+            } catch (e) {
+                console.warn(`[ScreenSaver] Failed to delete orphan ${file}:`, e.message);
+            }
+        }
+
+        // 4. Perform downloads
+        const download = (img) => {
+            return new Promise((resolve, reject) => {
+                const fileName = `${img.id.replace(/[\/\\]/g, '_')}.jpg`;
+                const filePath = path.join(SCREEN_SAVER_DIR, fileName);
+                const file = fs.createWriteStream(filePath);
+                
+                https.get(img.url, (response) => {
+                    if (response.statusCode !== 200) {
+                        reject(new Error(`Status ${response.statusCode}`));
+                        return;
+                    }
+                    response.pipe(file);
+                    file.on('finish', () => {
+                        file.close();
+                        resolve(filePath);
+                    });
+                }).on('error', (err) => {
+                    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+                    reject(err);
+                });
+            });
+        };
+
+        const results = await Promise.allSettled(toDownload.map(img => download(img)));
+        const successful = results.filter(r => r.status === 'fulfilled');
+        
+        console.log(`[ScreenSaver] Sync complete. ${successful.length} new images downloaded.`);
+        return { success: true, count: images.length };
+
+    } catch (err) {
+        console.error('[ScreenSaver] Differential sync failed:', err);
+        return { success: false, error: err.message };
+    }
+});
+
 
 /**
  * 5. APP LIFECYCLE

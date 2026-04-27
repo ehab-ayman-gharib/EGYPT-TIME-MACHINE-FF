@@ -3,6 +3,7 @@ export enum AppScreen {
   CAMERA = 'CAMERA',
   PROCESSING = 'PROCESSING',
   RESULT = 'RESULT',
+  SCREEN_SAVER = 'SCREEN_SAVER',
 }
 
 export enum EraId {
