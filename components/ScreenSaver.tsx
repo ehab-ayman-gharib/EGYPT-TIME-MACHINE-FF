@@ -1,239 +1,71 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { Canvas, useFrame } from '@react-three/fiber';
-import * as THREE from 'three';
 
 const { ipcRenderer } = window.require('electron');
 
 const CFG = {
-  CARDS: 5,
-  RADIUS: 0.7,
-  CARD_W: 0.6,
-  CARD_H: 0.9,
-  X_OFFSET: -0.8,
-  Y_OFFSET: 0.8,
-  CORNER_R: 0.04,
-  SPIN_SPEED: 0.3,
-  FOCUS_Z_BOOST: 3.5,
-  FOCUS_SCALE: 2.2,
+  TOTAL_CARDS: 12,
+  CARD_W: 200,
+  CARD_H: 300,
+  CORNER_R: 14,
   FOCUS_HOLD_MS: 5000,
-  FOCUS_ANIM_SPEED: 0.9,
-  SNAP_THRESHOLD: 0.05,
-  IDLE_SPIN_MS: 3000,
+  TRANSITION_MS: 1200,
+  IDLE_MS: 2500,
+  PERSPECTIVE: 1200,
+  FOCUS_SCALE: 2.8,
+  STAR_COUNT: 200,
 };
 
-type Phase = 'spinning' | 'zoom-in' | 'hold' | 'zoom-out';
-
-function makeRoundedRectGeo(w: number, h: number, r: number) {
-  const shape = new THREE.Shape();
-  const x = -w / 2, y = -h / 2;
-  shape.moveTo(x + r, y);
-  shape.lineTo(x + w - r, y);
-  shape.quadraticCurveTo(x + w, y, x + w, y + r);
-  shape.lineTo(x + w, y + h - r);
-  shape.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-  shape.lineTo(x + r, y + h);
-  shape.quadraticCurveTo(x, y + h, x, y + h - r);
-  shape.lineTo(x, y + r);
-  shape.quadraticCurveTo(x, y, x + r, y);
-  const geo = new THREE.ShapeGeometry(shape, 12);
-  const pos = geo.attributes.position;
-  const uvs = new Float32Array(pos.count * 2);
-  for (let i = 0; i < pos.count; i++) {
-    uvs[i * 2] = (pos.getX(i) + w / 2) / w;
-    uvs[i * 2 + 1] = (pos.getY(i) + h / 2) / h;
-  }
-  geo.setAttribute('uv', new THREE.BufferAttribute(uvs, 2));
-  return geo;
-}
-
-
-/* ── Single Card with rounded corners ── */
-const Card: React.FC<{
-  url: string; slotIndex: number; totalCards: number;
-  angleRef: React.MutableRefObject<number>;
-  fpRef: React.MutableRefObject<number>;
-  focusSlotRef: React.MutableRefObject<number>;
-}> = ({ url, slotIndex, totalCards, angleRef, fpRef, focusSlotRef }) => {
-  const ref = useRef<THREE.Group>(null);
-  const safePath = url.startsWith('http') ? url : `file:///${url.replace(/\\/g, '/')}`;
-  const slotAngle = (slotIndex / totalCards) * Math.PI * 2;
-
-  const [texture, setTexture] = useState<THREE.Texture | null>(null);
-  useEffect(() => {
-    new THREE.TextureLoader().load(safePath, (tex) => {
-      tex.colorSpace = THREE.SRGBColorSpace;
-      setTexture(tex);
-    });
-  }, [safePath]);
-
-  const imageGeo = useMemo(() => makeRoundedRectGeo(CFG.CARD_W, CFG.CARD_H, CFG.CORNER_R), []);
-
-  useFrame(() => {
-    if (!ref.current) return;
-    const angle = slotAngle + angleRef.current;
-    const isFocused = focusSlotRef.current === slotIndex;
-    const fp = isFocused ? fpRef.current : 0;
-
-    // Use a slightly faster curve for position than for scale
-    const posFp = Math.min(1, fp * 1.1);
-    const zoomFp = fp;
-
-    ref.current.position.x = (Math.sin(angle) * CFG.RADIUS + CFG.X_OFFSET) * (1 - posFp);
-    ref.current.position.y = CFG.Y_OFFSET * (1 - posFp);
-    ref.current.position.z = Math.cos(angle) * CFG.RADIUS + zoomFp * CFG.FOCUS_Z_BOOST;
-
-    // Intensify spin: 2 full turns (4*PI) during zoom
-    ref.current.rotation.y = (angle * (1 - zoomFp)) + (zoomFp * Math.PI * 4);
-
-    ref.current.scale.setScalar(1 + zoomFp * (CFG.FOCUS_SCALE - 1));
-  });
-
-  if (!texture) return null;
-
-  return (
-    <group ref={ref}>
-      {/* Image */}
-      <mesh geometry={imageGeo}>
-        <meshBasicMaterial map={texture} transparent side={THREE.DoubleSide} />
-      </mesh>
-    </group>
-  );
-};
-
-/* ── 3D Scene ── */
-const Scene: React.FC<{ images: string[] }> = ({ images }) => {
-  const [batch, setBatch] = useState<number[]>([]);
-  const angleRef = useRef(0);
-  const phaseRef = useRef<Phase>('spinning');
-  const timerRef = useRef(0);
-  const focusSlotRef = useRef(-1);
-  const fpRef = useRef(0);
-  const shownRef = useRef<Set<number>>(new Set());
-
-  const shuffleBatch = useCallback((isInitial = false) => {
-    const indices = Array.from({ length: images.length }, (_, i) => i);
-    for (let i = indices.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [indices[i], indices[j]] = [indices[j], indices[i]];
-    }
-    setBatch(indices.slice(0, Math.min(CFG.CARDS, indices.length)));
-    shownRef.current = new Set();
-    if (isInitial) {
-      // Offset so no card starts at the front on first load
-      angleRef.current = Math.PI / CFG.CARDS;
-    } else {
-      // Nudge angle past any card at the front to prevent immediate re-snap
-      angleRef.current += (Math.PI * 2 / CFG.CARDS) * 0.5;
-    }
-    phaseRef.current = 'spinning';
-    timerRef.current = 0;
-    focusSlotRef.current = -1;
-    fpRef.current = 0;
-  }, [images]);
-
-  useEffect(() => {
-    if (images.length > 0) shuffleBatch(true);
-  }, [images, shuffleBatch]);
-
-  useFrame((_, rawDelta) => {
-    if (batch.length === 0) return;
-    // Clamp delta to prevent over-spin from background tabs or long frames
-    const delta = Math.min(rawDelta, 0.05);
-    const total = batch.length;
-    const TWO_PI = Math.PI * 2;
-
-    // Normalize angle to prevent floating-point drift over time
-    angleRef.current = ((angleRef.current % TWO_PI) + TWO_PI) % TWO_PI;
-
-    switch (phaseRef.current) {
-      case 'spinning': {
-        angleRef.current += delta * CFG.SPIN_SPEED;
-        timerRef.current += delta * 1000;
-
-        if (timerRef.current > CFG.IDLE_SPIN_MS) {
-          for (let i = 0; i < total; i++) {
-            if (shownRef.current.has(i)) continue;
-            const sa = (i / total) * Math.PI * 2;
-            const eff = ((sa + angleRef.current) % (Math.PI * 2) + Math.PI * 2) % (Math.PI * 2);
-            const dist = Math.min(eff, Math.PI * 2 - eff);
-            if (dist < CFG.SNAP_THRESHOLD) {
-              const snap = eff < Math.PI ? -eff : Math.PI * 2 - eff;
-              angleRef.current += snap;
-              shownRef.current.add(i);
-              focusSlotRef.current = i;
-              phaseRef.current = 'zoom-in';
-              timerRef.current = 0;
-              return;
-            }
-          }
-        }
-
-        if (shownRef.current.size >= total) {
-          // All cards shown — wait a bit then reshuffle new images seamlessly
-          if (timerRef.current > CFG.IDLE_SPIN_MS) {
-            shuffleBatch(false);
-          }
-        }
-        break;
-      }
-      case 'zoom-in': {
-        fpRef.current = Math.min(1, fpRef.current + delta * CFG.FOCUS_ANIM_SPEED);
-        if (fpRef.current >= 0.99) {
-          fpRef.current = 1;
-          phaseRef.current = 'hold';
-          timerRef.current = 0;
-        }
-        break;
-      }
-      case 'hold': {
-        timerRef.current += delta * 1000;
-        if (timerRef.current > CFG.FOCUS_HOLD_MS) {
-          phaseRef.current = 'zoom-out';
-          timerRef.current = 0;
-        }
-        break;
-      }
-      case 'zoom-out': {
-        fpRef.current = Math.max(0, fpRef.current - delta * CFG.FOCUS_ANIM_SPEED);
-        if (fpRef.current <= 0.01) {
-          fpRef.current = 0;
-          focusSlotRef.current = -1;
-          phaseRef.current = 'spinning';
-          timerRef.current = 0;
-        }
-        break;
-      }
-    }
-  });
-
-  return (
-    <>
-      <ambientLight intensity={0.7} />
-      <pointLight position={[0, 5, 8]} intensity={0.6} color="#f5e6c8" />
-      <pointLight position={[-3, -2, 5]} intensity={0.3} color="#8b7355" />
-      {batch.map((imgIndex, slotIndex) => (
-        <Card
-          key={slotIndex}
-          url={images[imgIndex]}
-          slotIndex={slotIndex}
-          totalCards={batch.length}
-          angleRef={angleRef}
-          fpRef={fpRef}
-          focusSlotRef={focusSlotRef}
-        />
-      ))}
-    </>
-  );
-};
-
-/* ── Corner Burst Particles (CSS-based overlay) ── */
-const CORNER_COLORS = ['#d4a853', '#53d4d4', '#d453a8', '#53d477', '#d4c953'];
-const CORNERS = [
-  { x: 0, y: 0 },      // top-left
-  { x: 100, y: 0 },    // top-right
-  { x: 0, y: 100 },    // bottom-left
-  { x: 100, y: 100 },  // bottom-right
+// 12 scattered positions — improved scattering to avoid clusters, especially at the bottom
+const CARD_SLOTS = [
+  { x: -380, y: -620, z: -200, rx: 5,   ry: 12,  rz: -3, fs: 0.8, fa: 12 },
+  { x: 350,  y: -550, z: -280, rx: -4,  ry: -18, rz: 4,  fs: 1.0, fa: 10 },
+  { x: 20,   y: -380, z: -100, rx: 2,   ry: -8,  rz: 1,  fs: 1.2, fa: 8 },
+  { x: -420, y: -280, z: -180, rx: 6,   ry: 15,  rz: -3, fs: 1.5, fa: 11 },
+  { x: 400,  y: -180, z: -150, rx: -6,  ry: -12, rz: 2,  fs: 0.9, fa: 11 },
+  { x: -150, y: -50,  z: -250, rx: 3,   ry: -10, rz: -2, fs: 1.1, fa: 9 },
+  { x: 220,  y: 50,   z: -320, rx: -2,  ry: 10,  rz: -2, fs: 1.1, fa: 9 },
+  { x: -430, y: 180,  z: -120, rx: 4,   ry: 18,  rz: -4, fs: 0.7, fa: 13 },
+  { x: 380,  y: 300,  z: -220, rx: -3,  ry: -12, rz: 5,  fs: 1.0, fa: 8 },
+  { x: -400, y: 480,  z: -300, rx: 5,   ry: -8,  rz: 4,  fs: 0.9, fa: 12 },
+  { x: 150,  y: 580,  z: -180, rx: -5,  ry: -14, rz: 3,  fs: 1.3, fa: 10 },
+  { x: -380, y: 680,  z: -260, rx: 3,   ry: 12,  rz: -5, fs: 1.4, fa: 9 },
 ];
+
+/* ── Starfield ── */
+const Starfield: React.FC = () => {
+  const stars = useMemo(() =>
+    Array.from({ length: CFG.STAR_COUNT }, (_, i) => ({
+      id: i,
+      x: Math.random() * 100, y: Math.random() * 100,
+      size: 0.5 + Math.random() * 2,
+      opacity: 0.2 + Math.random() * 0.6,
+      dur: 2 + Math.random() * 4,
+      delay: Math.random() * 5,
+    })), []);
+
+  return (
+    <div className="absolute inset-0 pointer-events-none">
+      <style>{`
+        @keyframes twinkle {
+          0%, 100% { opacity: var(--bo); }
+          50% { opacity: 0.05; }
+        }
+      `}</style>
+      {stars.map((s) => (
+        <div key={s.id} style={{
+          position: 'absolute', left: `${s.x}%`, top: `${s.y}%`,
+          width: s.size, height: s.size, borderRadius: '50%', background: '#fff',
+          '--bo': s.opacity, opacity: s.opacity,
+          animation: `twinkle ${s.dur}s ${s.delay}s infinite ease-in-out`,
+        } as React.CSSProperties} />
+      ))}
+    </div>
+  );
+};
+
+/* ── Corner burst particles ── */
+const CORNER_COLORS = ['#d4a853', '#53d4d4', '#d453a8', '#53d477', '#d4c953'];
+const CORNERS = [{ x: 0, y: 0 }, { x: 100, y: 0 }, { x: 0, y: 100 }, { x: 100, y: 100 }];
 
 const CornerParticles: React.FC = () => {
   const particles = useMemo(() => {
@@ -243,16 +75,12 @@ const CornerParticles: React.FC = () => {
     }> = [];
     for (let i = 0; i < 80; i++) {
       const corner = i % 4;
-      const signX = CORNERS[corner].x === 0 ? 1 : -1;
-      const signY = CORNERS[corner].y === 0 ? 1 : -1;
+      const sx = CORNERS[corner].x === 0 ? 1 : -1;
+      const sy = CORNERS[corner].y === 0 ? 1 : -1;
       items.push({
-        id: i,
-        corner,
-        size: 2 + Math.random() * 5,
-        duration: 4 + Math.random() * 6,
-        delay: Math.random() * 10,
-        dx: signX * (20 + Math.random() * 30),
-        dy: signY * (20 + Math.random() * 30),
+        id: i, corner, size: 2 + Math.random() * 5,
+        duration: 4 + Math.random() * 6, delay: Math.random() * 10,
+        dx: sx * (20 + Math.random() * 30), dy: sy * (20 + Math.random() * 30),
         color: CORNER_COLORS[Math.floor(Math.random() * CORNER_COLORS.length)],
       });
     }
@@ -269,82 +97,218 @@ const CornerParticles: React.FC = () => {
           100% { transform: translate(var(--dx), var(--dy)) scale(0.2); opacity: 0; }
         }
         @keyframes color-shift {
-          0% { background: #d4a853; }
-          25% { background: #53d4d4; }
-          50% { background: #d453a8; }
-          75% { background: #53d477; }
-          100% { background: #d4a853; }
+          0% { background: #d4a853; } 25% { background: #53d4d4; }
+          50% { background: #d453a8; } 75% { background: #53d477; } 100% { background: #d4a853; }
         }
       `}</style>
       {particles.map((p) => (
-        <div
-          key={p.id}
-          style={{
-            position: 'absolute',
-            left: `${CORNERS[p.corner].x}%`,
-            top: `${CORNERS[p.corner].y}%`,
-            width: p.size,
-            height: p.size,
-            borderRadius: '50%',
-            background: p.color,
-            '--dx': `${p.dx}vw`,
-            '--dy': `${p.dy}vh`,
-            animation: `corner-burst ${p.duration}s ${p.delay}s infinite ease-out, color-shift ${p.duration * 2}s ${p.delay}s infinite linear`,
-            boxShadow: `0 0 ${p.size * 2}px ${p.color}`,
-          } as React.CSSProperties}
-        />
+        <div key={p.id} style={{
+          position: 'absolute', left: `${CORNERS[p.corner].x}%`, top: `${CORNERS[p.corner].y}%`,
+          width: p.size, height: p.size, borderRadius: '50%', background: p.color,
+          '--dx': `${p.dx}vw`, '--dy': `${p.dy}vh`,
+          animation: `corner-burst ${p.duration}s ${p.delay}s infinite ease-out, color-shift ${p.duration * 2}s ${p.delay}s infinite linear`,
+          boxShadow: `0 0 ${p.size * 2}px ${p.color}`,
+        } as React.CSSProperties} />
       ))}
     </div>
   );
 };
 
-/* ── Exported ScreenSaver ── */
+/* ── Main ScreenSaver ── */
 export const ScreenSaver: React.FC<{ onDismiss: () => void }> = ({ onDismiss }) => {
   const [images, setImages] = useState<string[]>([]);
+  const [batch, setBatch] = useState<number[]>([]);
+  const [focusedSlot, setFocusedSlot] = useState(-1);
+  const shownRef = useRef<Set<number>>(new Set());
+  const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
   useEffect(() => {
-    const loadImages = async () => {
+    const load = async () => {
       const { files } = await ipcRenderer.invoke('get-screensaver-info');
       if (files && files.length > 0) setImages(files);
     };
-    loadImages();
-    const handleInteraction = () => onDismiss();
-    window.addEventListener('mousedown', handleInteraction);
-    window.addEventListener('keydown', handleInteraction);
-    window.addEventListener('touchstart', handleInteraction);
+    load();
+    const dismiss = () => onDismiss();
+    window.addEventListener('mousedown', dismiss);
+    window.addEventListener('keydown', dismiss);
+    window.addEventListener('touchstart', dismiss);
     return () => {
-      window.removeEventListener('mousedown', handleInteraction);
-      window.removeEventListener('keydown', handleInteraction);
-      window.removeEventListener('touchstart', handleInteraction);
+      window.removeEventListener('mousedown', dismiss);
+      window.removeEventListener('keydown', dismiss);
+      window.removeEventListener('touchstart', dismiss);
+      if (timerRef.current) clearTimeout(timerRef.current);
     };
   }, [onDismiss]);
 
-  return (
-    <div
-      className="fixed inset-0 z-[9999] bg-slate-900 overflow-hidden cursor-none"
-      style={{
-        backgroundImage: `url('Isis-ScreenSaver.jpeg')`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-      }}
-    >
-      <Canvas
-        camera={{ position: [0, 0, 7], fov: 50 }}
-        gl={{ antialias: true, alpha: true }}
-        style={{ background: 'transparent' }}
-      >
-        {images.length > 0 && <Scene images={images} />}
-      </Canvas>
+  const shuffleBatch = useCallback(() => {
+    const indices = Array.from({ length: images.length }, (_, i) => i);
+    for (let i = indices.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [indices[i], indices[j]] = [indices[j], indices[i]];
+    }
+    setBatch(indices.slice(0, Math.min(CFG.TOTAL_CARDS, indices.length)));
+    shownRef.current = new Set();
+    setFocusedSlot(-1);
+  }, [images]);
 
-      {/* Corner burst particles */}
+  useEffect(() => {
+    if (images.length > 0) shuffleBatch();
+  }, [images, shuffleBatch]);
+
+  useEffect(() => {
+    if (batch.length === 0) return;
+    const cycle = () => {
+      const available = Array.from({ length: Math.min(batch.length, CARD_SLOTS.length) }, (_, i) => i)
+        .filter(i => !shownRef.current.has(i));
+      if (available.length === 0) { shuffleBatch(); return; }
+      const next = available[Math.floor(Math.random() * available.length)];
+      shownRef.current.add(next);
+      setFocusedSlot(next);
+      timerRef.current = setTimeout(() => {
+        setFocusedSlot(-1);
+        timerRef.current = setTimeout(cycle, CFG.IDLE_MS);
+      }, CFG.FOCUS_HOLD_MS + CFG.TRANSITION_MS);
+    };
+    timerRef.current = setTimeout(cycle, CFG.IDLE_MS);
+    return () => { if (timerRef.current) clearTimeout(timerRef.current); };
+  }, [batch, shuffleBatch]);
+
+  const getStyle = (slotIdx: number) => {
+    const slot = CARD_SLOTS[slotIdx];
+    const isFocused = slotIdx === focusedSlot;
+
+    if (isFocused) {
+      return {
+        transform: `translate3d(0px, 0px, 200px) rotateX(0deg) rotateY(0deg) rotateZ(0deg) scale(${CFG.FOCUS_SCALE})`,
+        filter: 'blur(0px)',
+        opacity: 1,
+        zIndex: 10,
+        animation: 'none',
+      };
+    }
+
+    // Lighter blur
+    const depthBlur = focusedSlot >= 0
+      ? Math.max(1.5, Math.abs(slot.z) / 160 + 1)
+      : Math.max(0.3, Math.abs(slot.z) / 250);
+
+    return {
+      transform: `translate3d(${slot.x}px, ${slot.y}px, ${slot.z}px) rotateX(${slot.rx}deg) rotateY(${slot.ry}deg) rotateZ(${slot.rz}deg) scale(1)`,
+      filter: `blur(${depthBlur}px)`,
+      opacity: focusedSlot >= 0 ? 0.65 : 0.9,
+      zIndex: 1,
+      animation: `card-float-${slotIdx} ${slot.fs * 3}s ease-in-out infinite`,
+    };
+  };
+
+  const floatKeyframes = useMemo(() =>
+    CARD_SLOTS.map((slot, i) => `
+      @keyframes card-float-${i} {
+        0%, 100% { margin-top: ${-CFG.CARD_H / 2}px; }
+        50% { margin-top: ${-CFG.CARD_H / 2 - slot.fa}px; }
+      }
+    `).join('\n'), []);
+
+  return (
+    <div className="fixed inset-0 z-[9999] overflow-hidden cursor-none" style={{ 
+      backgroundImage: "url('Result-Screen.jpg')",
+      backgroundSize: 'cover',
+      backgroundPosition: 'center'
+    }}>
+      <Starfield />
+      <style>{floatKeyframes}</style>
+      <style>{`
+        @keyframes title-glow {
+          0%, 100% { text-shadow: 0 0 20px rgba(212,168,83,0.4), 0 0 60px rgba(212,168,83,0.15); }
+          50% { text-shadow: 0 0 30px rgba(212,168,83,0.7), 0 0 80px rgba(212,168,83,0.3), 0 0 120px rgba(212,168,83,0.1); }
+        }
+        @keyframes tap-pulse {
+          0%, 100% { box-shadow: 0 0 20px rgba(234,179,8,0.2), inset 0 0 20px rgba(234,179,8,0.05); }
+          50% { box-shadow: 0 0 40px rgba(234,179,8,0.4), inset 0 0 30px rgba(234,179,8,0.1); }
+        }
+      `}</style>
+
+      {/* Title at top */}
+      <div className="absolute top-0 left-0 right-0 z-20 flex flex-col items-center pt-12 pointer-events-none">
+        <h1
+          className="text-5xl font-serif italic tracking-wider"
+          style={{
+            color: '#d4a853',
+            animation: 'title-glow 3s ease-in-out infinite',
+            fontFamily: 'Georgia, serif',
+          }}
+        >
+          Egypt Time Machine
+        </h1>
+        <div className="mt-3 h-[1px] w-48 bg-gradient-to-r from-transparent via-yellow-600/50 to-transparent" />
+      </div>
+
+      {/* 3D Viewport */}
+      <div style={{
+        position: 'absolute', inset: 0,
+        perspective: `${CFG.PERSPECTIVE}px`,
+        perspectiveOrigin: '50% 50%',
+      }}>
+        <div style={{ position: 'absolute', left: '50%', top: '50%', transformStyle: 'preserve-3d' }}>
+          {batch.map((imgIndex, slotIdx) => {
+            if (slotIdx >= CARD_SLOTS.length) return null;
+            const safePath = images[imgIndex]?.startsWith('http')
+              ? images[imgIndex]
+              : `file:///${images[imgIndex]?.replace(/\\/g, '/')}`;
+            const style = getStyle(slotIdx);
+
+            return (
+              <div
+                key={slotIdx}
+                style={{
+                  position: 'absolute',
+                  width: CFG.CARD_W, height: CFG.CARD_H,
+                  marginLeft: -CFG.CARD_W / 2,
+                  marginTop: -CFG.CARD_H / 2,
+                  borderRadius: CFG.CORNER_R,
+                  overflow: 'hidden',
+                  transformStyle: 'preserve-3d',
+                  transform: style.transform,
+                  filter: style.filter,
+                  opacity: style.opacity,
+                  zIndex: style.zIndex,
+                  animation: style.animation,
+                  transition: `
+                    transform ${CFG.TRANSITION_MS}ms cubic-bezier(0.25, 0.1, 0.25, 1),
+                    filter ${CFG.TRANSITION_MS * 0.4}ms ease,
+                    opacity ${CFG.TRANSITION_MS}ms ease
+                  `,
+                  boxShadow: slotIdx === focusedSlot
+                    ? '0 20px 60px rgba(0,0,0,0.7), 0 0 40px rgba(212,168,83,0.25)'
+                    : '0 8px 30px rgba(0,0,0,0.4)',
+                }}
+              >
+                <img
+                  src={safePath} alt=""
+                  style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+                />
+              </div>
+            );
+          })}
+        </div>
+      </div>
+
       <CornerParticles />
 
-      <div className="absolute bottom-8 left-0 right-0 flex flex-col items-center gap-2 pointer-events-none">
-        <div className="text-amber-200/30 text-lg tracking-[0.5em] uppercase font-light">
-          Touch to Start
-        </div>
-        <div className="text-white/15 text-3xl font-serif italic tracking-wider">
-          Egypt Time Machine
+      {/* "Tap to Start" matching SplashScreen style */}
+      <div className="absolute bottom-0 left-0 right-0 z-20 flex flex-col items-center pb-10 pointer-events-none">
+        <div className="flex flex-col items-center gap-6 animate-pulse">
+          <div className="relative">
+            <div className="absolute inset-0 bg-yellow-500/20 blur-3xl rounded-full scale-150 animate-pulse" />
+            <div
+              className="relative border-2 border-yellow-500/50 py-4 px-12 rounded-full bg-black/40 backdrop-blur-md"
+              style={{ animation: 'tap-pulse 2s ease-in-out infinite' }}
+            >
+              <span className="text-yellow-500 text-3xl font-bold uppercase tracking-[0.5em] whitespace-nowrap">
+                Tap to Start
+              </span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
