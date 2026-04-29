@@ -5,20 +5,20 @@ import * as THREE from 'three';
 const { ipcRenderer } = window.require('electron');
 
 const CFG = {
-  CARDS: 5,
-  RADIUS: 0.7,
-  CARD_W: 0.6,
-  CARD_H: 0.9,
-  X_OFFSET: -0.8,
-  Y_OFFSET: 0.8,
-  CORNER_R: 0.04,
-  SPIN_SPEED: 0.3,
-  FOCUS_Z_BOOST: 3.5,
-  FOCUS_SCALE: 2.2,
-  FOCUS_HOLD_MS: 5000,
-  FOCUS_ANIM_SPEED: 0.9,
-  SNAP_THRESHOLD: 0.05,
-  IDLE_SPIN_MS: 3000,
+  CARDS: 20,
+  RADIUS: 0.75,
+  CARD_W: 0.22,
+  CARD_H: 0.33,
+  X_OFFSET: -1.2,
+  Y_OFFSET: -0.5,
+  CORNER_R: 0.015,
+  SPIN_SPEED: 0.5,
+  FOCUS_Z_BOOST: 4.5,
+  FOCUS_SCALE: 4.5, // High multiplier to compensate for small base size
+  FOCUS_HOLD_MS: 3000,
+  FOCUS_ANIM_SPEED: 2.0, // 0.5s zoom
+  SNAP_THRESHOLD: 0.06,
+  IDLE_SPIN_MS: 1500,
 };
 
 type Phase = 'spinning' | 'zoom-in' | 'hold' | 'zoom-out';
@@ -47,13 +47,92 @@ function makeRoundedRectGeo(w: number, h: number, r: number) {
 }
 
 
+/* ── Card Glow & Particles ── */
+// Create a beautiful soft bloom/flare texture procedurally
+const radialGlowTexture = (() => {
+  const canvas = document.createElement('canvas');
+  canvas.width = 128;
+  canvas.height = 128;
+  const ctx = canvas.getContext('2d');
+  if (ctx) {
+    const gradient = ctx.createRadialGradient(64, 64, 10, 64, 64, 64);
+    gradient.addColorStop(0, 'rgba(252, 211, 77, 1)'); // Solid gold core
+    gradient.addColorStop(0.4, 'rgba(252, 211, 77, 0.6)');
+    gradient.addColorStop(1, 'rgba(252, 211, 77, 0)'); // Fade to transparent
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 128, 128);
+  }
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.needsUpdate = true;
+  return tex;
+})();
+
+const CardGlow: React.FC<{ opacity: number }> = ({ opacity }) => {
+  if (opacity <= 0.01) return null;
+
+  return (
+    <mesh position={[0, 0, -0.01]}>
+      {/* Use a plane slightly larger than the card to act as a soft light source behind it */}
+      <planeGeometry args={[CFG.CARD_W * 1.8, CFG.CARD_H * 1.5]} />
+      <meshBasicMaterial 
+        map={radialGlowTexture} 
+        transparent 
+        opacity={opacity * 0.8} 
+        depthWrite={false} 
+        blending={THREE.AdditiveBlending} 
+      />
+    </mesh>
+  );
+};
+
+const CardParticles: React.FC<{ active: boolean }> = ({ active }) => {
+  const pointsRef = useRef<THREE.Points>(null);
+  const count = 30;
+
+  const [geo, mat] = useMemo(() => {
+    const positions = new Float32Array(count * 3);
+    for (let i = 0; i < count; i++) {
+      positions[i * 3] = (Math.random() - 0.5) * CFG.CARD_W * 1.5;
+      positions[i * 3 + 1] = (Math.random() - 0.5) * CFG.CARD_H * 1.5;
+      positions[i * 3 + 2] = (Math.random() - 0.5) * 0.1;
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    const m = new THREE.PointsMaterial({
+      color: '#fcd34d',
+      size: 0.02,
+      transparent: true,
+      opacity: 0.6,
+      blending: THREE.AdditiveBlending
+    });
+    return [g, m];
+  }, []);
+
+  useFrame((state) => {
+    if (!pointsRef.current) return;
+    const t = state.clock.getElapsedTime();
+    const pos = pointsRef.current.geometry.attributes.position as THREE.BufferAttribute;
+    for (let i = 0; i < count; i++) {
+      const y = pos.getY(i);
+      pos.setY(i, y + Math.sin(t + i) * 0.001);
+    }
+    pos.needsUpdate = true;
+    if (pointsRef.current.material instanceof THREE.PointsMaterial) {
+      pointsRef.current.material.opacity = active ? 0.6 : 0.2;
+    }
+  });
+
+  return <points ref={pointsRef} geometry={geo} material={mat} />;
+};
+
 /* ── Single Card with rounded corners ── */
 const Card: React.FC<{
   url: string; slotIndex: number; totalCards: number;
   angleRef: React.MutableRefObject<number>;
+  lockedAngleRef: React.MutableRefObject<number>;
   fpRef: React.MutableRefObject<number>;
   focusSlotRef: React.MutableRefObject<number>;
-}> = ({ url, slotIndex, totalCards, angleRef, fpRef, focusSlotRef }) => {
+}> = ({ url, slotIndex, totalCards, angleRef, lockedAngleRef, fpRef, focusSlotRef }) => {
   const ref = useRef<THREE.Group>(null);
   const safePath = url.startsWith('http') ? url : `file:///${url.replace(/\\/g, '/')}`;
   const slotAngle = (slotIndex / totalCards) * Math.PI * 2;
@@ -70,20 +149,30 @@ const Card: React.FC<{
 
   useFrame(() => {
     if (!ref.current) return;
-    const angle = slotAngle + angleRef.current;
     const isFocused = focusSlotRef.current === slotIndex;
     const fp = isFocused ? fpRef.current : 0;
+    
+    // Lock the angle during focus to prevent extra spinning
+    const activeAngle = (isFocused && fp > 0) ? lockedAngleRef.current : angleRef.current;
+    const angle = slotAngle + activeAngle;
 
-    // Use a slightly faster curve for position than for scale
     const posFp = Math.min(1, fp * 1.1);
     const zoomFp = fp;
 
+    // Vertical Cylinder: circle in XZ plane, shifted by X and Y offsets
     ref.current.position.x = (Math.sin(angle) * CFG.RADIUS + CFG.X_OFFSET) * (1 - posFp);
     ref.current.position.y = CFG.Y_OFFSET * (1 - posFp);
-    ref.current.position.z = Math.cos(angle) * CFG.RADIUS + zoomFp * CFG.FOCUS_Z_BOOST;
+    ref.current.position.z = (Math.cos(angle) * CFG.RADIUS) * (1 - posFp) + zoomFp * CFG.FOCUS_Z_BOOST;
 
-    // Intensify spin: 2 full turns (4*PI) during zoom
-    ref.current.rotation.y = (angle * (1 - zoomFp)) + (zoomFp * Math.PI * 4);
+    // Normalize angle to [-PI, PI] to prevent full 360 spins when interpolating to 0
+    let rotAngle = angle % (Math.PI * 2);
+    if (rotAngle > Math.PI) rotAngle -= Math.PI * 2;
+    if (rotAngle < -Math.PI) rotAngle += Math.PI * 2;
+
+    // Face the center while spinning, face camera when focused
+    ref.current.rotation.y = rotAngle * (1 - zoomFp);
+    ref.current.rotation.x = 0;
+    ref.current.rotation.z = 0;
 
     ref.current.scale.setScalar(1 + zoomFp * (CFG.FOCUS_SCALE - 1));
   });
@@ -92,10 +181,16 @@ const Card: React.FC<{
 
   return (
     <group ref={ref}>
-      {/* Image */}
+      {/* Image - Render first for depth */}
       <mesh geometry={imageGeo}>
-        <meshBasicMaterial map={texture} transparent side={THREE.DoubleSide} />
+        <meshBasicMaterial map={texture} transparent side={THREE.DoubleSide} depthWrite={true} />
       </mesh>
+
+      {/* Glow - Render behind with no depth write */}
+      <CardGlow opacity={focusSlotRef.current === slotIndex ? 1 : 0.4} />
+
+      {/* Particles */}
+      <CardParticles active={focusSlotRef.current === slotIndex} />
     </group>
   );
 };
@@ -104,6 +199,7 @@ const Card: React.FC<{
 const Scene: React.FC<{ images: string[] }> = ({ images }) => {
   const [batch, setBatch] = useState<number[]>([]);
   const angleRef = useRef(0);
+  const lockedAngleRef = useRef(0);
   const phaseRef = useRef<Phase>('spinning');
   const timerRef = useRef(0);
   const focusSlotRef = useRef(-1);
@@ -129,6 +225,7 @@ const Scene: React.FC<{ images: string[] }> = ({ images }) => {
     timerRef.current = 0;
     focusSlotRef.current = -1;
     fpRef.current = 0;
+    lockedAngleRef.current = 0;
   }, [images]);
 
   useEffect(() => {
@@ -137,7 +234,6 @@ const Scene: React.FC<{ images: string[] }> = ({ images }) => {
 
   useFrame((_, rawDelta) => {
     if (batch.length === 0) return;
-    // Clamp delta to prevent over-spin from background tabs or long frames
     const delta = Math.min(rawDelta, 0.05);
     const total = batch.length;
     const TWO_PI = Math.PI * 2;
@@ -159,6 +255,7 @@ const Scene: React.FC<{ images: string[] }> = ({ images }) => {
             if (dist < CFG.SNAP_THRESHOLD) {
               const snap = eff < Math.PI ? -eff : Math.PI * 2 - eff;
               angleRef.current += snap;
+              lockedAngleRef.current = angleRef.current; // Store angle to stop spin for this card
               shownRef.current.add(i);
               focusSlotRef.current = i;
               phaseRef.current = 'zoom-in';
@@ -218,6 +315,7 @@ const Scene: React.FC<{ images: string[] }> = ({ images }) => {
           slotIndex={slotIndex}
           totalCards={batch.length}
           angleRef={angleRef}
+          lockedAngleRef={lockedAngleRef}
           fpRef={fpRef}
           focusSlotRef={focusSlotRef}
         />

@@ -10,7 +10,7 @@ import { ScreenSaver } from './components/ScreenSaver';
 
 const { ipcRenderer } = window.require('electron');
 const CLOUDINARY_CLOUD_NAME = "dniredeim"; // Default based on project context, update if different
-const IDLE_TIMEOUT = 20000; // 2 minutes
+const IDLE_TIMEOUT = 30000; // 30 seconds
 
 /**
  * Main Application Component
@@ -169,15 +169,19 @@ const App: React.FC = () => {
    * SCREEN SAVER & IDLE LOGIC
    */
   const resetIdleTimer = useCallback(() => {
-    // Only reset if we are not in the screen saver
-    if (currentScreen !== AppScreen.SCREEN_SAVER) {
-      localStorage.setItem('last_activity', Date.now().toString());
-    }
-  }, [currentScreen]);
+    localStorage.setItem('last_activity', Date.now().toString());
+  }, []);
 
   useEffect(() => {
     const checkIdle = () => {
-      if (currentScreen === AppScreen.SCREEN_SAVER) return;
+      // Don't trigger screensaver if already in screensaver or on the Result screen
+      if (currentScreen === AppScreen.SCREEN_SAVER || currentScreen === AppScreen.RESULT) {
+        // Keep updating last activity while on Result screen to prevent immediate trigger when leaving
+        if (currentScreen === AppScreen.RESULT) {
+          localStorage.setItem('last_activity', Date.now().toString());
+        }
+        return;
+      }
 
       const lastActivity = parseInt(localStorage.getItem('last_activity') || '0');
       const now = Date.now();
@@ -188,7 +192,7 @@ const App: React.FC = () => {
       }
     };
 
-    const interval = setInterval(checkIdle, 10000); // Check every 10s
+    const interval = setInterval(checkIdle, 1000); // Check every 1s for better precision
     return () => clearInterval(interval);
   }, [currentScreen]);
 
@@ -248,6 +252,11 @@ const App: React.FC = () => {
     };
 
     syncScreenSaver();
+  }, []);
+
+  // Initialize idle timer on mount to prevent immediate screensaver trigger
+  useEffect(() => {
+    localStorage.setItem('last_activity', Date.now().toString());
   }, []);
 
   // Monitor all interactions to reset idle timer

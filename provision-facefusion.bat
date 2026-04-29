@@ -12,7 +12,7 @@ IF EXIST "%SCRIPT_DIR%public\facefusion" (
     echo [Environment] Development detected.
 ) ELSE IF EXIST "%SCRIPT_DIR%resources\app.asar.unpacked\dist\facefusion" (
     SET "TARGET_DIR=%SCRIPT_DIR%resources\app.asar.unpacked\dist\facefusion"
-    echo [Environment] Production (Built App) detected.
+    echo [Environment] Production ^(Built App^) detected.
 ) ELSE (
     echo Error: Could not find FaceFusion folder. 
     echo Please place this script in the root of your project or built app.
@@ -41,12 +41,14 @@ if not exist "!CONDA_PATH!" (
 
 echo Using Conda at: !CONDA_PATH!
 
-:: 3. Update booth-config.json with the detected path (using PowerShell for JSON handling)
+:: 3. Update booth-config.json with the detected path
 echo Updating booth-config.json with detected path...
 SET "CONFIG_FILE=%SCRIPT_DIR%booth-config.json"
-if exist "!CONFIG_FILE!" (
-    powershell -Command "$config = Get-Content '!CONFIG_FILE!' | ConvertFrom-Json; $config.win32.condaPath = '!CONDA_PATH!'.Replace('\', '/'); $config | ConvertTo-Json | Set-Content '!CONFIG_FILE!'"
-    if %ERRORLEVEL% EQU 0 (
+SET PS_COMMAND="$config = Get-Content '%CONFIG_FILE%' | ConvertFrom-Json; $config.win32.condaPath = '!CONDA_PATH!'.Replace('\', '/'); $config | ConvertTo-Json | Set-Content '%CONFIG_FILE%'"
+
+if exist "%CONFIG_FILE%" (
+    powershell -Command "!PS_COMMAND!"
+    if !ERRORLEVEL! EQU 0 (
         echo Successfully updated booth-config.json
     ) else (
         echo Warning: Failed to update booth-config.json automatically.
