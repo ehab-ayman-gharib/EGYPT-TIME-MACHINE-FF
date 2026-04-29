@@ -3,32 +3,50 @@ import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react'
 const { ipcRenderer } = window.require('electron');
 
 const CFG = {
-  TOTAL_CARDS: 12,
-  CARD_W: 200,
-  CARD_H: 300,
+  TOTAL_CARDS: 30,
+  CARD_W: 160,
+  CARD_H: 240,
   CORNER_R: 14,
   FOCUS_HOLD_MS: 5000,
-  TRANSITION_MS: 1200,
-  IDLE_MS: 2500,
+  TRANSITION_MS: 400,
+  IDLE_MS: 2000,
   PERSPECTIVE: 1200,
   FOCUS_SCALE: 2.8,
   STAR_COUNT: 200,
 };
 
-// 12 scattered positions — improved scattering to avoid clusters, especially at the bottom
+// 30 scattered positions — densely filling 1080x1920 vertical screen
 const CARD_SLOTS = [
-  { x: -380, y: -620, z: -200, rx: 5,   ry: 12,  rz: -3, fs: 0.8, fa: 12 },
-  { x: 350,  y: -550, z: -280, rx: -4,  ry: -18, rz: 4,  fs: 1.0, fa: 10 },
-  { x: 20,   y: -380, z: -100, rx: 2,   ry: -8,  rz: 1,  fs: 1.2, fa: 8 },
-  { x: -420, y: -280, z: -180, rx: 6,   ry: 15,  rz: -3, fs: 1.5, fa: 11 },
-  { x: 400,  y: -180, z: -150, rx: -6,  ry: -12, rz: 2,  fs: 0.9, fa: 11 },
-  { x: -150, y: -50,  z: -250, rx: 3,   ry: -10, rz: -2, fs: 1.1, fa: 9 },
-  { x: 220,  y: 50,   z: -320, rx: -2,  ry: 10,  rz: -2, fs: 1.1, fa: 9 },
-  { x: -430, y: 180,  z: -120, rx: 4,   ry: 18,  rz: -4, fs: 0.7, fa: 13 },
-  { x: 380,  y: 300,  z: -220, rx: -3,  ry: -12, rz: 5,  fs: 1.0, fa: 8 },
-  { x: -400, y: 480,  z: -300, rx: 5,   ry: -8,  rz: 4,  fs: 0.9, fa: 12 },
-  { x: 150,  y: 580,  z: -180, rx: -5,  ry: -14, rz: 3,  fs: 1.3, fa: 10 },
-  { x: -380, y: 680,  z: -260, rx: 3,   ry: 12,  rz: -5, fs: 1.4, fa: 9 },
+  { x: -380, y: -720, z: -200, rx: 1, ry: 2, rz: -1, fs: 0.8, fa: 4 },
+  { x: 350, y: -680, z: -280, rx: -1, ry: -2, rz: 1, fs: 1.0, fa: 5 },
+  { x: 50, y: -640, z: -100, rx: 1, ry: -1, rz: 1, fs: 1.2, fa: 3 },
+  { x: -420, y: -580, z: -180, rx: 2, ry: 2, rz: -2, fs: 1.5, fa: 6 },
+  { x: 400, y: -520, z: -150, rx: -2, ry: -2, rz: 1, fs: 0.9, fa: 4 },
+  { x: -150, y: -480, z: -250, rx: 1, ry: -2, rz: -1, fs: 1.1, fa: 5 },
+  { x: 220, y: -420, z: -320, rx: -1, ry: 2, rz: -1, fs: 1.1, fa: 4 },
+  { x: -430, y: -350, z: -120, rx: 1, ry: 2, rz: -1, fs: 0.7, fa: 6 },
+  { x: 380, y: -280, z: -220, rx: -1, ry: -2, rz: 2, fs: 1.0, fa: 3 },
+  { x: -10, y: -220, z: -50, rx: 0, ry: 1, rz: -1, fs: 1.2, fa: 4 },
+  { x: -400, y: -150, z: -300, rx: 2, ry: -1, rz: 1, fs: 0.9, fa: 5 },
+  { x: 150, y: -80, z: -180, rx: -1, ry: -2, rz: 1, fs: 1.3, fa: 4 },
+  { x: -380, y: 0, z: -260, rx: 1, ry: 2, rz: -2, fs: 1.4, fa: 6 },
+  { x: 420, y: 80, z: -210, rx: -1, ry: -1, rz: 1, fs: 1.1, fa: 4 },
+  { x: -120, y: 150, z: -320, rx: 2, ry: 2, rz: -1, fs: 0.8, fa: 5 },
+  { x: 300, y: 220, z: -150, rx: -1, ry: 2, rz: 1, fs: 1.2, fa: 3 },
+  { x: -440, y: 300, z: -200, rx: 2, ry: -2, rz: -1, fs: 1.0, fa: 6 },
+  { x: 180, y: 380, z: -280, rx: -1, ry: 2, rz: 2, fs: 1.3, fa: 4 },
+  { x: -350, y: 450, z: -240, rx: 1, ry: -1, rz: -2, fs: 1.5, fa: 5 },
+  { x: 410, y: 520, z: -180, rx: -1, ry: -2, rz: 1, fs: 0.9, fa: 4 },
+  { x: -200, y: 600, z: -220, rx: 1, ry: 1, rz: -1, fs: 1.1, fa: 5 },
+  { x: 100, y: 680, z: -120, rx: -1, ry: -1, rz: 1, fs: 1.0, fa: 4 },
+  { x: -400, y: 750, z: -180, rx: 1, ry: 2, rz: -2, fs: 1.2, fa: 5 },
+  { x: 350, y: -10, z: -350, rx: -1, ry: -1, rz: 1, fs: 1.1, fa: 4 },
+  { x: -50, y: 350, z: -280, rx: 1, ry: 1, rz: -1, fs: 1.2, fa: 4 },
+  { x: 250, y: -450, z: -200, rx: -1, ry: 1, rz: 1, fs: 1.0, fa: 5 },
+  { x: -280, y: -550, z: -150, rx: 1, ry: -1, rz: -1, fs: 1.1, fa: 4 },
+  { x: 430, y: 150, z: -300, rx: -1, ry: 2, rz: 1, fs: 0.9, fa: 5 },
+  { x: -100, y: -150, z: -220, rx: 1, ry: -1, rz: -1, fs: 1.1, fa: 4 },
+  { x: 120, y: 450, z: -180, rx: -1, ry: 1, rz: 1, fs: 1.2, fa: 4 },
 ];
 
 /* ── Starfield ── */
@@ -119,15 +137,34 @@ export const ScreenSaver: React.FC<{ onDismiss: () => void }> = ({ onDismiss }) 
   const [images, setImages] = useState<string[]>([]);
   const [batch, setBatch] = useState<number[]>([]);
   const [focusedSlot, setFocusedSlot] = useState(-1);
+  const [isReshuffling, setIsReshuffling] = useState(false);
   const shownRef = useRef<Set<number>>(new Set());
   const timerRef = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
 
-  useEffect(() => {
-    const load = async () => {
+  const refreshGallery = useCallback(async () => {
+    try {
       const { files } = await ipcRenderer.invoke('get-screensaver-info');
-      if (files && files.length > 0) setImages(files);
-    };
-    load();
+      if (!files || files.length === 0) return;
+
+      setImages(files);
+
+      const indices = Array.from({ length: files.length }, (_, i) => i);
+      for (let i = indices.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [indices[i], indices[j]] = [indices[j], indices[i]];
+      }
+
+      const nextBatch = indices.slice(0, Math.min(CFG.TOTAL_CARDS, indices.length));
+      setBatch(nextBatch);
+      shownRef.current = new Set();
+      setFocusedSlot(-1);
+    } catch (err) {
+      console.error('Failed to refresh gallery:', err);
+    }
+  }, []);
+
+  useEffect(() => {
+    refreshGallery();
     const dismiss = () => onDismiss();
     window.addEventListener('mousedown', dismiss);
     window.addEventListener('keydown', dismiss);
@@ -138,29 +175,26 @@ export const ScreenSaver: React.FC<{ onDismiss: () => void }> = ({ onDismiss }) 
       window.removeEventListener('touchstart', dismiss);
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [onDismiss]);
+  }, [onDismiss, refreshGallery]);
 
-  const shuffleBatch = useCallback(() => {
-    const indices = Array.from({ length: images.length }, (_, i) => i);
-    for (let i = indices.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [indices[i], indices[j]] = [indices[j], indices[i]];
-    }
-    setBatch(indices.slice(0, Math.min(CFG.TOTAL_CARDS, indices.length)));
-    shownRef.current = new Set();
-    setFocusedSlot(-1);
-  }, [images]);
-
-  useEffect(() => {
-    if (images.length > 0) shuffleBatch();
-  }, [images, shuffleBatch]);
+  // Removed redundant shuffle effect
 
   useEffect(() => {
     if (batch.length === 0) return;
     const cycle = () => {
+      if (isReshuffling) return;
       const available = Array.from({ length: Math.min(batch.length, CARD_SLOTS.length) }, (_, i) => i)
         .filter(i => !shownRef.current.has(i));
-      if (available.length === 0) { shuffleBatch(); return; }
+
+      if (available.length === 0) {
+        // Reshuffle sequence
+        setIsReshuffling(true);
+        timerRef.current = setTimeout(() => {
+          refreshGallery();
+        }, CFG.TRANSITION_MS);
+        return;
+      }
+
       const next = available[Math.floor(Math.random() * available.length)];
       shownRef.current.add(next);
       setFocusedSlot(next);
@@ -171,11 +205,32 @@ export const ScreenSaver: React.FC<{ onDismiss: () => void }> = ({ onDismiss }) 
     };
     timerRef.current = setTimeout(cycle, CFG.IDLE_MS);
     return () => { if (timerRef.current) clearTimeout(timerRef.current); };
-  }, [batch, shuffleBatch]);
+  }, [batch, refreshGallery, isReshuffling]);
+
+  // Handle fly-in after reshuffle
+  useEffect(() => {
+    if (!isReshuffling) return;
+    // Wait for the fly-out + a small buffer for batch update, then fly back in
+    const t = setTimeout(() => {
+      setIsReshuffling(false);
+    }, CFG.TRANSITION_MS + 200);
+    return () => clearTimeout(t);
+  }, [isReshuffling]);
 
   const getStyle = (slotIdx: number) => {
     const slot = CARD_SLOTS[slotIdx];
     const isFocused = slotIdx === focusedSlot;
+
+    if (isReshuffling) {
+      return {
+        // Fly towards camera and away from center
+        transform: `translate3d(${slot.x * 4}px, ${slot.y * 4}px, 600px) rotateX(${slot.rx * 3}deg) rotateY(${slot.ry * 3}deg) scale(2)`,
+        filter: 'blur(4px)',
+        opacity: 0,
+        zIndex: 1,
+        animation: 'none',
+      };
+    }
 
     if (isFocused) {
       return {
@@ -210,7 +265,7 @@ export const ScreenSaver: React.FC<{ onDismiss: () => void }> = ({ onDismiss }) 
     `).join('\n'), []);
 
   return (
-    <div className="fixed inset-0 z-[9999] overflow-hidden cursor-none" style={{ 
+    <div className="fixed inset-0 z-[9999] overflow-hidden cursor-none" style={{
       backgroundImage: "url('Result-Screen.jpg')",
       backgroundSize: 'cover',
       backgroundPosition: 'center'
