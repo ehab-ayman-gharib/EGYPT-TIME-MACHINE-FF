@@ -16,10 +16,9 @@ let mainWindow = null;
 
 /**
  * STATE MANAGEMENT FOR TEMPLATE ROTATION
- * Ensures templates are used in order and reset when switching eras.
+ * Tracks the last used template index per era to maintain rotation state across era switches.
  */
-let lastUsedEraPath = "";
-let lastUsedTemplateIndex = -1;
+let eraTemplateIndices = {};
 
 
 /**
@@ -356,11 +355,10 @@ ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath, 
                 let mappedFaces = [];
                 let finalFoundPath = "";
 
-                // 1. Sequential Era Reset & File Listing
-                if (foundPath !== lastUsedEraPath) {
-                    console.log(`🔄 [FaceFusion] Era changed from ${lastUsedEraPath} to ${foundPath}. Resetting rotation.`);
-                    lastUsedEraPath = foundPath;
-                    lastUsedTemplateIndex = -1;
+                // 1. Initialize era index tracking
+                if (typeof eraTemplateIndices[foundPath] === 'undefined') {
+                    console.log(`🔄 [FaceFusion] First time in era ${foundPath}. Initializing rotation.`);
+                    eraTemplateIndices[foundPath] = -1;
                 }
 
                 let validImages = [];
@@ -384,12 +382,13 @@ ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath, 
                 while (templateAttempts < maxTemplateAttempts) {
                     templateAttempts++;
                     
-                    // Increment and Wrap Index
-                    lastUsedTemplateIndex = (lastUsedTemplateIndex + 1) % validImages.length;
-                    const selectedImage = validImages[lastUsedTemplateIndex];
+                    // Increment and Wrap Index per era
+                    eraTemplateIndices[foundPath] = (eraTemplateIndices[foundPath] + 1) % validImages.length;
+                    let currentTemplateIndex = eraTemplateIndices[foundPath];
+                    const selectedImage = validImages[currentTemplateIndex];
                     let currentTryPath = path.join(foundPath, selectedImage);
 
-                    console.log(`⚙️ [FaceFusion] Rotation Step ${templateAttempts}: Using template index ${lastUsedTemplateIndex} (${selectedImage})`);
+                    console.log(`⚙️ [FaceFusion] Rotation Step ${templateAttempts}: Using template index ${currentTemplateIndex} (${selectedImage})`);
 
 
                     // 2. ASAR Protection & Normalization

@@ -9,8 +9,8 @@ const CFG = {
   RADIUS: 0.75,
   CARD_W: 0.22,
   CARD_H: 0.33,
-  X_OFFSET: -1.2,
-  Y_OFFSET: -0.5,
+  X_OFFSET: -1,
+  Y_OFFSET: 0.5,
   CORNER_R: 0.015,
   SPIN_SPEED: 0.5,
   FOCUS_Z_BOOST: 4.5,
@@ -67,6 +67,24 @@ const radialGlowTexture = (() => {
   return tex;
 })();
 
+const particleTexture = (() => {
+  const canvas = document.createElement('canvas');
+  canvas.width = 32;
+  canvas.height = 32;
+  const ctx = canvas.getContext('2d');
+  if (ctx) {
+    const gradient = ctx.createRadialGradient(16, 16, 0, 16, 16, 16);
+    gradient.addColorStop(0, 'rgba(252, 211, 77, 1)');
+    gradient.addColorStop(0.4, 'rgba(252, 211, 77, 0.8)');
+    gradient.addColorStop(1, 'rgba(252, 211, 77, 0)');
+    ctx.fillStyle = gradient;
+    ctx.fillRect(0, 0, 32, 32);
+  }
+  const tex = new THREE.CanvasTexture(canvas);
+  tex.needsUpdate = true;
+  return tex;
+})();
+
 const CardGlow: React.FC<{ opacity: number }> = ({ opacity }) => {
   if (opacity <= 0.01) return null;
 
@@ -74,12 +92,12 @@ const CardGlow: React.FC<{ opacity: number }> = ({ opacity }) => {
     <mesh position={[0, 0, -0.01]}>
       {/* Use a plane slightly larger than the card to act as a soft light source behind it */}
       <planeGeometry args={[CFG.CARD_W * 1.8, CFG.CARD_H * 1.5]} />
-      <meshBasicMaterial 
-        map={radialGlowTexture} 
-        transparent 
-        opacity={opacity * 0.8} 
-        depthWrite={false} 
-        blending={THREE.AdditiveBlending} 
+      <meshBasicMaterial
+        map={radialGlowTexture}
+        transparent
+        opacity={opacity * 0.8}
+        depthWrite={false}
+        blending={THREE.AdditiveBlending}
       />
     </mesh>
   );
@@ -100,9 +118,11 @@ const CardParticles: React.FC<{ active: boolean }> = ({ active }) => {
     g.setAttribute('position', new THREE.BufferAttribute(positions, 3));
     const m = new THREE.PointsMaterial({
       color: '#fcd34d',
-      size: 0.02,
+      size: 0.03, // Slightly larger to accommodate the soft edge
+      map: particleTexture,
       transparent: true,
-      opacity: 0.6,
+      opacity: 0.8,
+      depthWrite: false,
       blending: THREE.AdditiveBlending
     });
     return [g, m];
@@ -151,7 +171,7 @@ const Card: React.FC<{
     if (!ref.current) return;
     const isFocused = focusSlotRef.current === slotIndex;
     const fp = isFocused ? fpRef.current : 0;
-    
+
     // Lock the angle during focus to prevent extra spinning
     const activeAngle = (isFocused && fp > 0) ? lockedAngleRef.current : angleRef.current;
     const angle = slotAngle + activeAngle;
@@ -420,14 +440,20 @@ export const ScreenSaver: React.FC<{ onDismiss: () => void }> = ({ onDismiss }) 
   return (
     <div
       className="fixed inset-0 z-[9999] bg-slate-900 overflow-hidden cursor-none"
-      style={{
-        backgroundImage: `url('Isis-ScreenSaver.jpeg')`,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-      }}
     >
-      <Canvas
-        camera={{ position: [0, 0, 7], fov: 50 }}
+      {/* BACKGROUND VIDEO LAYER */}
+      <video
+        autoPlay
+        loop
+        muted={true}
+        playsInline
+        className="absolute inset-0 w-full h-full object-cover z-0"
+        src="./Isis-Screen-Saver.mp4"
+      />
+
+      <div className="absolute inset-0 z-10">
+        <Canvas
+          camera={{ position: [0, 0, 7], fov: 50 }}
         gl={{ antialias: true, alpha: true }}
         style={{ background: 'transparent' }}
       >
@@ -444,6 +470,7 @@ export const ScreenSaver: React.FC<{ onDismiss: () => void }> = ({ onDismiss }) 
         <div className="text-white/15 text-3xl font-serif italic tracking-wider">
           Egypt Time Machine
         </div>
+      </div>
       </div>
     </div>
   );
