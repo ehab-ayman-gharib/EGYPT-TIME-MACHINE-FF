@@ -73,7 +73,11 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({ imageSrc, prompt, er
         const formData = new FormData();
         formData.append('image', blob, 'egypt-time-machine.png');
         formData.append('folder', 'kemet-mirror');
-        formData.append('metadata', JSON.stringify({ event: 'Time Machine Photobooth', era: era.name }));
+        formData.append('metadata', JSON.stringify({
+          event: 'Time Machine Photobooth',
+          era: era.name,
+          prompt: prompt
+        }));
 
         const uploadRes = await fetch('https://qr-web-api.vercel.app/upload', { method: 'POST', body: formData });
         const data = await uploadRes.json();

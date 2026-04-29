@@ -174,12 +174,10 @@ const App: React.FC = () => {
 
   useEffect(() => {
     const checkIdle = () => {
-      // Don't trigger screensaver if already in screensaver or on the Result screen
-      if (currentScreen === AppScreen.SCREEN_SAVER || currentScreen === AppScreen.RESULT) {
-        // Keep updating last activity while on Result screen to prevent immediate trigger when leaving
-        if (currentScreen === AppScreen.RESULT) {
-          localStorage.setItem('last_activity', Date.now().toString());
-        }
+      // Only count down for screensaver if on Splash or Camera screens
+      if (currentScreen !== AppScreen.SPLASH && currentScreen !== AppScreen.CAMERA) {
+        // Keep updating last activity while on other screens to prevent immediate trigger when leaving
+        localStorage.setItem('last_activity', Date.now().toString());
         return;
       }
 
