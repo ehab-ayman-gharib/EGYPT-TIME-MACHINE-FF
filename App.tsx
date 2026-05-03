@@ -18,7 +18,7 @@ const IDLE_TIMEOUT = 30000; // 30 seconds
  */
 const App: React.FC = () => {
   // Global State Management
-  const [currentScreen, setCurrentScreen] = useState<AppScreen>(AppScreen.SPLASH); // Tracks the active screen
+  const [currentScreen, setCurrentScreen] = useState<AppScreen>(AppScreen.SCREEN_SAVER); // Tracks the active screen
   const [selectedEra, setSelectedEra] = useState<EraData | null>(null);            // Stores the user's chosen era
   const [generatedImage, setGeneratedImage] = useState<string | null>(null);       // Holds the final processing result image
   const [generatedPrompt, setGeneratedPrompt] = useState<string>('');              // Stores the prompt used or generated description
@@ -147,7 +147,14 @@ const App: React.FC = () => {
           ) : <LoadingScreen />
         );
       case AppScreen.SCREEN_SAVER:
-        return <ScreenSaver onDismiss={() => setCurrentScreen(AppScreen.SPLASH)} />;
+        return (
+          <ScreenSaver 
+            onDismiss={() => {
+              setIsMuted(false);
+              setCurrentScreen(AppScreen.SPLASH);
+            }} 
+          />
+        );
       default:
         return <SplashScreen onSelectEra={handleEraSelect} isMuted={isMuted} setIsMuted={setIsMuted} />;
     }

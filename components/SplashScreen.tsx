@@ -25,7 +25,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onSelectEra, isMuted
   const mountRef = useRef<HTMLDivElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isExiting, setIsExiting] = useState(false);     // Triggers the wash-out animation
-  const [hasStarted, setHasStarted] = useState(false);   // Transitions from idle to welcome
+  const [hasStarted, setHasStarted] = useState(true);   // Starts directly in welcome phase
   const isExitingRef = useRef(false);
 
   /**

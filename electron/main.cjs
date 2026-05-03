@@ -264,9 +264,9 @@ ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath, 
     
     if (!activeCwd) {
         if (app.isPackaged) {
-            activeCwd = path.join(process.resourcesPath, 'app.asar.unpacked', 'dist', 'facefusion');
+            activeCwd = path.join(process.resourcesPath, 'facefusion');
         } else {
-            activeCwd = path.join(__dirname, '../public/facefusion');
+            activeCwd = path.join(__dirname, '../facefusion');
         }
     }
     const isWin = process.platform === 'win32';

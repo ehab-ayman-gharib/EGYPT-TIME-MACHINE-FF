@@ -8,7 +8,7 @@ echo "Starting FaceFusion provisioning..."
 # 1. Absolute Path Resolution
 # Get the absolute path of the directory containing this script
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-TARGET_DIR="$SCRIPT_DIR/public/facefusion"
+TARGET_DIR="$SCRIPT_DIR/facefusion"
 
 # Move to the target directory
 if [ -d "$TARGET_DIR" ]; then

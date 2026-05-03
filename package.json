@@ -50,21 +50,29 @@
     "asar": true,
     "asarUnpack": [
       "**/templates/**/*",
-      "**/node_modules/sharp/**/*",
-      "**/facefusion/**/*"
+      "**/node_modules/sharp/**/*"
     ],
     "files": [
       "dist/**/*",
-      "electron/**/*",
-      "!**/facefusion/.git",
-      "!**/facefusion/**/__pycache__",
-      "!**/facefusion/.github",
-      "!**/facefusion/tests"
+      "electron/**/*"
     ],
     "extraResources": [
       {
         "from": "booth-config.json",
         "to": "booth-config.json"
+      },
+      {
+        "from": "facefusion",
+        "to": "facefusion",
+        "filter": [
+          "**/*",
+          "!venv",
+          "!venv/**/*",
+          "!.git",
+          "!**/__pycache__",
+          "!.github",
+          "!tests"
+        ]
       }
     ],
     "win": {
