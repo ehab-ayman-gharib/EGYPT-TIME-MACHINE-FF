@@ -608,39 +608,39 @@ ipcMain.handle('print-image', async (event, { imageSrc, printerName }) => {
     });
 });
 
-// D. SCREEN SAVER SERVICE
-const SCREEN_SAVER_DIR = path.join(app.isPackaged ? process.resourcesPath : path.join(__dirname, '..'), 'Screen-Saver');
+// D. FEATURED ASSETS SERVICE
+const FEATURED_DIR = path.join(app.isPackaged ? process.resourcesPath : path.join(__dirname, '..'), 'Featured');
 
 // Ensure folder exists on startup
-if (!fs.existsSync(SCREEN_SAVER_DIR)) {
+if (!fs.existsSync(FEATURED_DIR)) {
     try {
-        fs.mkdirSync(SCREEN_SAVER_DIR, { recursive: true });
-        console.log('[ScreenSaver] Created directory:', SCREEN_SAVER_DIR);
+        fs.mkdirSync(FEATURED_DIR, { recursive: true });
+        console.log('[Featured] Created directory:', FEATURED_DIR);
     } catch (err) {
-        console.error('[ScreenSaver] Failed to create directory:', err);
+        console.error('[Featured] Failed to create directory:', err);
     }
 }
 
-ipcMain.handle('get-screensaver-info', async () => {
+ipcMain.handle('get-featured-info', async () => {
     try {
-        if (!fs.existsSync(SCREEN_SAVER_DIR)) return { count: 0, files: [] };
-        const files = fs.readdirSync(SCREEN_SAVER_DIR).filter(f => /\.(jpg|jpeg|png|webp|gif)$/i.test(f));
+        if (!fs.existsSync(FEATURED_DIR)) return { count: 0, files: [] };
+        const files = fs.readdirSync(FEATURED_DIR).filter(f => /\.(jpg|jpeg|png|webp|gif)$/i.test(f));
         return { 
             count: files.length, 
-            files: files.map(f => path.join(SCREEN_SAVER_DIR, f)) 
+            files: files.map(f => path.join(FEATURED_DIR, f)) 
         };
     } catch (err) {
-        console.error('[ScreenSaver] Error reading info:', err);
+        console.error('[Featured] Error reading info:', err);
         return { count: 0, files: [] };
     }
 });
 
-ipcMain.handle('sync-screensaver-images', async (event, images) => {
+ipcMain.handle('sync-featured-images', async (event, images) => {
     // 'images' is an array of { id: string, url: string }
-    console.log(`[ScreenSaver] Starting differential sync for ${images.length} images...`);
+    console.log(`[Featured] Starting differential sync for ${images.length} images...`);
     
     try {
-        const existingFiles = fs.readdirSync(SCREEN_SAVER_DIR);
+        const existingFiles = fs.readdirSync(FEATURED_DIR);
         const remoteIds = images.map(img => `${img.id.replace(/[\/\\]/g, '_')}.jpg`);
         
         // 1. Identify orphans (files locally but not on remote)
@@ -652,19 +652,19 @@ ipcMain.handle('sync-screensaver-images', async (event, images) => {
             return !existingFiles.includes(fileName);
         });
 
-        console.log(`[ScreenSaver] Sync Plan: ${toDownload.length} to download, ${toDelete.length} to delete, ${images.length - toDownload.length} already up to date.`);
+        console.log(`[Featured] Sync Plan: ${toDownload.length} to download, ${toDelete.length} to delete, ${images.length - toDownload.length} already up to date.`);
 
         if (toDownload.length === 0 && toDelete.length === 0) {
-            console.log('[ScreenSaver] Everything is already in sync.');
+            console.log('[Featured] Everything is already in sync.');
             return { success: true, count: images.length };
         }
 
         // 3. Perform deletions
         for (const file of toDelete) {
             try {
-                fs.unlinkSync(path.join(SCREEN_SAVER_DIR, file));
+                fs.unlinkSync(path.join(FEATURED_DIR, file));
             } catch (e) {
-                console.warn(`[ScreenSaver] Failed to delete orphan ${file}:`, e.message);
+                console.warn(`[Featured] Failed to delete orphan ${file}:`, e.message);
             }
         }
 
@@ -672,7 +672,7 @@ ipcMain.handle('sync-screensaver-images', async (event, images) => {
         const download = (img) => {
             return new Promise((resolve, reject) => {
                 const fileName = `${img.id.replace(/[\/\\]/g, '_')}.jpg`;
-                const filePath = path.join(SCREEN_SAVER_DIR, fileName);
+                const filePath = path.join(FEATURED_DIR, fileName);
                 const file = fs.createWriteStream(filePath);
                 
                 https.get(img.url, (response) => {
@@ -695,11 +695,11 @@ ipcMain.handle('sync-screensaver-images', async (event, images) => {
         const results = await Promise.allSettled(toDownload.map(img => download(img)));
         const successful = results.filter(r => r.status === 'fulfilled');
         
-        console.log(`[ScreenSaver] Sync complete. ${successful.length} new images downloaded.`);
+        console.log(`[Featured] Sync complete. ${successful.length} new images downloaded.`);
         return { success: true, count: images.length };
 
     } catch (err) {
-        console.error('[ScreenSaver] Differential sync failed:', err);
+        console.error('[Featured] Differential sync failed:', err);
         return { success: false, error: err.message };
     }
 });
@@ -709,7 +709,7 @@ ipcMain.handle('get-cached-video', async (event, url) => {
     const hash = crypto.createHash('md5').update(url).digest('hex');
     const ext = path.extname(new URL(url).pathname) || '.mp4';
     const fileName = `video_${hash}${ext}`;
-    const filePath = path.join(SCREEN_SAVER_DIR, fileName);
+    const filePath = path.join(FEATURED_DIR, fileName);
 
     if (fs.existsSync(filePath)) {
         console.log(`[VideoCache] Cache hit: ${fileName}`);
@@ -719,7 +719,7 @@ ipcMain.handle('get-cached-video', async (event, url) => {
     console.log(`[VideoCache] Cache miss. Downloading: ${url}`);
     
     // Ensure directory exists (already done in startup, but safe)
-    if (!fs.existsSync(SCREEN_SAVER_DIR)) fs.mkdirSync(SCREEN_SAVER_DIR, { recursive: true });
+    if (!fs.existsSync(FEATURED_DIR)) fs.mkdirSync(FEATURED_DIR, { recursive: true });
 
     return new Promise((resolve) => {
         const file = fs.createWriteStream(filePath);

@@ -10,7 +10,7 @@ const CFG = {
   CARD_W: 0.22,
   CARD_H: 0.33,
   X_OFFSET: -1,
-  Y_OFFSET: 0.5,
+  Y_OFFSET: 0.7,
   CORNER_R: 0.015,
   SPIN_SPEED: 0.5,
   FOCUS_Z_BOOST: 4.5,
@@ -419,15 +419,15 @@ const CornerParticles: React.FC = () => {
   );
 };
 
-/* ── Exported ScreenSaver ── */
-export const ScreenSaver: React.FC<{ onDismiss: () => void }> = ({ onDismiss }) => {
+/* ── Exported FeaturedGallery ── */
+export const FeaturedGallery: React.FC<{ onDismiss: () => void }> = ({ onDismiss }) => {
   const [images, setImages] = useState<string[]>([]);
   const [videoSrc, setVideoSrc] = useState<string>(VIDEO_URL);
 
   useEffect(() => {
     const loadAssets = async () => {
       // Load Images
-      const { files } = await ipcRenderer.invoke('get-screensaver-info');
+      const { files } = await ipcRenderer.invoke('get-featured-info');
       if (files && files.length > 0) setImages(files);
 
       // Cache and Load Video
@@ -466,33 +466,33 @@ export const ScreenSaver: React.FC<{ onDismiss: () => void }> = ({ onDismiss }) 
 
       {/* TOP LOGO/TITLE */}
       <div className="absolute top-12 left-1/2 -translate-x-1/2 z-20 w-[450px] pointer-events-none">
-        <img 
-          src="./Photobooth-Title.png" 
-          alt="Photobooth" 
-          className="w-full h-auto drop-shadow-[0_0_30px_rgba(0,0,0,0.6)]" 
+        <img
+          src="./Photobooth-Title.png"
+          alt="Photobooth"
+          className="w-full h-auto drop-shadow-[0_0_30px_rgba(0,0,0,0.6)]"
         />
       </div>
 
       <div className="absolute inset-0 z-10">
         <Canvas
           camera={{ position: [0, 0, 7], fov: 50 }}
-        gl={{ antialias: true, alpha: true }}
-        style={{ background: 'transparent' }}
-      >
-        {images.length > 0 && <Scene images={images} />}
-      </Canvas>
+          gl={{ antialias: true, alpha: true }}
+          style={{ background: 'transparent' }}
+        >
+          {images.length > 0 && <Scene images={images} />}
+        </Canvas>
 
-      {/* Corner burst particles */}
-      <CornerParticles />
+        {/* Corner burst particles */}
+        <CornerParticles />
 
-      <div className="absolute bottom-8 left-0 right-0 flex flex-col items-center gap-2 pointer-events-none">
-        <div className="text-amber-200/30 text-lg tracking-[0.5em] uppercase font-light">
-          Touch to Start
+        <div className="absolute bottom-8 left-0 right-0 flex flex-col items-center gap-2 pointer-events-none">
+          <div className="text-amber-200/30 text-lg tracking-[0.5em] uppercase font-light">
+            Touch to Start
+          </div>
+          <div className="text-white/15 text-3xl font-serif italic tracking-wider">
+            Egypt Time Machine
+          </div>
         </div>
-        <div className="text-white/15 text-3xl font-serif italic tracking-wider">
-          Egypt Time Machine
-        </div>
-      </div>
       </div>
     </div>
   );

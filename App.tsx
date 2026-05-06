@@ -6,7 +6,7 @@ import { LoadingScreen } from './components/LoadingScreen';
 import { ResultScreen } from './components/ResultScreen';
 import { transformWithFaceFusion } from './services/faceFusionService';
 import { applyEraStamp } from './services/stampService';
-import { ScreenSaver } from './components/ScreenSaver';
+import { FeaturedGallery } from './components/FeaturedGallery';
 
 const { ipcRenderer } = window.require('electron');
 const CLOUDINARY_CLOUD_NAME = "dniredeim"; // Default based on project context, update if different
@@ -148,7 +148,7 @@ const App: React.FC = () => {
         );
       case AppScreen.SCREEN_SAVER:
         return (
-          <ScreenSaver 
+          <FeaturedGallery 
             onDismiss={() => {
               setIsMuted(false);
               setCurrentScreen(AppScreen.SPLASH);
@@ -203,16 +203,16 @@ const App: React.FC = () => {
 
   /**
    * CLOUDINARY SYNC LOGIC
-   * Syncs the local Screen-Saver folder with tagged images from Cloudinary.
+   * Syncs the local Featured folder with tagged images from Cloudinary.
    */
   useEffect(() => {
-    const syncScreenSaver = async () => {
+    const syncFeaturedAssets = async () => {
       try {
-        console.log('[Cloudinary] Checking for screen saver updates...');
+        console.log('[Cloudinary] Checking for featured asset updates...');
 
         // 1. Fetch tagged images list from Cloudinary
         // Note: The client-side list API must be enabled in Cloudinary settings
-        const response = await fetch(`https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/list/Screen-Saver.json`);
+        const response = await fetch(`https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/list/Featured.json`);
 
         if (response.status === 401) {
           throw new Error('Unauthorized: Please enable "Resource List" in your Cloudinary Security settings.');
@@ -227,7 +227,7 @@ const App: React.FC = () => {
         const cloudinaryCount = cloudinaryImages.length;
 
         // 2. Check local folder count
-        const { count: localCount } = await ipcRenderer.invoke('get-screensaver-info');
+        const { count: localCount } = await ipcRenderer.invoke('get-featured-info');
 
         if (cloudinaryCount > 0) {
           setIsSyncing(true);
@@ -237,7 +237,7 @@ const App: React.FC = () => {
             url: `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload/v${img.version}/${img.public_id}.${img.format}`
           }));
 
-          const result = await ipcRenderer.invoke('sync-screensaver-images', imageData);
+          const result = await ipcRenderer.invoke('sync-featured-images', imageData);
           if (result.success) {
             console.log(`[Cloudinary] Differential sync complete. Total images: ${result.count}`);
           } else {
@@ -245,7 +245,7 @@ const App: React.FC = () => {
           }
           setIsSyncing(false);
         } else {
-          console.log('[Cloudinary] No images found with tag "Screen-Saver".');
+          console.log('[Cloudinary] No images found with tag "Featured".');
         }
       } catch (err: any) {
         console.warn('[Cloudinary] Sync skipped:', err.message || err);
@@ -256,10 +256,10 @@ const App: React.FC = () => {
       }
     };
 
-    syncScreenSaver();
+    syncFeaturedAssets();
   }, []);
 
-  // Initialize idle timer on mount to prevent immediate screensaver trigger
+  // Initialize idle timer on mount to prevent immediate Featured screen trigger
   useEffect(() => {
     localStorage.setItem('last_activity', Date.now().toString());
   }, []);
