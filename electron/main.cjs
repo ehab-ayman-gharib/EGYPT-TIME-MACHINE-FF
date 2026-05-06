@@ -704,6 +704,45 @@ ipcMain.handle('sync-screensaver-images', async (event, images) => {
     }
 });
 
+ipcMain.handle('get-cached-video', async (event, url) => {
+    const crypto = require('crypto');
+    const hash = crypto.createHash('md5').update(url).digest('hex');
+    const ext = path.extname(new URL(url).pathname) || '.mp4';
+    const fileName = `video_${hash}${ext}`;
+    const filePath = path.join(SCREEN_SAVER_DIR, fileName);
+
+    if (fs.existsSync(filePath)) {
+        console.log(`[VideoCache] Cache hit: ${fileName}`);
+        return filePath;
+    }
+
+    console.log(`[VideoCache] Cache miss. Downloading: ${url}`);
+    
+    // Ensure directory exists (already done in startup, but safe)
+    if (!fs.existsSync(SCREEN_SAVER_DIR)) fs.mkdirSync(SCREEN_SAVER_DIR, { recursive: true });
+
+    return new Promise((resolve) => {
+        const file = fs.createWriteStream(filePath);
+        https.get(url, (response) => {
+            if (response.statusCode !== 200) {
+                console.error(`[VideoCache] Download failed with status ${response.statusCode}`);
+                resolve(url);
+                return;
+            }
+            response.pipe(file);
+            file.on('finish', () => {
+                file.close();
+                console.log(`[VideoCache] Download complete: ${fileName}`);
+                resolve(filePath);
+            });
+        }).on('error', (err) => {
+            console.error('[VideoCache] Download error:', err);
+            if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+            resolve(url); // Fallback to streaming
+        });
+    });
+});
+
 
 /**
  * 5. APP LIFECYCLE

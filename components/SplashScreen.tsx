@@ -15,6 +15,10 @@ import { EraData, EraId } from '../types';
 import { ERAS } from '../constants';
 import { Camera } from 'lucide-react';
 
+const { ipcRenderer } = window.require('electron');
+const WELCOME_VIDEO_URL = 'https://res.cloudinary.com/dniredeim/video/upload/v1778078166/isis_talk_2_emjmhw.mp4';
+
+
 interface SplashScreenProps {
   onSelectEra: (era: EraData) => void;
   isMuted: boolean;
@@ -26,6 +30,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onSelectEra, isMuted
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isExiting, setIsExiting] = useState(false);     // Triggers the wash-out animation
   const [hasStarted, setHasStarted] = useState(true);   // Starts directly in welcome phase
+  const [videoSrc, setVideoSrc] = useState(WELCOME_VIDEO_URL);
+
+
+
   const isExitingRef = useRef(false);
 
   /**
@@ -66,7 +74,22 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onSelectEra, isMuted
   };
 
   /**
+   * CACHE REMOTE ASSETS
+   */
+  useEffect(() => {
+    const cacheAssets = async () => {
+      const cachedPath = await ipcRenderer.invoke('get-cached-video', WELCOME_VIDEO_URL);
+      if (cachedPath) {
+        const safePath = cachedPath.startsWith('http') ? cachedPath : `file:///${cachedPath.replace(/\\/g, '/')}`;
+        setVideoSrc(safePath);
+      }
+    };
+    cacheAssets();
+  }, []);
+
+  /**
    * THREE.JS BACKGROUND EFFECTS
+
    * Renders a 3D particle field that reacts to the exit state.
    */
   useEffect(() => {
@@ -181,14 +204,27 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onSelectEra, isMuted
         className={`absolute inset-0 transition-all duration-[1800ms] ease-in-out ${isExiting ? 'opacity-0 scale-110 blur-2xl' : 'opacity-100 scale-100'}`}
       >
         <video
-          key={hasStarted ? 'welcome' : 'idle'}
+          key={videoSrc}
           ref={videoRef}
           autoPlay
           loop
           muted={isMuted}
           playsInline
           className="w-full h-full object-cover"
-          src={hasStarted ? "./IsisV1_Welcome_01.mp4" : "./isis_test.mp4"}
+          src={videoSrc}
+        />
+      </div>
+
+      {/* TOP LOGO/TITLE */}
+      <div 
+        className={`absolute top-12 left-1/2 -translate-x-1/2 z-50 w-[450px] pointer-events-none transition-all duration-[1000ms] ease-in-out ${
+          isExiting ? 'opacity-0 -translate-y-10' : 'opacity-100'
+        }`}
+      >
+        <img 
+          src="./Photobooth-Title.png" 
+          alt="Photobooth" 
+          className="w-full h-auto drop-shadow-[0_0_30px_rgba(0,0,0,0.6)]" 
         />
       </div>
 

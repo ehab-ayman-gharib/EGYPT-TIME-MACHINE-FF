@@ -21,6 +21,9 @@ const CFG = {
   IDLE_SPIN_MS: 1500,
 };
 
+const VIDEO_URL = 'https://res.cloudinary.com/dniredeim/video/upload/v1778078092/Intro_rz8mvx.mp4';
+
+
 type Phase = 'spinning' | 'zoom-in' | 'hold' | 'zoom-out';
 
 function makeRoundedRectGeo(w: number, h: number, r: number) {
@@ -419,13 +422,22 @@ const CornerParticles: React.FC = () => {
 /* ── Exported ScreenSaver ── */
 export const ScreenSaver: React.FC<{ onDismiss: () => void }> = ({ onDismiss }) => {
   const [images, setImages] = useState<string[]>([]);
+  const [videoSrc, setVideoSrc] = useState<string>(VIDEO_URL);
 
   useEffect(() => {
-    const loadImages = async () => {
+    const loadAssets = async () => {
+      // Load Images
       const { files } = await ipcRenderer.invoke('get-screensaver-info');
       if (files && files.length > 0) setImages(files);
+
+      // Cache and Load Video
+      const cachedPath = await ipcRenderer.invoke('get-cached-video', VIDEO_URL);
+      if (cachedPath) {
+        const safePath = cachedPath.startsWith('http') ? cachedPath : `file:///${cachedPath.replace(/\\/g, '/')}`;
+        setVideoSrc(safePath);
+      }
     };
-    loadImages();
+    loadAssets();
     const handleInteraction = () => onDismiss();
     window.addEventListener('mousedown', handleInteraction);
     window.addEventListener('keydown', handleInteraction);
@@ -443,13 +455,23 @@ export const ScreenSaver: React.FC<{ onDismiss: () => void }> = ({ onDismiss }) 
     >
       {/* BACKGROUND VIDEO LAYER */}
       <video
+        key={videoSrc}
         autoPlay
         loop
         muted={true}
         playsInline
         className="absolute inset-0 w-full h-full object-cover z-0"
-        src="./Isis-Screen-Saver.mp4"
+        src={videoSrc}
       />
+
+      {/* TOP LOGO/TITLE */}
+      <div className="absolute top-12 left-1/2 -translate-x-1/2 z-20 w-[450px] pointer-events-none">
+        <img 
+          src="./Photobooth-Title.png" 
+          alt="Photobooth" 
+          className="w-full h-auto drop-shadow-[0_0_30px_rgba(0,0,0,0.6)]" 
+        />
+      </div>
 
       <div className="absolute inset-0 z-10">
         <Canvas
