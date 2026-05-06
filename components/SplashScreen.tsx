@@ -31,6 +31,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onSelectEra, isMuted
   const [isExiting, setIsExiting] = useState(false);     // Triggers the wash-out animation
   const [hasStarted, setHasStarted] = useState(true);   // Starts directly in welcome phase
   const [videoSrc, setVideoSrc] = useState(WELCOME_VIDEO_URL);
+  const [pendingVideoSrc, setPendingVideoSrc] = useState<string | null>(null);
+
 
 
 
@@ -74,18 +76,40 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onSelectEra, isMuted
   };
 
   /**
+   * Handle the end of a video loop.
+   * If a cached version is pending, we swap it now to avoid glitches.
+   */
+  const handleVideoEnded = () => {
+    if (pendingVideoSrc) {
+      console.log("[SplashScreen] Swapping to cached video source");
+      setVideoSrc(pendingVideoSrc);
+      setPendingVideoSrc(null);
+    }
+  };
+
+
+  /**
    * CACHE REMOTE ASSETS
    */
   useEffect(() => {
     const cacheAssets = async () => {
-      const cachedPath = await ipcRenderer.invoke('get-cached-video', WELCOME_VIDEO_URL);
-      if (cachedPath) {
-        const safePath = cachedPath.startsWith('http') ? cachedPath : `file:///${cachedPath.replace(/\\/g, '/')}`;
-        setVideoSrc(safePath);
+      try {
+        const cachedPath = await ipcRenderer.invoke('get-cached-video', WELCOME_VIDEO_URL);
+        if (cachedPath) {
+          const safePath = cachedPath.startsWith('http') ? cachedPath : `file:///${cachedPath.replace(/\\/g, '/')}`;
+          
+          // Only queue if it's actually a different source (e.g. switching from remote to local)
+          if (safePath !== videoSrc) {
+            setPendingVideoSrc(safePath);
+          }
+        }
+      } catch (err) {
+        console.error("[SplashScreen] Caching error:", err);
       }
     };
     cacheAssets();
   }, []);
+
 
   /**
    * THREE.JS BACKGROUND EFFECTS
@@ -207,12 +231,15 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onSelectEra, isMuted
           key={videoSrc}
           ref={videoRef}
           autoPlay
-          loop
+          // If we have a pending cached video, disable native loop so we can catch 'onEnded' and swap
+          loop={!pendingVideoSrc}
+          onEnded={handleVideoEnded}
           muted={isMuted}
           playsInline
           className="w-full h-full object-cover"
           src={videoSrc}
         />
+
       </div>
 
       {/* TOP LOGO/TITLE */}
