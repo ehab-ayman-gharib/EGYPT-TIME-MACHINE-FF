@@ -610,6 +610,7 @@ ipcMain.handle('print-image', async (event, { imageSrc, printerName }) => {
 
 // D. FEATURED ASSETS SERVICE
 const FEATURED_DIR = path.join(app.isPackaged ? process.resourcesPath : path.join(__dirname, '..'), 'Featured');
+const VIDEO_CACHE_DIR = path.join(app.isPackaged ? process.resourcesPath : path.join(__dirname, '..'), 'VideoCache');
 
 // Ensure folder exists on startup
 if (!fs.existsSync(FEATURED_DIR)) {
@@ -618,6 +619,16 @@ if (!fs.existsSync(FEATURED_DIR)) {
         console.log('[Featured] Created directory:', FEATURED_DIR);
     } catch (err) {
         console.error('[Featured] Failed to create directory:', err);
+    }
+}
+
+// Ensure Video Cache folder exists
+if (!fs.existsSync(VIDEO_CACHE_DIR)) {
+    try {
+        fs.mkdirSync(VIDEO_CACHE_DIR, { recursive: true });
+        console.log('[VideoCache] Created directory:', VIDEO_CACHE_DIR);
+    } catch (err) {
+        console.error('[VideoCache] Failed to create directory:', err);
     }
 }
 
@@ -709,7 +720,7 @@ ipcMain.handle('get-cached-video', async (event, url) => {
     const hash = crypto.createHash('md5').update(url).digest('hex');
     const ext = path.extname(new URL(url).pathname) || '.mp4';
     const fileName = `video_${hash}${ext}`;
-    const filePath = path.join(FEATURED_DIR, fileName);
+    const filePath = path.join(VIDEO_CACHE_DIR, fileName);
 
     if (fs.existsSync(filePath)) {
         console.log(`[VideoCache] Cache hit: ${fileName}`);
@@ -718,8 +729,8 @@ ipcMain.handle('get-cached-video', async (event, url) => {
 
     console.log(`[VideoCache] Cache miss. Downloading: ${url}`);
     
-    // Ensure directory exists (already done in startup, but safe)
-    if (!fs.existsSync(FEATURED_DIR)) fs.mkdirSync(FEATURED_DIR, { recursive: true });
+    // Ensure directory exists
+    if (!fs.existsSync(VIDEO_CACHE_DIR)) fs.mkdirSync(VIDEO_CACHE_DIR, { recursive: true });
 
     return new Promise((resolve) => {
         const file = fs.createWriteStream(filePath);

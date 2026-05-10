@@ -201,14 +201,17 @@ const App: React.FC = () => {
     return () => clearInterval(interval);
   }, [currentScreen]);
 
+const CLOUDINARY_PROJECT_FOLDER = "kemet-mirror"; // Cloudinary folder name
+
   /**
    * CLOUDINARY SYNC LOGIC
    * Syncs the local Featured folder with tagged images from Cloudinary.
+   * Only pulls images belonging to the specific project folder.
    */
   useEffect(() => {
     const syncFeaturedAssets = async () => {
       try {
-        console.log('[Cloudinary] Checking for featured asset updates...');
+        console.log(`[Cloudinary] Syncing featured assets for project: ${CLOUDINARY_PROJECT_FOLDER}...`);
 
         // 1. Fetch tagged images list from Cloudinary
         // Note: The client-side list API must be enabled in Cloudinary settings
@@ -219,40 +222,45 @@ const App: React.FC = () => {
         }
 
         if (!response.ok) {
+          if (response.status === 404) {
+            console.log('[Cloudinary] No images found with tag "Featured". Clearing local cache.');
+            await ipcRenderer.invoke('sync-featured-images', []);
+            return;
+          }
           throw new Error(`Cloudinary list API error: ${response.status} ${response.statusText}`);
         }
 
         const data = await response.json();
-        const cloudinaryImages = data.resources || [];
-        const cloudinaryCount = cloudinaryImages.length;
+        const allResources = data.resources || [];
 
-        // 2. Check local folder count
-        const { count: localCount } = await ipcRenderer.invoke('get-featured-info');
+        // 2. FILTER: Only sync images that belong to this project's folder
+        const projectImages = allResources.filter((img: any) => 
+          img.public_id.startsWith(`${CLOUDINARY_PROJECT_FOLDER}/`)
+        );
 
-        if (cloudinaryCount > 0) {
-          setIsSyncing(true);
+        console.log(`[Cloudinary] Found ${allResources.length} total featured images, ${projectImages.length} for this project.`);
 
-          const imageData = cloudinaryImages.map((img: any) => ({
-            id: img.public_id,
-            url: `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload/v${img.version}/${img.public_id}.${img.format}`
-          }));
+        setIsSyncing(true);
 
-          const result = await ipcRenderer.invoke('sync-featured-images', imageData);
-          if (result.success) {
-            console.log(`[Cloudinary] Differential sync complete. Total images: ${result.count}`);
-          } else {
-            console.warn('[Cloudinary] Sync completed with errors.');
-          }
-          setIsSyncing(false);
+        const imageData = projectImages.map((img: any) => ({
+          id: img.public_id,
+          url: `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload/v${img.version}/${img.public_id}.${img.format}`
+        }));
+
+        const result = await ipcRenderer.invoke('sync-featured-images', imageData);
+        
+        if (result.success) {
+          console.log(`[Cloudinary] Differential sync complete. Total project images: ${projectImages.length}`);
         } else {
-          console.log('[Cloudinary] No images found with tag "Featured".');
+          console.warn('[Cloudinary] Sync completed with errors:', result.error);
         }
+        setIsSyncing(false);
       } catch (err: any) {
         console.warn('[Cloudinary] Sync skipped:', err.message || err);
-        // If it's a 401, we want the user to see it in the console clearly
         if (err.message && err.message.includes('Unauthorized')) {
           console.error('CRITICAL: Cloudinary "Resource List" is disabled. Images cannot sync automatically.');
         }
+        setIsSyncing(false);
       }
     };
 
