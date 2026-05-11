@@ -12,6 +12,24 @@ const fs = require('fs');
 const sharp = require('sharp');
 const https = require('https');
 
+// Load environment variables from .env.local manually since dotenv is not a dependency
+const envPath = app.isPackaged 
+    ? path.join(process.resourcesPath, '.env.local')
+    : path.join(__dirname, '..', '.env.local');
+
+if (fs.existsSync(envPath)) {
+    const envContent = fs.readFileSync(envPath, 'utf-8');
+    envContent.split('\n').forEach(line => {
+        const [key, ...valueParts] = line.split('=');
+        if (key && valueParts.length > 0) {
+            process.env[key.trim()] = valueParts.join('=').trim();
+        }
+    });
+    console.log('[Env] Loaded .env.local from:', envPath);
+} else {
+    console.warn('[Env] .env.local not found at:', envPath);
+}
+
 let mainWindow = null;
 
 /**
@@ -245,18 +263,12 @@ ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath, 
             resourcesPath = path.join(path.dirname(process.execPath), '..', 'Resources');
         }
 
-        const unpackedBase = path.join(resourcesPath, 'app.asar.unpacked');
-        const asarBase = path.join(resourcesPath, 'app.asar');
-        
-        const possiblePaths = app.isPackaged ? [
-            path.join(unpackedBase, 'dist', targetPath),
-            path.join(asarBase, 'dist', targetPath),
-        ] : [
-            path.join(__dirname, '../public', targetPath)
+        const possiblePaths = [
+            path.join(TEMPLATES_DIR, targetPath)
         ];
 
         foundPath = possiblePaths.find(p => fs.existsSync(p));
-        if (!foundPath) foundPath = path.join(__dirname, '../public', targetPath);
+        if (!foundPath) foundPath = path.join(TEMPLATES_DIR, targetPath);
     }
 
     const config = getAppConfig();
@@ -400,15 +412,12 @@ ipcMain.handle('execute-face-fusion', async (event, { sourceBase64, targetPath, 
                         absoluteTryPath = tempTarg;
                     }
 
-                    // 3. Handshake: Analyze Slots
-                    const isDev = !app.isPackaged;
-                    const publicPath = isDev ? 'http://localhost:3000' : `file://${path.join(__dirname, '../dist').replace(/\\/g, '/')}`;
-                    const relativeTemplatePath = absoluteTryPath.split('public')[1] || absoluteTryPath.split('dist')[1] || absoluteTryPath;
-                    const templateUrl = absoluteTryPath.startsWith('http') ? absoluteTryPath : `${publicPath}${relativeTemplatePath.replace(/\\/g, '/')}`;
-                    
+                    // 3. Handshake: Analyze Slots via Data URL (Bulletproof for Electron)
                     let targetSlots = [];
                     try {
-                        targetSlots = await mainWindow.webContents.executeJavaScript(`window.analyzeTemplate("${templateUrl}")`);
+                        const templateBuffer = fs.readFileSync(absoluteTryPath);
+                        const templateDataUrl = `data:image/jpeg;base64,${templateBuffer.toString('base64')}`;
+                        targetSlots = await mainWindow.webContents.executeJavaScript(`window.analyzeTemplate("${templateDataUrl}")`);
                     } catch (err) {
                         console.warn(`[Handshake] Analysis failed for ${templateUrl}:`, err.message);
                         continue;
@@ -611,6 +620,7 @@ ipcMain.handle('print-image', async (event, { imageSrc, printerName }) => {
 // D. FEATURED ASSETS SERVICE
 const FEATURED_DIR = path.join(app.isPackaged ? process.resourcesPath : path.join(__dirname, '..'), 'Featured');
 const VIDEO_CACHE_DIR = path.join(app.isPackaged ? process.resourcesPath : path.join(__dirname, '..'), 'VideoCache');
+const TEMPLATES_DIR = path.join(app.isPackaged ? process.resourcesPath : path.join(__dirname, '..'), 'templates');
 
 // Ensure folder exists on startup
 if (!fs.existsSync(FEATURED_DIR)) {
@@ -751,6 +761,199 @@ ipcMain.handle('get-cached-video', async (event, url) => {
             if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
             resolve(url); // Fallback to streaming
         });
+    });
+});
+
+// E. TEMPLATE SYNC SERVICE
+// Helper to recursively list all files in a directory
+function getAllFiles(dirPath, arrayOfFiles) {
+    const files = fs.readdirSync(dirPath);
+    arrayOfFiles = arrayOfFiles || [];
+    files.forEach(function(file) {
+        if (fs.statSync(dirPath + "/" + file).isDirectory()) {
+            arrayOfFiles = getAllFiles(dirPath + "/" + file, arrayOfFiles);
+        } else {
+            arrayOfFiles.push(path.join(dirPath, "/", file));
+        }
+    });
+    return arrayOfFiles;
+}
+
+ipcMain.handle('sync-templates', async (event, templates) => {
+    // 'templates' is an array of { id: string, url: string, relativePath: string }
+    // relativePath example: 'Old Kingdom/1M/template_0.jpg'
+    console.log(`[Templates] Starting differential sync for ${templates.length} templates...`);
+
+    try {
+        if (!fs.existsSync(TEMPLATES_DIR)) {
+            fs.mkdirSync(TEMPLATES_DIR, { recursive: true });
+        }
+
+        const allLocalFiles = getAllFiles(TEMPLATES_DIR);
+
+        console.log(`[Templates] Local path: ${TEMPLATES_DIR}`);
+        console.log(`[Templates] Remote files count: ${templates.length}`);
+
+        // Helper: get the "stem" of a file path (path without extension)
+        const getStem = (filePath) => {
+            const ext = path.extname(filePath);
+            return filePath.slice(0, filePath.length - ext.length).toLowerCase();
+        };
+
+        // Build a set of remote stems (relative to TEMPLATES_DIR) for fast lookup
+        const remoteStems = new Set(
+            templates.map(t => getStem(path.normalize(path.join(TEMPLATES_DIR, t.relativePath))))
+        );
+
+        // Build a map of local stems -> full paths for orphan detection
+        const localStemMap = new Map();
+        for (const file of allLocalFiles) {
+            if (file.endsWith('Thumbs.db')) continue;
+            const stem = getStem(path.normalize(file));
+            localStemMap.set(stem, file);
+        }
+
+        // 1. Identify orphans: local files whose stem has NO match in remote
+        const toDelete = allLocalFiles.filter(file => {
+            if (file.endsWith('Thumbs.db')) return false;
+            const stem = getStem(path.normalize(file));
+            return !remoteStems.has(stem);
+        });
+
+        // 2. Identify missing: remote files whose stem has NO match locally
+        const toDownload = templates.filter(t => {
+            const stem = getStem(path.normalize(path.join(TEMPLATES_DIR, t.relativePath)));
+            return !localStemMap.has(stem);
+        });
+
+        console.log(`[Templates] Sync Plan: ${toDownload.length} to download, ${toDelete.length} to delete.`);
+
+        // 3. Perform deletions
+        for (const file of toDelete) {
+            try {
+                console.log(`[Templates] Deleting orphan: ${path.relative(TEMPLATES_DIR, file)}`);
+                fs.unlinkSync(file);
+                // Try to remove parent dir if empty
+                let parent = path.dirname(file);
+                while (parent !== TEMPLATES_DIR) {
+                    if (fs.readdirSync(parent).length === 0) {
+                        console.log(`[Templates] Removing empty folder: ${path.relative(TEMPLATES_DIR, parent)}`);
+                        fs.rmdirSync(parent);
+                        parent = path.dirname(parent);
+                    } else {
+                        break;
+                    }
+                }
+            } catch (e) {
+                console.warn(`[Templates] Failed to delete orphan ${file}:`, e.message);
+            }
+        }
+
+        // 4. Perform downloads
+        const download = (t) => {
+            return new Promise((resolve, reject) => {
+                const filePath = path.join(TEMPLATES_DIR, t.relativePath);
+                const dirPath = path.dirname(filePath);
+                
+                if (!fs.existsSync(dirPath)) {
+                    fs.mkdirSync(dirPath, { recursive: true });
+                }
+
+                console.log(`[Templates] Downloading: ${t.relativePath}`);
+                const file = fs.createWriteStream(filePath);
+                https.get(t.url, (response) => {
+                    if (response.statusCode !== 200) {
+                        reject(new Error(`Status ${response.statusCode}`));
+                        return;
+                    }
+                    response.pipe(file);
+                    file.on('finish', () => {
+                        file.close();
+                        resolve(filePath);
+                    });
+                }).on('error', (err) => {
+                    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+                    reject(err);
+                });
+            });
+        };
+
+        // Download in chunks to avoid overwhelming the system
+        const CHUNK_SIZE = 5;
+        for (let i = 0; i < toDownload.length; i += CHUNK_SIZE) {
+            const chunk = toDownload.slice(i, i + CHUNK_SIZE);
+            await Promise.allSettled(chunk.map(t => download(t)));
+        }
+
+        console.log(`[Templates] Sync complete.`);
+        return { success: true };
+
+    } catch (err) {
+        console.error('[Templates] Sync failed:', err);
+        return { success: false, error: err.message };
+    }
+});
+
+ipcMain.handle('list-remote-templates', async (event, { folder }) => {
+    return new Promise((resolve) => {
+        const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+        const apiKey = process.env.CLOUDINARY_API_KEY;
+        const apiSecret = process.env.CLOUDINARY_API_SECRET;
+
+        if (!cloudName || !apiKey || !apiSecret) {
+            console.error('[Cloudinary] Missing credentials in .env.local');
+            return resolve({ success: false, error: 'Cloudinary credentials missing in .env.local' });
+        }
+
+        console.log(`[Cloudinary] Searching for templates in folder: ${folder}...`);
+        const auth = Buffer.from(`${apiKey}:${apiSecret}`).toString('base64');
+        
+        // Search API is more robust than Resources API
+        const url = `https://api.cloudinary.com/v1_1/${cloudName}/resources/search`;
+        const postData = JSON.stringify({
+            expression: `folder:"${folder}/*"`,
+            max_results: 500
+        });
+
+        const req = https.request(url, {
+            method: 'POST',
+            headers: {
+                'Authorization': `Basic ${auth}`,
+                'Content-Type': 'application/json'
+            }
+        }, (res) => {
+            let data = '';
+            res.on('data', (chunk) => data += chunk);
+            res.on('end', () => {
+                try {
+                    const parsed = JSON.parse(data);
+                    if (parsed.error) {
+                        console.error('[Cloudinary] Search API Error:', parsed.error.message);
+                        resolve({ success: false, error: parsed.error.message });
+                    } else {
+                        console.log(`[Cloudinary] Search found ${parsed.resources?.length || 0} resources.`);
+                        // Ensure each resource has the full public_id even if Cloudinary sends it short
+                        const mappedResources = parsed.resources.map(r => ({
+                            ...r,
+                            public_id: r.public_id // Search API usually includes the folder in public_id
+                        }));
+                        if (parsed.resources?.length > 0) {
+                            console.log('[Cloudinary] First Resource Data:', JSON.stringify(parsed.resources[0], null, 2));
+                        }
+                        resolve({ success: true, resources: mappedResources });
+                    }
+                } catch (e) {
+                    resolve({ success: false, error: 'Failed to parse Cloudinary response' });
+                }
+            });
+        });
+
+        req.on('error', (err) => {
+            resolve({ success: false, error: err.message });
+        });
+
+        req.write(postData);
+        req.end();
     });
 });
 

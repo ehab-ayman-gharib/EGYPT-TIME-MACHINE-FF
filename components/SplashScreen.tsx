@@ -244,14 +244,14 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onSelectEra, isMuted
 
       {/* TOP LOGO/TITLE */}
       <div 
-        className={`absolute top-12 left-1/2 -translate-x-1/2 z-50 w-[450px] pointer-events-none transition-all duration-[1000ms] ease-in-out ${
+        className={`absolute top-8 left-1/2 -translate-x-1/2 z-50 w-[90vw] pointer-events-none transition-all duration-[1000ms] ease-in-out ${
           isExiting ? 'opacity-0 -translate-y-10' : 'opacity-100'
         }`}
       >
         <img 
           src="./Photobooth-Title.png" 
           alt="Photobooth" 
-          className="w-full h-auto drop-shadow-[0_0_30px_rgba(0,0,0,0.6)]" 
+          className="w-full h-auto drop-shadow-[0_0_40px_rgba(0,0,0,0.7)]" 
         />
       </div>
 

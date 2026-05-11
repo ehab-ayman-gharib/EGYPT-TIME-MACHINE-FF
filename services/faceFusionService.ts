@@ -166,7 +166,7 @@ export const transformWithFaceFusion = async (
 
   // Construct the final file-system path for Electron to search
   const eraFolderName = ERA_NAME_MAP[era.id] || era.id;
-  const targetPath = `templates/${eraFolderName}/${genderFolder}`;
+  const targetPath = `${eraFolderName}/${genderFolder}`;
 
   try {
     // 2. Obtain Electron IPC

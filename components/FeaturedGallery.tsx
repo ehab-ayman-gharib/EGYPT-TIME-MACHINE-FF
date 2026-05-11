@@ -465,11 +465,11 @@ export const FeaturedGallery: React.FC<{ onDismiss: () => void }> = ({ onDismiss
       />
 
       {/* TOP LOGO/TITLE */}
-      <div className="absolute top-12 left-1/2 -translate-x-1/2 z-20 w-[450px] pointer-events-none">
+      <div className="absolute top-8 left-1/2 -translate-x-1/2 z-20 w-[90vw] pointer-events-none">
         <img
           src="./Photobooth-Title.png"
           alt="Photobooth"
-          className="w-full h-auto drop-shadow-[0_0_30px_rgba(0,0,0,0.6)]"
+          className="w-full h-auto drop-shadow-[0_0_40px_rgba(0,0,0,0.7)]"
         />
       </div>
 

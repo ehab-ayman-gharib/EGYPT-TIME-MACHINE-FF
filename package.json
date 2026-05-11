@@ -49,7 +49,6 @@
     },
     "asar": true,
     "asarUnpack": [
-      "**/templates/**/*",
       "**/node_modules/sharp/**/*"
     ],
     "files": [
@@ -60,6 +59,14 @@
       {
         "from": "booth-config.json",
         "to": "booth-config.json"
+      },
+      {
+        "from": ".env.local",
+        "to": ".env.local"
+      },
+      {
+        "from": "templates",
+        "to": "templates"
       },
       {
         "from": "facefusion",

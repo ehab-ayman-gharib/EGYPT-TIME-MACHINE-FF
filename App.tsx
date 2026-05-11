@@ -214,7 +214,6 @@ const CLOUDINARY_PROJECT_FOLDER = "kemet-mirror"; // Cloudinary folder name
         console.log(`[Cloudinary] Syncing featured assets for project: ${CLOUDINARY_PROJECT_FOLDER}...`);
 
         // 1. Fetch tagged images list from Cloudinary
-        // Note: The client-side list API must be enabled in Cloudinary settings
         const response = await fetch(`https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/list/Featured.json`);
 
         if (response.status === 401) {
@@ -264,7 +263,76 @@ const CLOUDINARY_PROJECT_FOLDER = "kemet-mirror"; // Cloudinary folder name
       }
     };
 
+    const syncTemplates = async () => {
+      try {
+        console.log(`[Templates] Syncing templates for project: ${CLOUDINARY_PROJECT_FOLDER}...`);
+
+        // Use the authenticated IPC handler to search by folder
+        const folder = `${CLOUDINARY_PROJECT_FOLDER}/Templates`;
+        const result = await ipcRenderer.invoke('list-remote-templates', { folder });
+
+        if (!result.success) {
+          throw new Error(result.error || 'Failed to fetch remote template list');
+        }
+
+        const allResources = result.resources || [];
+        console.log(`[Templates] Search returned ${allResources.length} resources.`);
+        if (allResources.length > 0) {
+          console.log(`[Templates] Example Public ID: ${allResources[0].public_id}`);
+        }
+
+        // Filter and extract relative path
+        const projectTemplates = allResources
+          .map((img: any) => {
+            const folder = img.asset_folder || '';
+            const rawFilename = img.public_id;
+            
+            // Strip Cloudinary's unique random suffix (e.g., _xrr9us) if present
+            // We look for an underscore followed by 6 alphanumeric characters at the end
+            const filename = rawFilename.replace(/_[a-z0-9]{6}$/i, '');
+            
+            // Remove the 'kemet-mirror/Templates/' prefix from the folder path
+            const prefix = `${CLOUDINARY_PROJECT_FOLDER}/Templates/`;
+            let relativeFolder = folder;
+            
+            if (folder.startsWith(prefix)) {
+              relativeFolder = folder.substring(prefix.length);
+            } else if (folder.includes('/Templates/')) {
+              // Case-insensitive fallback
+              const idx = folder.toLowerCase().indexOf('/templates/');
+              relativeFolder = folder.substring(idx + 11);
+            }
+
+            // Combine relative folder and cleaned filename
+            const relativePath = relativeFolder 
+              ? `${relativeFolder}/${filename}.${img.format}`
+              : `${filename}.${img.format}`;
+
+            return {
+              id: img.public_id,
+              url: img.secure_url || img.url,
+              relativePath: relativePath
+            };
+          })
+          .filter(Boolean);
+
+        console.log(`[Templates] Successfully processed ${projectTemplates.length} templates with correct folder structure.`);
+
+        if (projectTemplates.length > 0) {
+          const syncResult = await ipcRenderer.invoke('sync-templates', projectTemplates);
+          if (syncResult.success) {
+            console.log('[Templates] Sync complete.');
+          } else {
+            console.warn('[Templates] Sync failed:', syncResult.error);
+          }
+        }
+      } catch (err: any) {
+        console.warn('[Templates] Sync skipped:', err.message || err);
+      }
+    };
+
     syncFeaturedAssets();
+    syncTemplates();
   }, []);
 
   // Initialize idle timer on mount to prevent immediate Featured screen trigger
