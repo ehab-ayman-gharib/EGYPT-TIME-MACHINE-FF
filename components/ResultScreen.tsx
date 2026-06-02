@@ -136,13 +136,13 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({ imageSrc, prompt, er
     setPrintStatus('printing');
     try {
       const canvas = document.createElement('canvas');
-      canvas.width = 400; canvas.height = 600;
+      canvas.width = 1200; canvas.height = 1800;
       const ctx = canvas.getContext('2d');
       if (ctx) {
-        ctx.fillStyle = 'white'; ctx.fillRect(0, 0, 400, 600);
-        ctx.fillStyle = 'red'; ctx.fillRect(50, 50, 300, 500);
-        ctx.fillStyle = 'white'; ctx.font = 'bold 48px Arial'; ctx.textAlign = 'center';
-        ctx.fillText('TEST PRINT', 200, 300);
+        ctx.fillStyle = 'white'; ctx.fillRect(0, 0, 1200, 1800);
+        ctx.fillStyle = 'red'; ctx.fillRect(150, 150, 900, 1500);
+        ctx.fillStyle = 'white'; ctx.font = 'bold 144px Arial'; ctx.textAlign = 'center';
+        ctx.fillText('TEST PRINT', 600, 900);
       }
       const testImageSrc = canvas.toDataURL('image/png');
       const { ipcRenderer } = (window as any).require('electron');
