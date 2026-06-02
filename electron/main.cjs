@@ -603,9 +603,17 @@ ipcMain.handle('print-image', async (event, { imageSrc, printerName }) => {
             const base64Data = imageSrc.replace(/^data:image\/\w+;base64,/, '');
             fs.writeFileSync(tempImagePath, Buffer.from(base64Data, 'base64'));
 
-            const printCommand = process.platform === 'win32'
-                ? `rundll32.exe C:\\WINDOWS\\system32\\shimgvw.dll,ImageView_PrintTo /pt "${tempImagePath}" "${printerName}"`
-                : `lp -d "${printerName}" -o fit-to-page "${tempImagePath}"`;
+            let printCommand = '';
+            if (process.platform === 'win32') {
+                printCommand = `rundll32.exe C:\\WINDOWS\\system32\\shimgvw.dll,ImageView_PrintTo /pt "${tempImagePath}" "${printerName}"`;
+            } else {
+                let options = '-o fit-to-page';
+                const lowerName = (printerName || '').toLowerCase();
+                if (lowerName.includes('qw410') || lowerName.includes('dnp')) {
+                    options += ' -o PageSize=dnp4x6';
+                }
+                printCommand = `lp -d "${printerName}" ${options} "${tempImagePath}"`;
+            }
 
             require('child_process').exec(printCommand, { shell: true }, (error) => {
                 setTimeout(() => fs.existsSync(tempImagePath) && fs.unlinkSync(tempImagePath), 10000);

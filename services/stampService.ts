@@ -52,9 +52,9 @@ export const applyEraStamp = (imageSrc: string, era: EraData): Promise<string> =
                 return;
             }
 
-            // Canvas size for 4x6 inch printing at 300 DPI: 1800 x 2700 pixels
-            canvas.width = 1800;
-            canvas.height = 2700;
+            // Canvas size for 4x6 inch printing at 300 DPI: 1200 x 1800 pixels
+            canvas.width = 1200;
+            canvas.height = 1800;
 
             // 1. Draw Background - BASE layer
             ctx.drawImage(backgroundImg, 0, 0, canvas.width, canvas.height);
