@@ -26,6 +26,7 @@ const App: React.FC = () => {
   const [sessionKey, setSessionKey] = useState(0);                                 // Forces re-mounting of components on restart
   const [isMuted, setIsMuted] = useState(true);                                    // Global audio mute state
   const [isSyncing, setIsSyncing] = useState(false);                               // Tracks background sync status
+  const [isKioskMode, setIsKioskMode] = useState<boolean>(true);                   // Tracks if kiosk mode is active
 
 
   /**
@@ -203,137 +204,87 @@ const App: React.FC = () => {
 
 const CLOUDINARY_PROJECT_FOLDER = "kemet-mirror"; // Cloudinary folder name
 
-  /**
-   * CLOUDINARY SYNC LOGIC
-   * Syncs the local Featured folder with tagged images from Cloudinary.
-   * Only pulls images belonging to the specific project folder.
-   */
+
+
+  // Fetch kiosk status on boot
   useEffect(() => {
-    const syncFeaturedAssets = async () => {
+    const checkKiosk = async () => {
       try {
-        console.log(`[Cloudinary] Syncing featured assets for project: ${CLOUDINARY_PROJECT_FOLDER}...`);
+        const status = await ipcRenderer.invoke('get-kiosk-status');
+        setIsKioskMode(status);
+        console.log('[Kiosk] Resolved kiosk state on boot:', status);
+      } catch (err) {
+        console.error('[Kiosk] Failed to resolve kiosk state:', err);
+      }
+    };
+    checkKiosk();
+  }, []);
 
-        // 1. Fetch tagged images list from Cloudinary
-        const response = await fetch(`https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/list/Featured.json`);
-
-        if (response.status === 401) {
-          throw new Error('Unauthorized: Please enable "Resource List" in your Cloudinary Security settings.');
-        }
-
-        if (!response.ok) {
-          if (response.status === 404) {
-            console.log('[Cloudinary] No images found with tag "Featured". Clearing local cache.');
-            await ipcRenderer.invoke('sync-featured-images', []);
-            return;
-          }
-          throw new Error(`Cloudinary list API error: ${response.status} ${response.statusText}`);
-        }
-
-        const data = await response.json();
+  const handleManualSync = async () => {
+    if (isSyncing) return;
+    setIsSyncing(true);
+    try {
+      console.log('[Manual Sync] Requesting Cloudinary Sync...');
+      
+      // 1. Sync Featured Assets
+      console.log(`[Manual Sync] Syncing featured assets...`);
+      const featuredResponse = await fetch(`https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/list/Featured.json`);
+      if (featuredResponse.ok) {
+        const data = await featuredResponse.json();
         const allResources = data.resources || [];
-
-        // 2. FILTER: Only sync images that belong to this project's folder
         const projectImages = allResources.filter((img: any) => 
           img.public_id.startsWith(`${CLOUDINARY_PROJECT_FOLDER}/`)
         );
-
-        console.log(`[Cloudinary] Found ${allResources.length} total featured images, ${projectImages.length} for this project.`);
-
-        setIsSyncing(true);
-
         const imageData = projectImages.map((img: any) => ({
           id: img.public_id,
           url: `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload/v${img.version}/${img.public_id}.${img.format}`
         }));
-
-        const result = await ipcRenderer.invoke('sync-featured-images', imageData);
-        
-        if (result.success) {
-          console.log(`[Cloudinary] Differential sync complete. Total project images: ${projectImages.length}`);
-        } else {
-          console.warn('[Cloudinary] Sync completed with errors:', result.error);
-        }
-        setIsSyncing(false);
-      } catch (err: any) {
-        console.warn('[Cloudinary] Sync skipped:', err.message || err);
-        if (err.message && err.message.includes('Unauthorized')) {
-          console.error('CRITICAL: Cloudinary "Resource List" is disabled. Images cannot sync automatically.');
-        }
-        setIsSyncing(false);
+        await ipcRenderer.invoke('sync-featured-images', imageData);
+      } else {
+        throw new Error('Cloudinary Featured.json list endpoint returned non-OK status');
       }
-    };
 
-    const syncTemplates = async () => {
-      try {
-        console.log(`[Templates] Syncing templates for project: ${CLOUDINARY_PROJECT_FOLDER}...`);
-
-        // Use the authenticated IPC handler to search by folder
-        const folder = `${CLOUDINARY_PROJECT_FOLDER}/Templates`;
-        const result = await ipcRenderer.invoke('list-remote-templates', { folder });
-
-        if (!result.success) {
-          throw new Error(result.error || 'Failed to fetch remote template list');
-        }
-
-        const allResources = result.resources || [];
-        console.log(`[Templates] Search returned ${allResources.length} resources.`);
-        if (allResources.length > 0) {
-          console.log(`[Templates] Example Public ID: ${allResources[0].public_id}`);
-        }
-
-        // Filter and extract relative path
-        const projectTemplates = allResources
-          .map((img: any) => {
-            const folder = img.asset_folder || '';
-            const rawFilename = img.public_id;
-            
-            // Strip Cloudinary's unique random suffix (e.g., _xrr9us) if present
-            // We look for an underscore followed by 6 alphanumeric characters at the end
-            const filename = rawFilename.replace(/_[a-z0-9]{6}$/i, '');
-            
-            // Remove the 'kemet-mirror/Templates/' prefix from the folder path
-            const prefix = `${CLOUDINARY_PROJECT_FOLDER}/Templates/`;
-            let relativeFolder = folder;
-            
-            if (folder.startsWith(prefix)) {
-              relativeFolder = folder.substring(prefix.length);
-            } else if (folder.includes('/Templates/')) {
-              // Case-insensitive fallback
-              const idx = folder.toLowerCase().indexOf('/templates/');
-              relativeFolder = folder.substring(idx + 11);
-            }
-
-            // Combine relative folder and cleaned filename
-            const relativePath = relativeFolder 
-              ? `${relativeFolder}/${filename}.${img.format}`
-              : `${filename}.${img.format}`;
-
-            return {
-              id: img.public_id,
-              url: img.secure_url || img.url,
-              relativePath: relativePath
-            };
-          })
-          .filter(Boolean);
-
-        console.log(`[Templates] Successfully processed ${projectTemplates.length} templates with correct folder structure.`);
-
-        if (projectTemplates.length > 0) {
-          const syncResult = await ipcRenderer.invoke('sync-templates', projectTemplates);
-          if (syncResult.success) {
-            console.log('[Templates] Sync complete.');
-          } else {
-            console.warn('[Templates] Sync failed:', syncResult.error);
+      // 2. Sync Templates
+      console.log(`[Manual Sync] Syncing templates...`);
+      const folder = `${CLOUDINARY_PROJECT_FOLDER}/Templates`;
+      const templatesResult = await ipcRenderer.invoke('list-remote-templates', { folder });
+      if (templatesResult.success) {
+        const allResources = templatesResult.resources || [];
+        const projectTemplates = allResources.map((img: any) => {
+          const folder = img.asset_folder || '';
+          const rawFilename = img.public_id;
+          const filename = rawFilename.replace(/_[a-z0-9]{6}$/i, '');
+          const prefix = `${CLOUDINARY_PROJECT_FOLDER}/Templates/`;
+          let relativeFolder = folder;
+          if (folder.startsWith(prefix)) {
+            relativeFolder = folder.substring(prefix.length);
+          } else if (folder.includes('/Templates/')) {
+            const idx = folder.toLowerCase().indexOf('/templates/');
+            relativeFolder = folder.substring(idx + 11);
           }
+          return {
+            id: img.public_id,
+            url: img.secure_url || img.url,
+            relativePath: relativeFolder 
+              ? `${relativeFolder}/${filename}.${img.format}`
+              : `${filename}.${img.format}`
+          };
+        }).filter(Boolean);
+        if (projectTemplates.length > 0) {
+          await ipcRenderer.invoke('sync-templates', projectTemplates);
         }
-      } catch (err: any) {
-        console.warn('[Templates] Sync skipped:', err.message || err);
+      } else {
+        throw new Error(templatesResult.error || 'Failed to fetch remote templates list');
       }
-    };
 
-    syncFeaturedAssets();
-    syncTemplates();
-  }, []);
+      alert('Sync completed successfully!');
+    } catch (err: any) {
+      console.error('[Manual Sync] Error occurred:', err);
+      alert(`Sync failed: ${err.message || err}`);
+    } finally {
+      setIsSyncing(false);
+    }
+  };
 
   // Initialize idle timer on mount to prevent immediate Featured screen trigger
   useEffect(() => {
@@ -353,9 +304,18 @@ const CLOUDINARY_PROJECT_FOLDER = "kemet-mirror"; // Cloudinary folder name
   return (
     // Main Wrapper container ensuring full screen dimensions and dark mode defaults
     <div
-      className="h-[100dvh] w-screen bg-slate-900 text-slate-100 flex flex-col overflow-hidden"
+      className="h-[100dvh] w-screen bg-slate-900 text-slate-100 flex flex-col overflow-hidden relative"
       onClick={handleGlobalClick}
     >
+      {!isKioskMode && (
+        <button
+          onClick={handleManualSync}
+          disabled={isSyncing}
+          className="fixed top-4 right-4 z-[99999] px-6 py-3 bg-amber-500 hover:bg-amber-400 disabled:bg-slate-800 disabled:text-slate-400 text-black font-black uppercase tracking-wider rounded-2xl shadow-[0_10px_30px_rgba(245,158,11,0.3)] border border-amber-300/30 flex items-center gap-2 text-sm transition-all active:scale-95"
+        >
+          {isSyncing ? 'Syncing...' : 'Sync Cloud Images'}
+        </button>
+      )}
       <main className="flex-grow relative h-full w-full" key={sessionKey}>
         {renderScreen()}
         {/* Render LoadingScreen when currentScreen is PROCESSING */}

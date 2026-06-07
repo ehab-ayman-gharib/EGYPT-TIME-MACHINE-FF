@@ -353,10 +353,11 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
       {/* 4. FOOTER CONTROLS (Shutter, Upload) */}
       {!isProcessing && !previewImage && (
         <div className="absolute bottom-0 left-0 right-0 p-10 pb-16 z-20 flex justify-center items-center gap-8 bg-gradient-to-t from-black/80 to-transparent">
-          <input type="file" ref={fileInputRef} onChange={handleFileSelect} accept="image/*" className="hidden" />
-          <button onClick={() => fileInputRef.current?.click()} className="p-4 bg-white/20 backdrop-blur-md rounded-full text-white">
+          {/* Commented out upload feature as requested */}
+          {/* <input type="file" ref={fileInputRef} onChange={handleFileSelect} accept="image/*" className="hidden" /> */}
+          {/* <button onClick={() => fileInputRef.current?.click()} className="p-4 bg-white/20 backdrop-blur-md rounded-full text-white">
             <Upload size={24} />
-          </button>
+          </button> */}
 
           <button onClick={startCaptureSequence} disabled={isDetecting || countdown !== null} className="relative w-28 h-28 flex items-center justify-center">
             {!isDetecting && countdown === null && <div className="absolute inset-0 rounded-full border-[6px] border-white/30 animate-pulse-medium" />}
@@ -365,7 +366,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
             </div>
           </button>
 
-          <div className="w-[56px]" />
+          {/* <div className="w-[56px]" /> */}
         </div>
       )}
     </div>

@@ -37,6 +37,23 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onSelectEra, isMuted
 
 
   const isExitingRef = useRef(false);
+  const clickTimesRef = useRef<number[]>([]);
+
+  const handleTitleClick = async () => {
+    const now = Date.now();
+    const recentClicks = [...clickTimesRef.current, now].filter(t => now - t < 3000);
+    clickTimesRef.current = recentClicks;
+    
+    if (recentClicks.length >= 5) {
+      clickTimesRef.current = [];
+      console.log('[Kiosk] Secret title click pattern detected! Toggling kiosk mode...');
+      try {
+        await ipcRenderer.invoke('toggle-kiosk');
+      } catch (err) {
+        console.error('Failed to toggle kiosk mode:', err);
+      }
+    }
+  };
 
   /**
    * AUDIO & FULLSCREEN UNLOCK
@@ -244,7 +261,8 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onSelectEra, isMuted
 
       {/* TOP LOGO/TITLE */}
       <div 
-        className={`absolute top-8 left-1/2 -translate-x-1/2 z-50 w-[90vw] pointer-events-none transition-all duration-[1000ms] ease-in-out ${
+        onClick={handleTitleClick}
+        className={`absolute top-8 left-1/2 -translate-x-1/2 z-50 w-[90vw] pointer-events-auto cursor-pointer transition-all duration-[1000ms] ease-in-out ${
           isExiting ? 'opacity-0 -translate-y-10' : 'opacity-100'
         }`}
       >

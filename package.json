@@ -69,6 +69,10 @@
         "to": "templates"
       },
       {
+        "from": "Featured",
+        "to": "Featured"
+      },
+      {
         "from": "facefusion",
         "to": "facefusion",
         "filter": [

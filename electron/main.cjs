@@ -32,6 +32,7 @@ if (fs.existsSync(envPath)) {
 
 let mainWindow = null;
 let isKioskModeActive = true;
+let isRecreatingWindow = false;
 
 /**
  * STATE MANAGEMENT FOR TEMPLATE ROTATION
@@ -44,17 +45,17 @@ let eraTemplateIndices = {};
  * 1. WINDOW INITIALIZATION
  * Creates the main application window and configures permissions for camera access.
  */
-function createWindow() {
+function createWindow(isKiosk = true) {
     mainWindow = new BrowserWindow({
         width: 1200,
         height: 800,
-        fullscreen: true,
-        kiosk: true, // This locks the app down natively on macOS
-        alwaysOnTop: true, // Keeps it above any random system alerts
-        movable: false,
-        resizable: false,
-        frame: true, // Enables title bars, close, and minimize buttons when windowed
-        autoHideMenuBar: true,
+        fullscreen: isKiosk,
+        kiosk: isKiosk, // This locks the app down natively on macOS
+        alwaysOnTop: isKiosk, // Keeps it above any random system alerts
+        movable: !isKiosk,
+        resizable: !isKiosk,
+        frame: !isKiosk, // Enables title bars, close, and minimize buttons when windowed
+        autoHideMenuBar: isKiosk,
         webPreferences: {
             nodeIntegration: true,     // Allows using 'require' in frontend (essential for some legacy libs)
             contextIsolation: false,    // Disables isolation for easier communication (non-standard but used here)
@@ -626,7 +627,7 @@ ipcMain.handle('print-image', async (event, { imageSrc, printerName }) => {
             } else {
                 let options = '-o fit-to-page';
                 const lowerName = (printerName || '').toLowerCase();
-                if (lowerName.includes('qw410') || lowerName.includes('dnp')) {
+                if (lowerName.includes('qw410') || lowerName.includes('dnp') || lowerName.includes('photobooth')) {
                     options += ' -o PageSize=dnp4x6';
                 }
                 printCommand = `lp -d "${printerName}" ${options} "${tempImagePath}"`;
@@ -1023,6 +1024,51 @@ function unregisterKioskShortcuts() {
 /**
  * 5. APP LIFECYCLE
  */
+function toggleKiosk() {
+    if (mainWindow) {
+        isKioskModeActive = !isKioskModeActive;
+        console.log(`[Kiosk] Toggling Kiosk Mode to: ${isKioskModeActive}`);
+
+        isRecreatingWindow = true; // Prevent app.quit in window-all-closed
+
+        // Save current URL
+        const currentURL = mainWindow.webContents.getURL();
+
+        // Unregister devtools shortcut to prevent registration collision
+        globalShortcut.unregister('CommandOrControl+Shift+I');
+
+        // Destroy current window immediately
+        mainWindow.destroy();
+
+        // Recreate window with correct kiosk/frame state
+        createWindow(isKioskModeActive);
+
+        // Load saved URL or fallback to main
+        if (currentURL) {
+            mainWindow.loadURL(currentURL);
+        }
+
+        // Register or unregister standard OS escape shortcuts
+        if (isKioskModeActive) {
+            registerKioskShortcuts();
+        } else {
+            unregisterKioskShortcuts();
+        }
+
+        isRecreatingWindow = false; // Reset flag
+        return { success: true, isKioskModeActive };
+    }
+    return { success: false };
+}
+
+ipcMain.handle('toggle-kiosk', () => {
+    return toggleKiosk();
+});
+
+ipcMain.handle('get-kiosk-status', () => {
+    return isKioskModeActive;
+});
+
 app.whenReady().then(() => {
     createWindow();
 
@@ -1031,34 +1077,13 @@ app.whenReady().then(() => {
         registerKioskShortcuts();
     }
 
-    // Define a secret key combination only you know to exit KIOSK mode (e.g., Ctrl+Alt+Shift+Q)
+    // Commented out keyboard shortcut registration as requested (now triggered via title click pattern)
+    /*
     const success = globalShortcut.register('CommandOrControl+Alt+Shift+Q', () => {
-        if (mainWindow) {
-            isKioskModeActive = !isKioskModeActive;
-            console.log(`[Kiosk] Toggled Kiosk Mode to: ${isKioskModeActive}`);
-            
-            mainWindow.setKiosk(isKioskModeActive);
-            mainWindow.setAlwaysOnTop(isKioskModeActive);
-            mainWindow.setResizable(!isKioskModeActive);
-            mainWindow.setMovable(!isKioskModeActive);
-            mainWindow.setFullScreen(isKioskModeActive);
-
-            if (isKioskModeActive) {
-                mainWindow.restore();
-                mainWindow.setMenuBarVisibility(false);
-                mainWindow.setAutoHideMenuBar(true);
-                if (mainWindow.isFocused()) {
-                    registerKioskShortcuts();
-                }
-            } else {
-                unregisterKioskShortcuts();
-                mainWindow.setMenuBarVisibility(true);
-                mainWindow.setAutoHideMenuBar(false);
-                mainWindow.minimize(); // Minimize window so operator can see the desktop immediately
-            }
-        }
+        toggleKiosk();
     });
     console.log(`[Kiosk] Secret exit shortcut registration status: ${success}`);
+    */
 });
 
 // Disable standard menu shortcuts globally when focused so users cannot trigger them
@@ -1080,9 +1105,10 @@ app.on('will-quit', () => {
 });
 
 app.on('window-all-closed', () => {
+    if (isRecreatingWindow) return; // Prevent app quitting during window recreation
     if (process.platform !== 'darwin') app.quit();
 });
 
 app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow();
+    if (BrowserWindow.getAllWindows().length === 0) createWindow(isKioskModeActive);
 });
