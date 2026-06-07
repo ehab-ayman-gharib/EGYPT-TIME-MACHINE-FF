@@ -6,7 +6,7 @@
         "facefusionDir": ""
     },
     "darwin": {
-        "printerName": "Dai_Nippon_Printing_DP_QW410",
+        "printerName": "Photobooth_Printer",
         "condaEnv": "",
         "condaPath": "",
         "facefusionDir": ""

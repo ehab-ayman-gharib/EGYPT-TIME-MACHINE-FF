@@ -44,7 +44,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onSelectEra, isMuted
     const recentClicks = [...clickTimesRef.current, now].filter(t => now - t < 3000);
     clickTimesRef.current = recentClicks;
     
-    if (recentClicks.length >= 5) {
+    if (recentClicks.length >= 10) {
       clickTimesRef.current = [];
       console.log('[Kiosk] Secret title click pattern detected! Toggling kiosk mode...');
       try {
