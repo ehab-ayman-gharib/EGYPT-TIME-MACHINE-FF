@@ -31,6 +31,7 @@ if (fs.existsSync(envPath)) {
 }
 
 let mainWindow = null;
+let isKioskModeActive = true;
 
 /**
  * STATE MANAGEMENT FOR TEMPLATE ROTATION
@@ -47,6 +48,13 @@ function createWindow() {
     mainWindow = new BrowserWindow({
         width: 1200,
         height: 800,
+        fullscreen: true,
+        kiosk: true, // This locks the app down natively on macOS
+        alwaysOnTop: true, // Keeps it above any random system alerts
+        movable: false,
+        resizable: false,
+        frame: true, // Enables title bars, close, and minimize buttons when windowed
+        autoHideMenuBar: true,
         webPreferences: {
             nodeIntegration: true,     // Allows using 'require' in frontend (essential for some legacy libs)
             contextIsolation: false,    // Disables isolation for easier communication (non-standard but used here)
@@ -54,8 +62,13 @@ function createWindow() {
             devTools: true,
             webSecurity: false,         // Required to load local images via file:// protocol
         },
-        fullscreen: true,
-        autoHideMenuBar: true,
+    });
+
+    // Prevent user from navigating away via touch/gestures
+    mainWindow.on('always-on-top-changed', () => {
+        if (isKioskModeActive) {
+            mainWindow.setAlwaysOnTop(true);
+        }
     });
 
     // Permission Handlers: Ensure the app can access the camera and other hardware without popups
@@ -94,6 +107,10 @@ function createWindow() {
             globalShortcut.register('CommandOrControl+Shift+I', () => {
                 mainWindow.webContents.toggleDevTools();
             });
+        });
+
+        mainWindow.on('blur', () => {
+            globalShortcut.unregister('CommandOrControl+Shift+I');
         });
 
         // Detect available printers on startup
@@ -969,7 +986,98 @@ ipcMain.handle('list-remote-templates', async (event, { folder }) => {
 /**
  * 5. APP LIFECYCLE
  */
-app.whenReady().then(createWindow);
+/**
+ * Helper to register standard OS escape shortcuts (to block them)
+ */
+function registerKioskShortcuts() {
+    try {
+        const q = globalShortcut.register('CommandOrControl+Q', () => { 
+            console.log('[Kiosk] Blocked CommandOrControl+Q'); 
+        });
+        const h = globalShortcut.register('CommandOrControl+H', () => { 
+            console.log('[Kiosk] Blocked CommandOrControl+H'); 
+        });
+        const m = globalShortcut.register('CommandOrControl+M', () => { 
+            console.log('[Kiosk] Blocked CommandOrControl+M'); 
+        });
+        console.log(`[Kiosk] Registered blocking shortcuts: Q=${q}, H=${h}, M=${m}`);
+    } catch (e) {
+        console.error('[Kiosk] Failed to register blocking shortcuts:', e);
+    }
+}
+
+/**
+ * Helper to unregister standard OS escape shortcuts
+ */
+function unregisterKioskShortcuts() {
+    try {
+        globalShortcut.unregister('CommandOrControl+Q');
+        globalShortcut.unregister('CommandOrControl+H');
+        globalShortcut.unregister('CommandOrControl+M');
+        console.log('[Kiosk] Unregistered blocking shortcuts.');
+    } catch (e) {
+        console.error('[Kiosk] Failed to unregister blocking shortcuts:', e);
+    }
+}
+
+/**
+ * 5. APP LIFECYCLE
+ */
+app.whenReady().then(() => {
+    createWindow();
+
+    // Register blocking shortcuts immediately on startup since window starts focused
+    if (isKioskModeActive) {
+        registerKioskShortcuts();
+    }
+
+    // Define a secret key combination only you know to exit KIOSK mode (e.g., Ctrl+Alt+Shift+Q)
+    const success = globalShortcut.register('CommandOrControl+Alt+Shift+Q', () => {
+        if (mainWindow) {
+            isKioskModeActive = !isKioskModeActive;
+            console.log(`[Kiosk] Toggled Kiosk Mode to: ${isKioskModeActive}`);
+            
+            mainWindow.setKiosk(isKioskModeActive);
+            mainWindow.setAlwaysOnTop(isKioskModeActive);
+            mainWindow.setResizable(!isKioskModeActive);
+            mainWindow.setMovable(!isKioskModeActive);
+            mainWindow.setFullScreen(isKioskModeActive);
+
+            if (isKioskModeActive) {
+                mainWindow.restore();
+                mainWindow.setMenuBarVisibility(false);
+                mainWindow.setAutoHideMenuBar(true);
+                if (mainWindow.isFocused()) {
+                    registerKioskShortcuts();
+                }
+            } else {
+                unregisterKioskShortcuts();
+                mainWindow.setMenuBarVisibility(true);
+                mainWindow.setAutoHideMenuBar(false);
+                mainWindow.minimize(); // Minimize window so operator can see the desktop immediately
+            }
+        }
+    });
+    console.log(`[Kiosk] Secret exit shortcut registration status: ${success}`);
+});
+
+// Disable standard menu shortcuts globally when focused so users cannot trigger them
+app.on('browser-window-focus', () => {
+    if (isKioskModeActive) {
+        registerKioskShortcuts();
+    }
+});
+
+// Unregister them when window loses focus to avoid affecting other applications system-wide
+app.on('browser-window-blur', () => {
+    if (isKioskModeActive) {
+        unregisterKioskShortcuts();
+    }
+});
+
+app.on('will-quit', () => {
+    globalShortcut.unregisterAll();
+});
 
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') app.quit();
