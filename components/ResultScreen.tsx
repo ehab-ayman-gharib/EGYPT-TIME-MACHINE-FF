@@ -7,7 +7,7 @@
  * 3. Downloading (Local file saving).
  */
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { EraData, FaceDetectionResult } from '../types';
 import { Download, RotateCcw, Share2, QrCode, Loader2, Printer, CheckCircle2, XCircle } from 'lucide-react';
 
@@ -27,6 +27,57 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({ imageSrc, prompt, er
   const [selectedPrinter, setSelectedPrinter] = useState<string>(localStorage.getItem('preferredPrinter') || '');
   const [showPrinterSettings, setShowPrinterSettings] = useState(false);
   const [printStatus, setPrintStatus] = useState<'idle' | 'printing' | 'success' | string>('idle');
+
+  /**
+   * RESTART & CLEAR PRINTER QUEUE
+   * Clears the current selected printer queue before returning to the splash screen.
+   */
+  const handleRestart = useCallback(() => {
+    const isElectron = navigator.userAgent.indexOf('Electron') !== -1;
+    if (isElectron && (window as any).require && selectedPrinter) {
+      const { ipcRenderer } = (window as any).require('electron');
+      console.log('[ResultScreen] Invoking clear-printer-queue for:', selectedPrinter);
+      // Execute in the background without blocking the UI transition
+      ipcRenderer.invoke('clear-printer-queue', { printerName: selectedPrinter }).catch((err: any) => {
+        console.error('[ResultScreen] Failed to clear printer queue:', err);
+      });
+    }
+    onRestart();
+  }, [onRestart, selectedPrinter]);
+
+  /**
+   * 0. INACTIVITY TIMEOUT
+   * Auto-restarts the booth and goes back to splash if the user is inactive for 5 minutes.
+   */
+  useEffect(() => {
+    const INACTIVITY_LIMIT = 5 * 60 * 1000; // 5 minutes
+    let timeoutId: NodeJS.Timeout;
+
+    const resetTimer = () => {
+      clearTimeout(timeoutId);
+      timeoutId = setTimeout(() => {
+        console.log('[Inactivity] 5 minutes passed without interaction, restarting...');
+        handleRestart();
+      }, INACTIVITY_LIMIT);
+    };
+
+    // User interactions to listen for
+    const interactionEvents = ['mousemove', 'mousedown', 'keypress', 'touchstart', 'scroll', 'click'];
+    
+    interactionEvents.forEach(event => {
+      window.addEventListener(event, resetTimer);
+    });
+
+    // Initialize timer
+    resetTimer();
+
+    return () => {
+      clearTimeout(timeoutId);
+      interactionEvents.forEach(event => {
+        window.removeEventListener(event, resetTimer);
+      });
+    };
+  }, [handleRestart]);
 
   /**
    * 1. PRINTER DISCOVERY
@@ -226,7 +277,7 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({ imageSrc, prompt, er
                   <Printer size={18} /> PRINT PHOTO
                 </button>
              </div>
-             <button onClick={onRestart} className="py-3 bg-white/10 text-white font-bold rounded-xl border border-white/20">
+             <button onClick={handleRestart} className="py-3 bg-white/10 text-white font-bold rounded-xl border border-white/20">
                <RotateCcw size={16} className="inline mr-2" /> NEW ADVENTURE
              </button>
           </div>

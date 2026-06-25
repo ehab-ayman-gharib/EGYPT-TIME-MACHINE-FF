@@ -643,6 +643,38 @@ ipcMain.handle('print-image', async (event, { imageSrc, printerName }) => {
     });
 });
 
+// C2. CLEAR PRINTER QUEUE
+// Cancels all print jobs for a specific printer (PowerShell on Windows, CUPS cancel on Mac)
+ipcMain.handle('clear-printer-queue', async (event, { printerName }) => {
+    return new Promise((resolve) => {
+        if (!printerName) {
+            console.log('[Printer] No printer name provided to clear queue.');
+            return resolve({ success: false, error: 'No printer name provided' });
+        }
+        
+        let clearCommand = '';
+        if (process.platform === 'win32') {
+            // Using PowerShell to query jobs for this printer and remove them
+            clearCommand = `powershell -Command "Get-PrintJob -PrinterName '${printerName}' | Remove-PrintJob"`;
+        } else {
+            // CUPS cancel command for macOS
+            clearCommand = `cancel -a "${printerName}"`;
+        }
+
+        console.log(`[Printer] Attempting to clear queue for: ${printerName} using command: ${clearCommand}`);
+
+        require('child_process').exec(clearCommand, { shell: true }, (error, stdout, stderr) => {
+            if (error) {
+                console.error(`[Printer] Failed to clear queue for ${printerName}:`, error.message);
+                resolve({ success: false, error: error.message });
+            } else {
+                console.log(`[Printer] Successfully cleared queue for ${printerName}`);
+                resolve({ success: true });
+            }
+        });
+    });
+});
+
 // D. FEATURED ASSETS SERVICE
 const FEATURED_DIR = path.join(app.isPackaged ? process.resourcesPath : path.join(__dirname, '..'), 'Featured');
 const VIDEO_CACHE_DIR = path.join(app.isPackaged ? process.resourcesPath : path.join(__dirname, '..'), 'VideoCache');

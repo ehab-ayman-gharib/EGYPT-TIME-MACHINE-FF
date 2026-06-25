@@ -1,0 +1,6 @@
+# Antigravity Project Rules: Egypt Time Machine
+
+## Codebase Context (Graphify Integration)
+- This project uses Graphify to maintain a local structural map of the codebase.
+- Before refactoring, navigating, or generating new modules, read the cached structural graph located at: `./graphify-out/graph.json`.
+- Use this graph to identify upstream dependencies, import tracking, and module boundaries without parsing every file manually.

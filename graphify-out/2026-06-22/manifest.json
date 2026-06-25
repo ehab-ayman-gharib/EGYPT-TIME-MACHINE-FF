@@ -1,0 +1,1187 @@
+{
+  "App.tsx": {
+    "mtime": 1780795651.3436205,
+    "ast_hash": "5bad46f8eb611cc19cc23b3115705cb1",
+    "semantic_hash": "5bad46f8eb611cc19cc23b3115705cb1"
+  },
+  "GenderDetectionService.ts": {
+    "mtime": 1773487663.2538953,
+    "ast_hash": "401671a3d5cb6f6642492386eb4fed95",
+    "semantic_hash": "401671a3d5cb6f6642492386eb4fed95"
+  },
+  "components/CameraCapture.tsx": {
+    "mtime": 1780794320.0943134,
+    "ast_hash": "8ef6cacea6bf27fd3514acd325aa230f",
+    "semantic_hash": "8ef6cacea6bf27fd3514acd325aa230f"
+  },
+  "components/FeaturedGallery.tsx": {
+    "mtime": 1778518978.102733,
+    "ast_hash": "0e0ef6de8a72d7045723dd2ec194b9a9",
+    "semantic_hash": "0e0ef6de8a72d7045723dd2ec194b9a9"
+  },
+  "components/LoadingScreen.tsx": {
+    "mtime": 1773487663.0,
+    "ast_hash": "fdacc41d43e4ab22bab4a1b5bcfddbb3",
+    "semantic_hash": "fdacc41d43e4ab22bab4a1b5bcfddbb3"
+  },
+  "components/ResultScreen.tsx": {
+    "mtime": 1780400362.3521957,
+    "ast_hash": "30417130df4f4362bbe79b09937afd4f",
+    "semantic_hash": "30417130df4f4362bbe79b09937afd4f"
+  },
+  "components/SplashScreen.tsx": {
+    "mtime": 1780796632.087113,
+    "ast_hash": "74ef7c1f29995fa3f480e2caba311926",
+    "semantic_hash": "74ef7c1f29995fa3f480e2caba311926"
+  },
+  "constants.ts": {
+    "mtime": 1776863100.0032105,
+    "ast_hash": "a002541039e375353f810a4ae8734b65",
+    "semantic_hash": "a002541039e375353f810a4ae8734b65"
+  },
+  "facefusion/.assets/models/iperov/elon_musk_224.dfm": {
+    "mtime": 1774408102.0629528,
+    "ast_hash": "f8bb7e7e2b1baa25efb905e812316f25",
+    "semantic_hash": "f8bb7e7e2b1baa25efb905e812316f25"
+  },
+  "facefusion/facefusion.py": {
+    "mtime": 1773419755.4110644,
+    "ast_hash": "b0b9690c2904b3b1a516f3a8e6b4a7df",
+    "semantic_hash": "b0b9690c2904b3b1a516f3a8e6b4a7df"
+  },
+  "facefusion/facefusion/__init__.py": {
+    "mtime": 1773419755.4110644,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "facefusion/facefusion/app_context.py": {
+    "mtime": 1773419755.4110644,
+    "ast_hash": "b0b94de99fff1b5ac0908883552ce633",
+    "semantic_hash": "b0b94de99fff1b5ac0908883552ce633"
+  },
+  "facefusion/facefusion/args.py": {
+    "mtime": 1773419755.4110644,
+    "ast_hash": "2cad5ae56570c97500a66d4c0bf3d145",
+    "semantic_hash": "2cad5ae56570c97500a66d4c0bf3d145"
+  },
+  "facefusion/facefusion/audio.py": {
+    "mtime": 1773419755.4110644,
+    "ast_hash": "dde3b27ee01f55778c32885c6546d66a",
+    "semantic_hash": "dde3b27ee01f55778c32885c6546d66a"
+  },
+  "facefusion/facefusion/benchmarker.py": {
+    "mtime": 1773419755.4110644,
+    "ast_hash": "987f3397b825988c093fea332414212a",
+    "semantic_hash": "987f3397b825988c093fea332414212a"
+  },
+  "facefusion/facefusion/camera_manager.py": {
+    "mtime": 1773419755.4110644,
+    "ast_hash": "30d495b15ac780d82f071aae55014072",
+    "semantic_hash": "30d495b15ac780d82f071aae55014072"
+  },
+  "facefusion/facefusion/choices.py": {
+    "mtime": 1773419755.4120643,
+    "ast_hash": "995ba56404766a58862028f100680b84",
+    "semantic_hash": "995ba56404766a58862028f100680b84"
+  },
+  "facefusion/facefusion/cli_helper.py": {
+    "mtime": 1773419755.4120643,
+    "ast_hash": "5b520e0001e7c67383b1670c03c015ae",
+    "semantic_hash": "5b520e0001e7c67383b1670c03c015ae"
+  },
+  "facefusion/facefusion/common_helper.py": {
+    "mtime": 1773419755.413065,
+    "ast_hash": "1ee1daa43639107ec0db071cbcf8ee31",
+    "semantic_hash": "1ee1daa43639107ec0db071cbcf8ee31"
+  },
+  "facefusion/facefusion/config.py": {
+    "mtime": 1773419755.413065,
+    "ast_hash": "f452dd7c6e93e5a1dead6aeed4e4e89c",
+    "semantic_hash": "f452dd7c6e93e5a1dead6aeed4e4e89c"
+  },
+  "facefusion/facefusion/content_analyser.py": {
+    "mtime": 1773426187.4221265,
+    "ast_hash": "c363c0e25083ae7fb9655c67e19458dd",
+    "semantic_hash": "c363c0e25083ae7fb9655c67e19458dd"
+  },
+  "facefusion/facefusion/core.py": {
+    "mtime": 1773426340.7383356,
+    "ast_hash": "81cd396caadadca5aafb00bb880435fc",
+    "semantic_hash": "81cd396caadadca5aafb00bb880435fc"
+  },
+  "facefusion/facefusion/curl_builder.py": {
+    "mtime": 1773419755.413065,
+    "ast_hash": "fff32e6041823e106cbe15c3d826280b",
+    "semantic_hash": "fff32e6041823e106cbe15c3d826280b"
+  },
+  "facefusion/facefusion/download.py": {
+    "mtime": 1773419755.413065,
+    "ast_hash": "026e47aecc4b90122e245825fd74de9e",
+    "semantic_hash": "026e47aecc4b90122e245825fd74de9e"
+  },
+  "facefusion/facefusion/execution.py": {
+    "mtime": 1773419755.413065,
+    "ast_hash": "4df645a5964e6d857dc846e282dd13c0",
+    "semantic_hash": "4df645a5964e6d857dc846e282dd13c0"
+  },
+  "facefusion/facefusion/exit_helper.py": {
+    "mtime": 1773419755.413065,
+    "ast_hash": "71f5e0655957d78cad84daf2fc5a7eb1",
+    "semantic_hash": "71f5e0655957d78cad84daf2fc5a7eb1"
+  },
+  "facefusion/facefusion/face_analyser.py": {
+    "mtime": 1773419755.4140658,
+    "ast_hash": "dc09e1b6c1b2b699304446b94ff7ac73",
+    "semantic_hash": "dc09e1b6c1b2b699304446b94ff7ac73"
+  },
+  "facefusion/facefusion/face_classifier.py": {
+    "mtime": 1773419755.4140658,
+    "ast_hash": "75ab3027565528510c99034e4e84ebfc",
+    "semantic_hash": "75ab3027565528510c99034e4e84ebfc"
+  },
+  "facefusion/facefusion/face_detector.py": {
+    "mtime": 1773419755.4140658,
+    "ast_hash": "119fec24132af49dd949d53f65cd64de",
+    "semantic_hash": "119fec24132af49dd949d53f65cd64de"
+  },
+  "facefusion/facefusion/face_helper.py": {
+    "mtime": 1773419755.4140658,
+    "ast_hash": "548647c245b5fd01ea51acae1ab2971b",
+    "semantic_hash": "548647c245b5fd01ea51acae1ab2971b"
+  },
+  "facefusion/facefusion/face_landmarker.py": {
+    "mtime": 1773419755.4140658,
+    "ast_hash": "7d53fc86635f6fd80bd963574f1c7169",
+    "semantic_hash": "7d53fc86635f6fd80bd963574f1c7169"
+  },
+  "facefusion/facefusion/face_masker.py": {
+    "mtime": 1773419755.4140658,
+    "ast_hash": "8eb79843a9e379242f89b30a312eaaaf",
+    "semantic_hash": "8eb79843a9e379242f89b30a312eaaaf"
+  },
+  "facefusion/facefusion/face_recognizer.py": {
+    "mtime": 1773419755.4140658,
+    "ast_hash": "379ab7964f3b93bd7638523f7a04c819",
+    "semantic_hash": "379ab7964f3b93bd7638523f7a04c819"
+  },
+  "facefusion/facefusion/face_selector.py": {
+    "mtime": 1773419755.4140658,
+    "ast_hash": "193bebceb2b3fa21589fdf127f325c91",
+    "semantic_hash": "193bebceb2b3fa21589fdf127f325c91"
+  },
+  "facefusion/facefusion/face_store.py": {
+    "mtime": 1773419755.4150658,
+    "ast_hash": "acf4eec6a7df2c7bf1f67ce3e8683958",
+    "semantic_hash": "acf4eec6a7df2c7bf1f67ce3e8683958"
+  },
+  "facefusion/facefusion/ffmpeg.py": {
+    "mtime": 1773419755.4150658,
+    "ast_hash": "e1de9aea80aff4266aa204c9d689f09f",
+    "semantic_hash": "e1de9aea80aff4266aa204c9d689f09f"
+  },
+  "facefusion/facefusion/ffmpeg_builder.py": {
+    "mtime": 1773419755.4150658,
+    "ast_hash": "8a1d5d2f5d5e1f3d48d88eb549d624e7",
+    "semantic_hash": "8a1d5d2f5d5e1f3d48d88eb549d624e7"
+  },
+  "facefusion/facefusion/filesystem.py": {
+    "mtime": 1773419755.4150658,
+    "ast_hash": "fd76c01baaf54c2990016ba408619e07",
+    "semantic_hash": "fd76c01baaf54c2990016ba408619e07"
+  },
+  "facefusion/facefusion/hash_helper.py": {
+    "mtime": 1773419755.4150658,
+    "ast_hash": "8617ef99662eb93a9dd46f4199c32599",
+    "semantic_hash": "8617ef99662eb93a9dd46f4199c32599"
+  },
+  "facefusion/facefusion/inference_manager.py": {
+    "mtime": 1773419755.4150658,
+    "ast_hash": "859dea021bd0c6fa67db4f0e9cf83fa7",
+    "semantic_hash": "859dea021bd0c6fa67db4f0e9cf83fa7"
+  },
+  "facefusion/facefusion/installer.py": {
+    "mtime": 1773419755.4150658,
+    "ast_hash": "15ec95b5031c70b1df3eef0166acac1f",
+    "semantic_hash": "15ec95b5031c70b1df3eef0166acac1f"
+  },
+  "facefusion/facefusion/jobs/__init__.py": {
+    "mtime": 1773419755.4150658,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "facefusion/facefusion/jobs/job_helper.py": {
+    "mtime": 1773419755.4150658,
+    "ast_hash": "b18c947577d50439b49905330fc89e89",
+    "semantic_hash": "b18c947577d50439b49905330fc89e89"
+  },
+  "facefusion/facefusion/jobs/job_list.py": {
+    "mtime": 1773419755.416065,
+    "ast_hash": "a1214b8bc20b707e8a7db346fad70a8a",
+    "semantic_hash": "a1214b8bc20b707e8a7db346fad70a8a"
+  },
+  "facefusion/facefusion/jobs/job_manager.py": {
+    "mtime": 1773419755.416065,
+    "ast_hash": "55af2fc7091c130d24ed967e7d4bc19e",
+    "semantic_hash": "55af2fc7091c130d24ed967e7d4bc19e"
+  },
+  "facefusion/facefusion/jobs/job_runner.py": {
+    "mtime": 1773419755.416065,
+    "ast_hash": "cbe2210d0ab8a2289789ed17f7598031",
+    "semantic_hash": "cbe2210d0ab8a2289789ed17f7598031"
+  },
+  "facefusion/facefusion/jobs/job_store.py": {
+    "mtime": 1773419755.416065,
+    "ast_hash": "a9136c32ea0b2bb03d381d05f4884603",
+    "semantic_hash": "a9136c32ea0b2bb03d381d05f4884603"
+  },
+  "facefusion/facefusion/json.py": {
+    "mtime": 1773419755.416065,
+    "ast_hash": "b354b78e2b2a5f6f5f9e5f7e280ef40a",
+    "semantic_hash": "b354b78e2b2a5f6f5f9e5f7e280ef40a"
+  },
+  "facefusion/facefusion/locales.py": {
+    "mtime": 1773419755.416065,
+    "ast_hash": "38dcf98072eba0d82e25b92afe0cbdf5",
+    "semantic_hash": "38dcf98072eba0d82e25b92afe0cbdf5"
+  },
+  "facefusion/facefusion/logger.py": {
+    "mtime": 1773419755.416065,
+    "ast_hash": "18e13658698bc4b8813ed7beefd69d8b",
+    "semantic_hash": "18e13658698bc4b8813ed7beefd69d8b"
+  },
+  "facefusion/facefusion/memory.py": {
+    "mtime": 1773419755.416065,
+    "ast_hash": "8b286eaef68f20a5631609a8ac70a58e",
+    "semantic_hash": "8b286eaef68f20a5631609a8ac70a58e"
+  },
+  "facefusion/facefusion/metadata.py": {
+    "mtime": 1773419755.4170651,
+    "ast_hash": "2146280244771cd983b4d0b4af5c235e",
+    "semantic_hash": "2146280244771cd983b4d0b4af5c235e"
+  },
+  "facefusion/facefusion/model_helper.py": {
+    "mtime": 1773419755.4170651,
+    "ast_hash": "afc4290e1effa5f9e617cb8f56e25ea2",
+    "semantic_hash": "afc4290e1effa5f9e617cb8f56e25ea2"
+  },
+  "facefusion/facefusion/normalizer.py": {
+    "mtime": 1773419755.4180665,
+    "ast_hash": "813a181eab77df9c8d7b680868bc1273",
+    "semantic_hash": "813a181eab77df9c8d7b680868bc1273"
+  },
+  "facefusion/facefusion/process_manager.py": {
+    "mtime": 1773419755.4180665,
+    "ast_hash": "86856945edd39f97e1351a29751a1014",
+    "semantic_hash": "86856945edd39f97e1351a29751a1014"
+  },
+  "facefusion/facefusion/processors/__init__.py": {
+    "mtime": 1773419755.4180665,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "facefusion/facefusion/processors/core.py": {
+    "mtime": 1773419755.4180665,
+    "ast_hash": "e810ce86d7012d121bd5d8a73e1d0157",
+    "semantic_hash": "e810ce86d7012d121bd5d8a73e1d0157"
+  },
+  "facefusion/facefusion/processors/live_portrait.py": {
+    "mtime": 1773419755.4180665,
+    "ast_hash": "9f52ad1c7c4c8b9eeb419ab298251390",
+    "semantic_hash": "9f52ad1c7c4c8b9eeb419ab298251390"
+  },
+  "facefusion/facefusion/processors/modules/__init__.py": {
+    "mtime": 1773419755.4180665,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "facefusion/facefusion/processors/modules/age_modifier/__init__.py": {
+    "mtime": 1773419755.4180665,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "facefusion/facefusion/processors/modules/age_modifier/choices.py": {
+    "mtime": 1773419755.4180665,
+    "ast_hash": "0073e48daf71bad5e743317739b3cfb1",
+    "semantic_hash": "0073e48daf71bad5e743317739b3cfb1"
+  },
+  "facefusion/facefusion/processors/modules/age_modifier/core.py": {
+    "mtime": 1773419755.4180665,
+    "ast_hash": "d2624f291a7fe9258a21d44e60a8990d",
+    "semantic_hash": "d2624f291a7fe9258a21d44e60a8990d"
+  },
+  "facefusion/facefusion/processors/modules/age_modifier/locales.py": {
+    "mtime": 1773419755.419064,
+    "ast_hash": "599f226ebe8863395da5dcfca035a0b2",
+    "semantic_hash": "599f226ebe8863395da5dcfca035a0b2"
+  },
+  "facefusion/facefusion/processors/modules/age_modifier/types.py": {
+    "mtime": 1773419755.419064,
+    "ast_hash": "9d55e98c2f795505018a590cd10fc5ef",
+    "semantic_hash": "9d55e98c2f795505018a590cd10fc5ef"
+  },
+  "facefusion/facefusion/processors/modules/background_remover/__init__.py": {
+    "mtime": 1773419755.419064,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "facefusion/facefusion/processors/modules/background_remover/choices.py": {
+    "mtime": 1773419755.419064,
+    "ast_hash": "37c716eaa187b3bedcd8114dadfacd14",
+    "semantic_hash": "37c716eaa187b3bedcd8114dadfacd14"
+  },
+  "facefusion/facefusion/processors/modules/background_remover/core.py": {
+    "mtime": 1773419755.419064,
+    "ast_hash": "4427957bd2b80141e7f0652638a4bcc5",
+    "semantic_hash": "4427957bd2b80141e7f0652638a4bcc5"
+  },
+  "facefusion/facefusion/processors/modules/background_remover/locales.py": {
+    "mtime": 1773419755.419064,
+    "ast_hash": "51545d23970e82ef2529ec8affd4865c",
+    "semantic_hash": "51545d23970e82ef2529ec8affd4865c"
+  },
+  "facefusion/facefusion/processors/modules/background_remover/types.py": {
+    "mtime": 1773419755.419064,
+    "ast_hash": "1052af725b3537529faf0407ee9300c9",
+    "semantic_hash": "1052af725b3537529faf0407ee9300c9"
+  },
+  "facefusion/facefusion/processors/modules/deep_swapper/__init__.py": {
+    "mtime": 1773419755.419064,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "facefusion/facefusion/processors/modules/deep_swapper/choices.py": {
+    "mtime": 1773419755.419064,
+    "ast_hash": "850b0307102ecd05061eb1ac36d62037",
+    "semantic_hash": "850b0307102ecd05061eb1ac36d62037"
+  },
+  "facefusion/facefusion/processors/modules/deep_swapper/core.py": {
+    "mtime": 1773419755.4200654,
+    "ast_hash": "40c70d79dc79408269c50a1069d17357",
+    "semantic_hash": "40c70d79dc79408269c50a1069d17357"
+  },
+  "facefusion/facefusion/processors/modules/deep_swapper/locales.py": {
+    "mtime": 1773419755.4200654,
+    "ast_hash": "0ac90db95abdda4accccade03d6c4edc",
+    "semantic_hash": "0ac90db95abdda4accccade03d6c4edc"
+  },
+  "facefusion/facefusion/processors/modules/deep_swapper/types.py": {
+    "mtime": 1773419755.4200654,
+    "ast_hash": "2d80522617d08549adc6ad0e9f7186d3",
+    "semantic_hash": "2d80522617d08549adc6ad0e9f7186d3"
+  },
+  "facefusion/facefusion/processors/modules/expression_restorer/__init__.py": {
+    "mtime": 1773419755.4200654,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "facefusion/facefusion/processors/modules/expression_restorer/choices.py": {
+    "mtime": 1773419755.4200654,
+    "ast_hash": "bf54c470b6c3c9854e6b4e8168461404",
+    "semantic_hash": "bf54c470b6c3c9854e6b4e8168461404"
+  },
+  "facefusion/facefusion/processors/modules/expression_restorer/core.py": {
+    "mtime": 1773419755.4200654,
+    "ast_hash": "21dcf7c874d9a61fe1f02194b40ef915",
+    "semantic_hash": "21dcf7c874d9a61fe1f02194b40ef915"
+  },
+  "facefusion/facefusion/processors/modules/expression_restorer/locales.py": {
+    "mtime": 1773419755.4200654,
+    "ast_hash": "ba250c762c912b0708fe072fd292e9fb",
+    "semantic_hash": "ba250c762c912b0708fe072fd292e9fb"
+  },
+  "facefusion/facefusion/processors/modules/expression_restorer/types.py": {
+    "mtime": 1773419755.4200654,
+    "ast_hash": "34a16f79efb8484ebb5ee0fdd6fbb360",
+    "semantic_hash": "34a16f79efb8484ebb5ee0fdd6fbb360"
+  },
+  "facefusion/facefusion/processors/modules/face_debugger/__init__.py": {
+    "mtime": 1773419755.4200654,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "facefusion/facefusion/processors/modules/face_debugger/choices.py": {
+    "mtime": 1773419755.4210663,
+    "ast_hash": "0bcc0989fbcb724db1b7475af912a7b3",
+    "semantic_hash": "0bcc0989fbcb724db1b7475af912a7b3"
+  },
+  "facefusion/facefusion/processors/modules/face_debugger/core.py": {
+    "mtime": 1773419755.4210663,
+    "ast_hash": "334e79b2001a5c74de44be6b6c3a5906",
+    "semantic_hash": "334e79b2001a5c74de44be6b6c3a5906"
+  },
+  "facefusion/facefusion/processors/modules/face_debugger/locales.py": {
+    "mtime": 1773419755.4210663,
+    "ast_hash": "d020edae97f588e2f2dca843978884dd",
+    "semantic_hash": "d020edae97f588e2f2dca843978884dd"
+  },
+  "facefusion/facefusion/processors/modules/face_debugger/types.py": {
+    "mtime": 1773419755.4210663,
+    "ast_hash": "affabdd23ca62da9b155139b9e44dd2a",
+    "semantic_hash": "affabdd23ca62da9b155139b9e44dd2a"
+  },
+  "facefusion/facefusion/processors/modules/face_editor/__init__.py": {
+    "mtime": 1773419755.4220731,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "facefusion/facefusion/processors/modules/face_editor/choices.py": {
+    "mtime": 1773419755.4220731,
+    "ast_hash": "b5266f1dceb148b8a71f9df09a7adf85",
+    "semantic_hash": "b5266f1dceb148b8a71f9df09a7adf85"
+  },
+  "facefusion/facefusion/processors/modules/face_editor/core.py": {
+    "mtime": 1773419755.4220731,
+    "ast_hash": "b8b8b9f74eb31b5c4284f34091425986",
+    "semantic_hash": "b8b8b9f74eb31b5c4284f34091425986"
+  },
+  "facefusion/facefusion/processors/modules/face_editor/locales.py": {
+    "mtime": 1773419755.4220731,
+    "ast_hash": "5ba4332e08daf39c68a2e493273d42c7",
+    "semantic_hash": "5ba4332e08daf39c68a2e493273d42c7"
+  },
+  "facefusion/facefusion/processors/modules/face_editor/types.py": {
+    "mtime": 1773419755.4220731,
+    "ast_hash": "c4c97c3285197922ac7e75ffd6c61ff4",
+    "semantic_hash": "c4c97c3285197922ac7e75ffd6c61ff4"
+  },
+  "facefusion/facefusion/processors/modules/face_enhancer/__init__.py": {
+    "mtime": 1773419755.4220731,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "facefusion/facefusion/processors/modules/face_enhancer/choices.py": {
+    "mtime": 1773419755.423065,
+    "ast_hash": "4c41257934ba3d2dd822a7114ed8bc64",
+    "semantic_hash": "4c41257934ba3d2dd822a7114ed8bc64"
+  },
+  "facefusion/facefusion/processors/modules/face_enhancer/core.py": {
+    "mtime": 1773419755.423065,
+    "ast_hash": "65054ea8743e449ae905b8a21c1ceed5",
+    "semantic_hash": "65054ea8743e449ae905b8a21c1ceed5"
+  },
+  "facefusion/facefusion/processors/modules/face_enhancer/locales.py": {
+    "mtime": 1773419755.423065,
+    "ast_hash": "a2a493149a0c4b394ea055e9a2fd1e6a",
+    "semantic_hash": "a2a493149a0c4b394ea055e9a2fd1e6a"
+  },
+  "facefusion/facefusion/processors/modules/face_enhancer/types.py": {
+    "mtime": 1773419755.423065,
+    "ast_hash": "53cac7862648d20917653f1bdcc63d4e",
+    "semantic_hash": "53cac7862648d20917653f1bdcc63d4e"
+  },
+  "facefusion/facefusion/processors/modules/face_swapper/__init__.py": {
+    "mtime": 1773419755.423065,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "facefusion/facefusion/processors/modules/face_swapper/choices.py": {
+    "mtime": 1773419755.423065,
+    "ast_hash": "0494bd5011d2ff225666e8ec18f276cf",
+    "semantic_hash": "0494bd5011d2ff225666e8ec18f276cf"
+  },
+  "facefusion/facefusion/processors/modules/face_swapper/core.py": {
+    "mtime": 1773419755.423065,
+    "ast_hash": "848d1b4d201315362a08c22b230ff8e6",
+    "semantic_hash": "848d1b4d201315362a08c22b230ff8e6"
+  },
+  "facefusion/facefusion/processors/modules/face_swapper/locales.py": {
+    "mtime": 1773419755.423065,
+    "ast_hash": "72a1d95f32ba5a1f355418eee40e7887",
+    "semantic_hash": "72a1d95f32ba5a1f355418eee40e7887"
+  },
+  "facefusion/facefusion/processors/modules/face_swapper/types.py": {
+    "mtime": 1773419755.423065,
+    "ast_hash": "11fc164d386c7113af84b666bf2675e7",
+    "semantic_hash": "11fc164d386c7113af84b666bf2675e7"
+  },
+  "facefusion/facefusion/processors/modules/frame_colorizer/__init__.py": {
+    "mtime": 1773419755.423065,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "facefusion/facefusion/processors/modules/frame_colorizer/choices.py": {
+    "mtime": 1773419755.4241726,
+    "ast_hash": "ceacf73cd6ddac1f47aac420fd0f2ee3",
+    "semantic_hash": "ceacf73cd6ddac1f47aac420fd0f2ee3"
+  },
+  "facefusion/facefusion/processors/modules/frame_colorizer/core.py": {
+    "mtime": 1773419755.4241726,
+    "ast_hash": "f33ca425a9987a2980e5ca0ff54381de",
+    "semantic_hash": "f33ca425a9987a2980e5ca0ff54381de"
+  },
+  "facefusion/facefusion/processors/modules/frame_colorizer/locales.py": {
+    "mtime": 1773419755.4241726,
+    "ast_hash": "cf2c42805012ae62ed433340bcb425b8",
+    "semantic_hash": "cf2c42805012ae62ed433340bcb425b8"
+  },
+  "facefusion/facefusion/processors/modules/frame_colorizer/types.py": {
+    "mtime": 1773419755.4241726,
+    "ast_hash": "9a292e9cfdc0ab56ef03cc0c91556ca3",
+    "semantic_hash": "9a292e9cfdc0ab56ef03cc0c91556ca3"
+  },
+  "facefusion/facefusion/processors/modules/frame_enhancer/__init__.py": {
+    "mtime": 1773419755.4241726,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "facefusion/facefusion/processors/modules/frame_enhancer/choices.py": {
+    "mtime": 1773419755.4241726,
+    "ast_hash": "1a91ae6f5ffc148738f15e856cc23f52",
+    "semantic_hash": "1a91ae6f5ffc148738f15e856cc23f52"
+  },
+  "facefusion/facefusion/processors/modules/frame_enhancer/core.py": {
+    "mtime": 1773419755.4241726,
+    "ast_hash": "fb8c5b4a8beba7e1fa39537aa7a2fd4e",
+    "semantic_hash": "fb8c5b4a8beba7e1fa39537aa7a2fd4e"
+  },
+  "facefusion/facefusion/processors/modules/frame_enhancer/locales.py": {
+    "mtime": 1773419755.4241726,
+    "ast_hash": "5fbeb2205d6c32e50858829379657de6",
+    "semantic_hash": "5fbeb2205d6c32e50858829379657de6"
+  },
+  "facefusion/facefusion/processors/modules/frame_enhancer/types.py": {
+    "mtime": 1773419755.4241726,
+    "ast_hash": "4c9bb0984a1419d55faca817fef4cf0c",
+    "semantic_hash": "4c9bb0984a1419d55faca817fef4cf0c"
+  },
+  "facefusion/facefusion/processors/modules/lip_syncer/__init__.py": {
+    "mtime": 1773419755.4251752,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "facefusion/facefusion/processors/modules/lip_syncer/choices.py": {
+    "mtime": 1773419755.4251752,
+    "ast_hash": "06d4fedb6093b93db20e95fffdda4127",
+    "semantic_hash": "06d4fedb6093b93db20e95fffdda4127"
+  },
+  "facefusion/facefusion/processors/modules/lip_syncer/core.py": {
+    "mtime": 1773419755.4251752,
+    "ast_hash": "0fb15b06c2bed203c9afd325e14cb003",
+    "semantic_hash": "0fb15b06c2bed203c9afd325e14cb003"
+  },
+  "facefusion/facefusion/processors/modules/lip_syncer/locales.py": {
+    "mtime": 1773419755.4251752,
+    "ast_hash": "a93638dfa00c6b8d1dbbde0fe01a7413",
+    "semantic_hash": "a93638dfa00c6b8d1dbbde0fe01a7413"
+  },
+  "facefusion/facefusion/processors/modules/lip_syncer/types.py": {
+    "mtime": 1773419755.4251752,
+    "ast_hash": "af7d12be054ecc14ef56160532499a60",
+    "semantic_hash": "af7d12be054ecc14ef56160532499a60"
+  },
+  "facefusion/facefusion/processors/pixel_boost.py": {
+    "mtime": 1773419755.4251752,
+    "ast_hash": "de5f1e22fddbaadce907b1f0fb4a482d",
+    "semantic_hash": "de5f1e22fddbaadce907b1f0fb4a482d"
+  },
+  "facefusion/facefusion/processors/types.py": {
+    "mtime": 1773419755.4251752,
+    "ast_hash": "cf8a72c292fdfeb857f94e34c30c71e2",
+    "semantic_hash": "cf8a72c292fdfeb857f94e34c30c71e2"
+  },
+  "facefusion/facefusion/program.py": {
+    "mtime": 1773419755.4251752,
+    "ast_hash": "7c7852cee1924ea83c0c3e9fc98d13e7",
+    "semantic_hash": "7c7852cee1924ea83c0c3e9fc98d13e7"
+  },
+  "facefusion/facefusion/program_helper.py": {
+    "mtime": 1773419755.4261806,
+    "ast_hash": "5f092a8ea1e5ddb04ac8d2ca58eeb3ee",
+    "semantic_hash": "5f092a8ea1e5ddb04ac8d2ca58eeb3ee"
+  },
+  "facefusion/facefusion/sanitizer.py": {
+    "mtime": 1773419755.4261806,
+    "ast_hash": "d7acc903573e9cb9dab8627ac594a972",
+    "semantic_hash": "d7acc903573e9cb9dab8627ac594a972"
+  },
+  "facefusion/facefusion/state_manager.py": {
+    "mtime": 1773419755.4261806,
+    "ast_hash": "9e440802ff74365c023fb9f3ff2c60f5",
+    "semantic_hash": "9e440802ff74365c023fb9f3ff2c60f5"
+  },
+  "facefusion/facefusion/streamer.py": {
+    "mtime": 1773419755.4261806,
+    "ast_hash": "9d30be168e14ce2144031c5a3e5e0bde",
+    "semantic_hash": "9d30be168e14ce2144031c5a3e5e0bde"
+  },
+  "facefusion/facefusion/temp_helper.py": {
+    "mtime": 1773419755.4261806,
+    "ast_hash": "4c2fa809ec4754b817ae47fe259f82ce",
+    "semantic_hash": "4c2fa809ec4754b817ae47fe259f82ce"
+  },
+  "facefusion/facefusion/thread_helper.py": {
+    "mtime": 1773419755.4261806,
+    "ast_hash": "e912aeab8bfae16fe7929c8e3140327d",
+    "semantic_hash": "e912aeab8bfae16fe7929c8e3140327d"
+  },
+  "facefusion/facefusion/time_helper.py": {
+    "mtime": 1773419755.4261806,
+    "ast_hash": "a4a723ca260cd74a9bfdb852fcc4bbe0",
+    "semantic_hash": "a4a723ca260cd74a9bfdb852fcc4bbe0"
+  },
+  "facefusion/facefusion/translator.py": {
+    "mtime": 1773419755.4261806,
+    "ast_hash": "eab7241290bba1ee2e443c89f39c0014",
+    "semantic_hash": "eab7241290bba1ee2e443c89f39c0014"
+  },
+  "facefusion/facefusion/types.py": {
+    "mtime": 1773419755.4261806,
+    "ast_hash": "7bca716a997f2788b0cef058b0204e89",
+    "semantic_hash": "7bca716a997f2788b0cef058b0204e89"
+  },
+  "facefusion/facefusion/uis/__init__.py": {
+    "mtime": 1773419755.4261806,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "facefusion/facefusion/uis/choices.py": {
+    "mtime": 1773419755.4271748,
+    "ast_hash": "3bf6c28e130caf175ec2d5a8390a8abe",
+    "semantic_hash": "3bf6c28e130caf175ec2d5a8390a8abe"
+  },
+  "facefusion/facefusion/uis/components/__init__.py": {
+    "mtime": 1773419755.4271748,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "facefusion/facefusion/uis/components/about.py": {
+    "mtime": 1773419755.4271748,
+    "ast_hash": "400a7403ddcf71ebece4f99367191acb",
+    "semantic_hash": "400a7403ddcf71ebece4f99367191acb"
+  },
+  "facefusion/facefusion/uis/components/age_modifier_options.py": {
+    "mtime": 1773419755.4271748,
+    "ast_hash": "3fe8228e17ee594ac726e2cfd62aa539",
+    "semantic_hash": "3fe8228e17ee594ac726e2cfd62aa539"
+  },
+  "facefusion/facefusion/uis/components/background_remover_options.py": {
+    "mtime": 1773419755.4271748,
+    "ast_hash": "51e0152fa036ec18e6ddf9879f66ff41",
+    "semantic_hash": "51e0152fa036ec18e6ddf9879f66ff41"
+  },
+  "facefusion/facefusion/uis/components/benchmark.py": {
+    "mtime": 1773419755.4271748,
+    "ast_hash": "8c520067de9596d286d7f7b11937d926",
+    "semantic_hash": "8c520067de9596d286d7f7b11937d926"
+  },
+  "facefusion/facefusion/uis/components/benchmark_options.py": {
+    "mtime": 1773419755.4291832,
+    "ast_hash": "d4e47303e3b66ae46b9ca9aa4bc19400",
+    "semantic_hash": "d4e47303e3b66ae46b9ca9aa4bc19400"
+  },
+  "facefusion/facefusion/uis/components/common_options.py": {
+    "mtime": 1773419755.4291832,
+    "ast_hash": "64d7101f98722cd312ec9d64b7a7e6bc",
+    "semantic_hash": "64d7101f98722cd312ec9d64b7a7e6bc"
+  },
+  "facefusion/facefusion/uis/components/deep_swapper_options.py": {
+    "mtime": 1773419755.4291832,
+    "ast_hash": "10d7638d638df3c14c57babd0a92cc41",
+    "semantic_hash": "10d7638d638df3c14c57babd0a92cc41"
+  },
+  "facefusion/facefusion/uis/components/download.py": {
+    "mtime": 1773419755.4291832,
+    "ast_hash": "cb28e1aa99038fde7deb0bcc1c72624d",
+    "semantic_hash": "cb28e1aa99038fde7deb0bcc1c72624d"
+  },
+  "facefusion/facefusion/uis/components/execution.py": {
+    "mtime": 1773419755.4291832,
+    "ast_hash": "3c7a9a7a76ac3ebc09373462fc32cd4f",
+    "semantic_hash": "3c7a9a7a76ac3ebc09373462fc32cd4f"
+  },
+  "facefusion/facefusion/uis/components/execution_thread_count.py": {
+    "mtime": 1773419755.4291832,
+    "ast_hash": "9489c0779a78054edec95a421a307f48",
+    "semantic_hash": "9489c0779a78054edec95a421a307f48"
+  },
+  "facefusion/facefusion/uis/components/expression_restorer_options.py": {
+    "mtime": 1773419755.4291832,
+    "ast_hash": "7f012f08c6ffe479d69e989d925f2fba",
+    "semantic_hash": "7f012f08c6ffe479d69e989d925f2fba"
+  },
+  "facefusion/facefusion/uis/components/face_debugger_options.py": {
+    "mtime": 1773419755.4291832,
+    "ast_hash": "77e19e67aab0c9847ed0ec70b82c58f8",
+    "semantic_hash": "77e19e67aab0c9847ed0ec70b82c58f8"
+  },
+  "facefusion/facefusion/uis/components/face_detector.py": {
+    "mtime": 1773419755.4291832,
+    "ast_hash": "a2290851b0bc7a4453077b41038ede9f",
+    "semantic_hash": "a2290851b0bc7a4453077b41038ede9f"
+  },
+  "facefusion/facefusion/uis/components/face_editor_options.py": {
+    "mtime": 1773419755.4291832,
+    "ast_hash": "a98c8346d53dfadc30a7ed276706c933",
+    "semantic_hash": "a98c8346d53dfadc30a7ed276706c933"
+  },
+  "facefusion/facefusion/uis/components/face_enhancer_options.py": {
+    "mtime": 1773419755.4301765,
+    "ast_hash": "46dbc69486548670fd7bec2f5fc64475",
+    "semantic_hash": "46dbc69486548670fd7bec2f5fc64475"
+  },
+  "facefusion/facefusion/uis/components/face_landmarker.py": {
+    "mtime": 1773419755.4301765,
+    "ast_hash": "c3cd274a161369da77e1bf98e74bda79",
+    "semantic_hash": "c3cd274a161369da77e1bf98e74bda79"
+  },
+  "facefusion/facefusion/uis/components/face_masker.py": {
+    "mtime": 1773419755.4301765,
+    "ast_hash": "1e9809deba568a4c6e8414105773dceb",
+    "semantic_hash": "1e9809deba568a4c6e8414105773dceb"
+  },
+  "facefusion/facefusion/uis/components/face_selector.py": {
+    "mtime": 1773419755.4301765,
+    "ast_hash": "fca54c73525cde36bd2157dc80899265",
+    "semantic_hash": "fca54c73525cde36bd2157dc80899265"
+  },
+  "facefusion/facefusion/uis/components/face_swapper_options.py": {
+    "mtime": 1773419755.4301765,
+    "ast_hash": "3d708e1ee636749267bdb5e11949d060",
+    "semantic_hash": "3d708e1ee636749267bdb5e11949d060"
+  },
+  "facefusion/facefusion/uis/components/frame_colorizer_options.py": {
+    "mtime": 1773419755.4301765,
+    "ast_hash": "28b8e39236dd01d715fd8094d545230e",
+    "semantic_hash": "28b8e39236dd01d715fd8094d545230e"
+  },
+  "facefusion/facefusion/uis/components/frame_enhancer_options.py": {
+    "mtime": 1773419755.4301765,
+    "ast_hash": "11d925b09f6e28c656c50a0ba26cca4b",
+    "semantic_hash": "11d925b09f6e28c656c50a0ba26cca4b"
+  },
+  "facefusion/facefusion/uis/components/instant_runner.py": {
+    "mtime": 1773419755.4301765,
+    "ast_hash": "9e64d0d5669e9d3284752593e1a29bb3",
+    "semantic_hash": "9e64d0d5669e9d3284752593e1a29bb3"
+  },
+  "facefusion/facefusion/uis/components/job_list.py": {
+    "mtime": 1773419755.4301765,
+    "ast_hash": "f1d1ddefc91ee629ac135b36a0b4d28a",
+    "semantic_hash": "f1d1ddefc91ee629ac135b36a0b4d28a"
+  },
+  "facefusion/facefusion/uis/components/job_list_options.py": {
+    "mtime": 1773419755.4301765,
+    "ast_hash": "dc66f78abc77e296ca4fc619f89a99b0",
+    "semantic_hash": "dc66f78abc77e296ca4fc619f89a99b0"
+  },
+  "facefusion/facefusion/uis/components/job_manager.py": {
+    "mtime": 1773419755.4311752,
+    "ast_hash": "2678f6a0c81274f65c7cdc9f05affa5f",
+    "semantic_hash": "2678f6a0c81274f65c7cdc9f05affa5f"
+  },
+  "facefusion/facefusion/uis/components/job_runner.py": {
+    "mtime": 1773419755.4311752,
+    "ast_hash": "f63877079702b8b027aed0ee34558202",
+    "semantic_hash": "f63877079702b8b027aed0ee34558202"
+  },
+  "facefusion/facefusion/uis/components/lip_syncer_options.py": {
+    "mtime": 1773419755.4311752,
+    "ast_hash": "6deed410e77a0b1b5eb097ba64494fbf",
+    "semantic_hash": "6deed410e77a0b1b5eb097ba64494fbf"
+  },
+  "facefusion/facefusion/uis/components/memory.py": {
+    "mtime": 1773419755.4311752,
+    "ast_hash": "bfc8da6aea1ccb3ba9fd117654766747",
+    "semantic_hash": "bfc8da6aea1ccb3ba9fd117654766747"
+  },
+  "facefusion/facefusion/uis/components/output.py": {
+    "mtime": 1773419755.4311752,
+    "ast_hash": "141e50805d59d74905dd6043fce07f22",
+    "semantic_hash": "141e50805d59d74905dd6043fce07f22"
+  },
+  "facefusion/facefusion/uis/components/output_options.py": {
+    "mtime": 1773419755.4311752,
+    "ast_hash": "e7f8ba7e2be9c9ea5c0569f9b35622c1",
+    "semantic_hash": "e7f8ba7e2be9c9ea5c0569f9b35622c1"
+  },
+  "facefusion/facefusion/uis/components/preview.py": {
+    "mtime": 1773419755.4311752,
+    "ast_hash": "927afc8beea77d068553399aa5153771",
+    "semantic_hash": "927afc8beea77d068553399aa5153771"
+  },
+  "facefusion/facefusion/uis/components/preview_options.py": {
+    "mtime": 1773419755.4311752,
+    "ast_hash": "c05979138bfab63093d26f3d07a1317b",
+    "semantic_hash": "c05979138bfab63093d26f3d07a1317b"
+  },
+  "facefusion/facefusion/uis/components/processors.py": {
+    "mtime": 1773419755.4321766,
+    "ast_hash": "abdf4d46154396b8478c2e1e371c7a13",
+    "semantic_hash": "abdf4d46154396b8478c2e1e371c7a13"
+  },
+  "facefusion/facefusion/uis/components/source.py": {
+    "mtime": 1773419755.4331765,
+    "ast_hash": "457794990a0bfeda4d0921b26aa569f0",
+    "semantic_hash": "457794990a0bfeda4d0921b26aa569f0"
+  },
+  "facefusion/facefusion/uis/components/target.py": {
+    "mtime": 1773419755.4331765,
+    "ast_hash": "aa3fafa33d949413ce8123f3f992815f",
+    "semantic_hash": "aa3fafa33d949413ce8123f3f992815f"
+  },
+  "facefusion/facefusion/uis/components/temp_frame.py": {
+    "mtime": 1773419755.4331765,
+    "ast_hash": "a09adba41f4317e56ee4b2377d69c6ed",
+    "semantic_hash": "a09adba41f4317e56ee4b2377d69c6ed"
+  },
+  "facefusion/facefusion/uis/components/terminal.py": {
+    "mtime": 1773419755.4331765,
+    "ast_hash": "7c380990b4a6998a5179ff23b6b370df",
+    "semantic_hash": "7c380990b4a6998a5179ff23b6b370df"
+  },
+  "facefusion/facefusion/uis/components/trim_frame.py": {
+    "mtime": 1773419755.4331765,
+    "ast_hash": "5d8de2d6a8cedd2195ca538db66c83fc",
+    "semantic_hash": "5d8de2d6a8cedd2195ca538db66c83fc"
+  },
+  "facefusion/facefusion/uis/components/ui_workflow.py": {
+    "mtime": 1773419755.4331765,
+    "ast_hash": "87e6e6741d8415fe429263a66399a0f2",
+    "semantic_hash": "87e6e6741d8415fe429263a66399a0f2"
+  },
+  "facefusion/facefusion/uis/components/voice_extractor.py": {
+    "mtime": 1773419755.4331765,
+    "ast_hash": "752a747d542eceec4d945888ce038bad",
+    "semantic_hash": "752a747d542eceec4d945888ce038bad"
+  },
+  "facefusion/facefusion/uis/components/webcam.py": {
+    "mtime": 1773419755.4331765,
+    "ast_hash": "3a9c7c7e8b2723cd1c5f4edadfc9ae62",
+    "semantic_hash": "3a9c7c7e8b2723cd1c5f4edadfc9ae62"
+  },
+  "facefusion/facefusion/uis/components/webcam_options.py": {
+    "mtime": 1773419755.4331765,
+    "ast_hash": "8a9fe366336e295a20e009456f27c620",
+    "semantic_hash": "8a9fe366336e295a20e009456f27c620"
+  },
+  "facefusion/facefusion/uis/core.py": {
+    "mtime": 1773419755.4331765,
+    "ast_hash": "fc1aedd2c93ca2f403d7e6829651cab6",
+    "semantic_hash": "fc1aedd2c93ca2f403d7e6829651cab6"
+  },
+  "facefusion/facefusion/uis/layouts/benchmark.py": {
+    "mtime": 1773419755.4341767,
+    "ast_hash": "89f56128cab7c9d4bf0e281bb00b1422",
+    "semantic_hash": "89f56128cab7c9d4bf0e281bb00b1422"
+  },
+  "facefusion/facefusion/uis/layouts/default.py": {
+    "mtime": 1773419755.4341767,
+    "ast_hash": "2196690c33d01c95720c9d942a2350d3",
+    "semantic_hash": "2196690c33d01c95720c9d942a2350d3"
+  },
+  "facefusion/facefusion/uis/layouts/jobs.py": {
+    "mtime": 1773419755.4341767,
+    "ast_hash": "7dbbc24eced68e7ab841b77935037d1f",
+    "semantic_hash": "7dbbc24eced68e7ab841b77935037d1f"
+  },
+  "facefusion/facefusion/uis/layouts/webcam.py": {
+    "mtime": 1773419755.4341767,
+    "ast_hash": "674075a8f7cba8c1ff7b4fd7e563bb39",
+    "semantic_hash": "674075a8f7cba8c1ff7b4fd7e563bb39"
+  },
+  "facefusion/facefusion/uis/overrides.py": {
+    "mtime": 1773419755.4351845,
+    "ast_hash": "ed23f2433b8a0d9e2b70c1b2830da8e8",
+    "semantic_hash": "ed23f2433b8a0d9e2b70c1b2830da8e8"
+  },
+  "facefusion/facefusion/uis/types.py": {
+    "mtime": 1773419755.4351845,
+    "ast_hash": "0cdf6afea946f94661f4dccf3a3c1c32",
+    "semantic_hash": "0cdf6afea946f94661f4dccf3a3c1c32"
+  },
+  "facefusion/facefusion/uis/ui_helper.py": {
+    "mtime": 1773419755.4351845,
+    "ast_hash": "c9ad57ca7d105be7b12fdfbecc2c34b1",
+    "semantic_hash": "c9ad57ca7d105be7b12fdfbecc2c34b1"
+  },
+  "facefusion/facefusion/video_manager.py": {
+    "mtime": 1773419755.4351845,
+    "ast_hash": "046154bdf22b97be7f34958853249f9b",
+    "semantic_hash": "046154bdf22b97be7f34958853249f9b"
+  },
+  "facefusion/facefusion/vision.py": {
+    "mtime": 1773419755.4351845,
+    "ast_hash": "9b9df6c5d24e3035ebaceb3d967606e8",
+    "semantic_hash": "9b9df6c5d24e3035ebaceb3d967606e8"
+  },
+  "facefusion/facefusion/voice_extractor.py": {
+    "mtime": 1773419755.4361763,
+    "ast_hash": "0b604f8c0d5cf72b92e59aa38e01e300",
+    "semantic_hash": "0b604f8c0d5cf72b92e59aa38e01e300"
+  },
+  "facefusion/facefusion/workflows/__init__.py": {
+    "mtime": 1773419755.4361763,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "facefusion/facefusion/workflows/core.py": {
+    "mtime": 1773419755.4361763,
+    "ast_hash": "73ce223200d4caeb670a4042d56359b0",
+    "semantic_hash": "73ce223200d4caeb670a4042d56359b0"
+  },
+  "facefusion/facefusion/workflows/image_to_image.py": {
+    "mtime": 1773419755.4361763,
+    "ast_hash": "4f9aceab0f58fddb6ef98f175479e6a3",
+    "semantic_hash": "4f9aceab0f58fddb6ef98f175479e6a3"
+  },
+  "facefusion/facefusion/workflows/image_to_video.py": {
+    "mtime": 1773419755.4361763,
+    "ast_hash": "9b308b045b9b0f7d78ccb915ba64a0ff",
+    "semantic_hash": "9b308b045b9b0f7d78ccb915ba64a0ff"
+  },
+  "facefusion/install.py": {
+    "mtime": 1773419755.4361763,
+    "ast_hash": "174231dba323b1be78fcba11c8e40595",
+    "semantic_hash": "174231dba323b1be78fcba11c8e40595"
+  },
+  "facefusion/tests/__init__.py": {
+    "mtime": 1773419755.4361763,
+    "ast_hash": "d41d8cd98f00b204e9800998ecf8427e",
+    "semantic_hash": "d41d8cd98f00b204e9800998ecf8427e"
+  },
+  "facefusion/tests/helper.py": {
+    "mtime": 1773419755.4361763,
+    "ast_hash": "94cdd365a3c00eb9cf475dd75c19c152",
+    "semantic_hash": "94cdd365a3c00eb9cf475dd75c19c152"
+  },
+  "facefusion/tests/test_audio.py": {
+    "mtime": 1773419755.4371762,
+    "ast_hash": "b7ab25b3bb27f80a0a9fea2bfda05c92",
+    "semantic_hash": "b7ab25b3bb27f80a0a9fea2bfda05c92"
+  },
+  "facefusion/tests/test_cli_age_modifier.py": {
+    "mtime": 1773419755.4371762,
+    "ast_hash": "c6a491c76dafa57a930a8d252547b5ef",
+    "semantic_hash": "c6a491c76dafa57a930a8d252547b5ef"
+  },
+  "facefusion/tests/test_cli_background_remover.py": {
+    "mtime": 1773419755.4371762,
+    "ast_hash": "78cefefa11e6648300b1c775e917fe91",
+    "semantic_hash": "78cefefa11e6648300b1c775e917fe91"
+  },
+  "facefusion/tests/test_cli_batch_runner.py": {
+    "mtime": 1773419755.4381843,
+    "ast_hash": "6184c72dd16fc74ea0230bf21b5cb96f",
+    "semantic_hash": "6184c72dd16fc74ea0230bf21b5cb96f"
+  },
+  "facefusion/tests/test_cli_expression_restorer.py": {
+    "mtime": 1773419755.4381843,
+    "ast_hash": "47d0f3025ada3dd4b2ea29119683f5db",
+    "semantic_hash": "47d0f3025ada3dd4b2ea29119683f5db"
+  },
+  "facefusion/tests/test_cli_face_debugger.py": {
+    "mtime": 1773419755.4381843,
+    "ast_hash": "0055a79ba21aa4f171d3a12aecd018d2",
+    "semantic_hash": "0055a79ba21aa4f171d3a12aecd018d2"
+  },
+  "facefusion/tests/test_cli_face_editor.py": {
+    "mtime": 1773419755.4381843,
+    "ast_hash": "e200e4d9bb5440c6718d72ab68554890",
+    "semantic_hash": "e200e4d9bb5440c6718d72ab68554890"
+  },
+  "facefusion/tests/test_cli_face_enhancer.py": {
+    "mtime": 1773419755.4381843,
+    "ast_hash": "450cfc8b9dd2fd48eafdd9d5c4788b52",
+    "semantic_hash": "450cfc8b9dd2fd48eafdd9d5c4788b52"
+  },
+  "facefusion/tests/test_cli_face_swapper.py": {
+    "mtime": 1773419755.4381843,
+    "ast_hash": "8b6a666e2ed9953c4b1a80f1dc7af423",
+    "semantic_hash": "8b6a666e2ed9953c4b1a80f1dc7af423"
+  },
+  "facefusion/tests/test_cli_frame_colorizer.py": {
+    "mtime": 1773419755.4381843,
+    "ast_hash": "fb1bcf6b6c21658d4d501cc8c1c71c1c",
+    "semantic_hash": "fb1bcf6b6c21658d4d501cc8c1c71c1c"
+  },
+  "facefusion/tests/test_cli_frame_enhancer.py": {
+    "mtime": 1773419755.4381843,
+    "ast_hash": "c90f07a3d8e01192ed9b194c9ffa1ad1",
+    "semantic_hash": "c90f07a3d8e01192ed9b194c9ffa1ad1"
+  },
+  "facefusion/tests/test_cli_job_manager.py": {
+    "mtime": 1773419755.4381843,
+    "ast_hash": "affb7214eb8efa46d26efc2344754ece",
+    "semantic_hash": "affb7214eb8efa46d26efc2344754ece"
+  },
+  "facefusion/tests/test_cli_job_runner.py": {
+    "mtime": 1773419755.4391766,
+    "ast_hash": "7747b6eeb8f52f254f093720b62ecc9b",
+    "semantic_hash": "7747b6eeb8f52f254f093720b62ecc9b"
+  },
+  "facefusion/tests/test_cli_lip_syncer.py": {
+    "mtime": 1773419755.4391766,
+    "ast_hash": "bba70a66cff0867176a20083c79aeaee",
+    "semantic_hash": "bba70a66cff0867176a20083c79aeaee"
+  },
+  "facefusion/tests/test_cli_output_scale.py": {
+    "mtime": 1773419755.4391766,
+    "ast_hash": "12007f44348e85334414a8b560488255",
+    "semantic_hash": "12007f44348e85334414a8b560488255"
+  },
+  "facefusion/tests/test_common_helper.py": {
+    "mtime": 1773419755.4391766,
+    "ast_hash": "ef03dee76980c1615a35719e78c5f45b",
+    "semantic_hash": "ef03dee76980c1615a35719e78c5f45b"
+  },
+  "facefusion/tests/test_config.py": {
+    "mtime": 1773419755.4391766,
+    "ast_hash": "970faa30479f2ad562951ac9fc0cf1f6",
+    "semantic_hash": "970faa30479f2ad562951ac9fc0cf1f6"
+  },
+  "facefusion/tests/test_curl_builder.py": {
+    "mtime": 1773419755.4391766,
+    "ast_hash": "0104464dabaf57c9da70ea5c12c60657",
+    "semantic_hash": "0104464dabaf57c9da70ea5c12c60657"
+  },
+  "facefusion/tests/test_download.py": {
+    "mtime": 1773419755.4391766,
+    "ast_hash": "123d21be4c044346dd575b1d37cbd562",
+    "semantic_hash": "123d21be4c044346dd575b1d37cbd562"
+  },
+  "facefusion/tests/test_execution.py": {
+    "mtime": 1773419755.4391766,
+    "ast_hash": "15c11a47cef828714aa4c9b2c1026dbb",
+    "semantic_hash": "15c11a47cef828714aa4c9b2c1026dbb"
+  },
+  "facefusion/tests/test_face_analyser.py": {
+    "mtime": 1773419755.4391766,
+    "ast_hash": "bc11f99669d6893fe46bafe4b0d86328",
+    "semantic_hash": "bc11f99669d6893fe46bafe4b0d86328"
+  },
+  "facefusion/tests/test_ffmpeg.py": {
+    "mtime": 1773419755.4391766,
+    "ast_hash": "4a14f0b30769e59c8ded2523ff8abd02",
+    "semantic_hash": "4a14f0b30769e59c8ded2523ff8abd02"
+  },
+  "facefusion/tests/test_ffmpeg_builder.py": {
+    "mtime": 1773419755.4391766,
+    "ast_hash": "d089eb58705f2c6124589262dee53233",
+    "semantic_hash": "d089eb58705f2c6124589262dee53233"
+  },
+  "facefusion/tests/test_filesystem.py": {
+    "mtime": 1773419755.4401946,
+    "ast_hash": "39ed877ed39e640cbb99873e7bb92760",
+    "semantic_hash": "39ed877ed39e640cbb99873e7bb92760"
+  },
+  "facefusion/tests/test_inference_manager.py": {
+    "mtime": 1773419755.4401946,
+    "ast_hash": "d512f37f4077ce805de38ec61f281a79",
+    "semantic_hash": "d512f37f4077ce805de38ec61f281a79"
+  },
+  "facefusion/tests/test_job_helper.py": {
+    "mtime": 1773419755.4401946,
+    "ast_hash": "9c0d08a01694286c98cfc795ac113a6a",
+    "semantic_hash": "9c0d08a01694286c98cfc795ac113a6a"
+  },
+  "facefusion/tests/test_job_list.py": {
+    "mtime": 1773419755.4401946,
+    "ast_hash": "f27287dbdb671a1e8ed53146e5f9ea56",
+    "semantic_hash": "f27287dbdb671a1e8ed53146e5f9ea56"
+  },
+  "facefusion/tests/test_job_manager.py": {
+    "mtime": 1773419755.4401946,
+    "ast_hash": "fa1f64e817e534758c19b636f589f83d",
+    "semantic_hash": "fa1f64e817e534758c19b636f589f83d"
+  },
+  "facefusion/tests/test_job_runner.py": {
+    "mtime": 1773419755.4401946,
+    "ast_hash": "791a52350876e0338e59f7c8035648d6",
+    "semantic_hash": "791a52350876e0338e59f7c8035648d6"
+  },
+  "facefusion/tests/test_json.py": {
+    "mtime": 1773419755.4412065,
+    "ast_hash": "3f05415113f164fb8e041743b971e34a",
+    "semantic_hash": "3f05415113f164fb8e041743b971e34a"
+  },
+  "facefusion/tests/test_memory.py": {
+    "mtime": 1773419755.4412065,
+    "ast_hash": "1e8146537f5213bb9d44e57497f517ae",
+    "semantic_hash": "1e8146537f5213bb9d44e57497f517ae"
+  },
+  "facefusion/tests/test_normalizer.py": {
+    "mtime": 1773419755.4412065,
+    "ast_hash": "f1fa575ac32525510e6be95e24d9fced",
+    "semantic_hash": "f1fa575ac32525510e6be95e24d9fced"
+  },
+  "facefusion/tests/test_process_manager.py": {
+    "mtime": 1773419755.4412065,
+    "ast_hash": "7a736acf663fc80ac810341702a559d3",
+    "semantic_hash": "7a736acf663fc80ac810341702a559d3"
+  },
+  "facefusion/tests/test_program_helper.py": {
+    "mtime": 1773419755.4412065,
+    "ast_hash": "49392d7058156891d44a51b152bb27e9",
+    "semantic_hash": "49392d7058156891d44a51b152bb27e9"
+  },
+  "facefusion/tests/test_sanitizer.py": {
+    "mtime": 1773419755.4412065,
+    "ast_hash": "ad03a83e5368269f531d761747995bb3",
+    "semantic_hash": "ad03a83e5368269f531d761747995bb3"
+  },
+  "facefusion/tests/test_state_manager.py": {
+    "mtime": 1773419755.4412065,
+    "ast_hash": "773897a397ded3ac2363ce0c5c677f09",
+    "semantic_hash": "773897a397ded3ac2363ce0c5c677f09"
+  },
+  "facefusion/tests/test_temp_helper.py": {
+    "mtime": 1773419755.4421988,
+    "ast_hash": "4d1ff8ec745fdbca0508aaeb14e0c594",
+    "semantic_hash": "4d1ff8ec745fdbca0508aaeb14e0c594"
+  },
+  "facefusion/tests/test_time_helper.py": {
+    "mtime": 1773419755.4421988,
+    "ast_hash": "6df8987e90a4dabe86dc8efc08b7cf57",
+    "semantic_hash": "6df8987e90a4dabe86dc8efc08b7cf57"
+  },
+  "facefusion/tests/test_translator.py": {
+    "mtime": 1773419755.4421988,
+    "ast_hash": "dc4c2d4c90b0242adfb42070c4a3aa6d",
+    "semantic_hash": "dc4c2d4c90b0242adfb42070c4a3aa6d"
+  },
+  "facefusion/tests/test_vision.py": {
+    "mtime": 1773419755.4421988,
+    "ast_hash": "a9d68c7d1390d27391811285d99238b5",
+    "semantic_hash": "a9d68c7d1390d27391811285d99238b5"
+  },
+  "index.tsx": {
+    "mtime": 1774710545.4900467,
+    "ast_hash": "3756a92a0a1598ac797c75c9814b6743",
+    "semantic_hash": "3756a92a0a1598ac797c75c9814b6743"
+  },
+  "provision-facefusion.sh": {
+    "mtime": 1777986685.9939828,
+    "ast_hash": "53d41d3be119211f2e944d7bb8ff6fe2",
+    "semantic_hash": "53d41d3be119211f2e944d7bb8ff6fe2"
+  },
+  "services/faceFusionService.ts": {
+    "mtime": 1778514456.5517745,
+    "ast_hash": "ac78f91c3b24087e07b19ea740183f7c",
+    "semantic_hash": "ac78f91c3b24087e07b19ea740183f7c"
+  },
+  "services/faceService.ts": {
+    "mtime": 1774727435.2762005,
+    "ast_hash": "b38ff32660bf1ef437538bdfe338c068",
+    "semantic_hash": "b38ff32660bf1ef437538bdfe338c068"
+  },
+  "services/geminiService.ts": {
+    "mtime": 1777753600.5599997,
+    "ast_hash": "68a797148502d6b1d10ab49837de23a7",
+    "semantic_hash": "68a797148502d6b1d10ab49837de23a7"
+  },
+  "services/stampService.ts": {
+    "mtime": 1780402946.855633,
+    "ast_hash": "4bacc89658ce6bd270df70d34d17d9d7",
+    "semantic_hash": "4bacc89658ce6bd270df70d34d17d9d7"
+  },
+  "types.ts": {
+    "mtime": 1777217511.8341,
+    "ast_hash": "c98682a87ba276813361bbf01032a24a",
+    "semantic_hash": "c98682a87ba276813361bbf01032a24a"
+  },
+  "vite.config.ts": {
+    "mtime": 1773576983.0,
+    "ast_hash": "1a213d950cb9f83b33c98c39928bb4ce",
+    "semantic_hash": "1a213d950cb9f83b33c98c39928bb4ce"
+  }
+}
