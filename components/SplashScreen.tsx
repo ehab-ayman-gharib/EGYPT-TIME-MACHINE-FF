@@ -303,10 +303,10 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onSelectEra, isMuted
             {ERAS.map((era) => (
               <div
                 key={era.id}
-                className="flex flex-col items-center gap-1 group cursor-pointer transition-transform hover:scale-105 active:scale-95"
+                className="flex flex-col items-center gap-1 group cursor-pointer transition-transform hover:scale-105 active:scale-95 shrink"
                 onClick={() => handleEraClick(era)}
               >
-                <div className="relative w-[18.5vw] h-[31vw] md:w-40 md:h-64 flex items-center justify-center">
+                <div className="relative w-[14vw] h-[24vw] md:w-36 md:h-56 flex items-center justify-center">
                   <div className="w-full h-full flex items-center justify-center relative">
                     <img
                       src={era.previewImage}

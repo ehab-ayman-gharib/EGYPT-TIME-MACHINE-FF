@@ -10,8 +10,8 @@
     "semantic_hash": "401671a3d5cb6f6642492386eb4fed95"
   },
   "components/CameraCapture.tsx": {
-    "mtime": 1782386984.431103,
-    "ast_hash": "6cc40fe215e90ed44488efb4f0cc974c",
+    "mtime": 1782380507.1041806,
+    "ast_hash": "4b97017246c57310fb6e0cc8d0ad4ac2",
     "semantic_hash": ""
   },
   "components/FeaturedGallery.tsx": {
@@ -30,9 +30,9 @@
     "semantic_hash": ""
   },
   "components/SplashScreen.tsx": {
-    "mtime": 1782381613.4495633,
-    "ast_hash": "da6e8b06318b7e84b22bc24076830dfb",
-    "semantic_hash": ""
+    "mtime": 1780796632.087113,
+    "ast_hash": "74ef7c1f29995fa3f480e2caba311926",
+    "semantic_hash": "74ef7c1f29995fa3f480e2caba311926"
   },
   "constants.ts": {
     "mtime": 1782380047.865427,
@@ -1180,9 +1180,9 @@
     "semantic_hash": ""
   },
   "vite.config.ts": {
-    "mtime": 1782386692.2353237,
-    "ast_hash": "9e976bc789a2a24cce1e1d391194a6a7",
-    "semantic_hash": ""
+    "mtime": 1773576983.0,
+    "ast_hash": "1a213d950cb9f83b33c98c39928bb4ce",
+    "semantic_hash": "1a213d950cb9f83b33c98c39928bb4ce"
   },
   ".agent/workflows/electron-build.md": {
     "mtime": 1773487663.2477686,
@@ -1285,8 +1285,8 @@
     "semantic_hash": ""
   },
   "services/cameraKitConfig.ts": {
-    "mtime": 1782389821.330055,
-    "ast_hash": "2a18dab76b9ae2e5f7c24115d2809759",
+    "mtime": 1782380042.4692297,
+    "ast_hash": "81e1aa576e030eaa6881f300f1863797",
     "semantic_hash": ""
   }
 }

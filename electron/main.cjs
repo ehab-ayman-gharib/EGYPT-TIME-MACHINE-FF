@@ -31,7 +31,7 @@ if (fs.existsSync(envPath)) {
 }
 
 let mainWindow = null;
-let isKioskModeActive = true;
+let isKioskModeActive = false;
 let isRecreatingWindow = false;
 
 /**
@@ -45,7 +45,7 @@ let eraTemplateIndices = {};
  * 1. WINDOW INITIALIZATION
  * Creates the main application window and configures permissions for camera access.
  */
-function createWindow(isKiosk = true) {
+function createWindow(isKiosk = false) {
     mainWindow = new BrowserWindow({
         width: 1200,
         height: 800,
@@ -87,11 +87,70 @@ function createWindow(isKiosk = true) {
 
     const isDevEnv = !app.isPackaged;
 
+
+
     // Load appropriate URL/File based on environment
     if (isDevEnv) {
         mainWindow.loadURL('http://localhost:3000'); // Vite dev server
     } else {
-        mainWindow.loadFile(path.join(__dirname, '../dist/index.html')); // Production build
+        // Serve dist via a local HTTP server instead of file://
+        // CameraKit requires an HTTP origin (file:// breaks WASM loading & API calls)
+        const http = require('http');
+        const distDir = path.join(__dirname, '../dist');
+
+        const mimeTypes = {
+            '.html': 'text/html',
+            '.js': 'application/javascript',
+            '.mjs': 'application/javascript',
+            '.css': 'text/css',
+            '.json': 'application/json',
+            '.png': 'image/png',
+            '.jpg': 'image/jpeg',
+            '.jpeg': 'image/jpeg',
+            '.gif': 'image/gif',
+            '.svg': 'image/svg+xml',
+            '.ico': 'image/x-icon',
+            '.woff': 'font/woff',
+            '.woff2': 'font/woff2',
+            '.ttf': 'font/ttf',
+            '.wasm': 'application/wasm',
+            '.mp4': 'video/mp4',
+            '.webm': 'video/webm',
+            '.mp3': 'audio/mpeg',
+            '.wav': 'audio/wav',
+            '.webp': 'image/webp',
+        };
+
+        const server = http.createServer((req, res) => {
+            let filePath = path.join(distDir, req.url === '/' ? 'index.html' : req.url);
+            filePath = filePath.split('?')[0];
+
+            const ext = path.extname(filePath).toLowerCase();
+            const contentType = mimeTypes[ext] || 'application/octet-stream';
+
+            fs.readFile(filePath, (err, data) => {
+                if (err) {
+                    fs.readFile(path.join(distDir, 'index.html'), (err2, fallbackData) => {
+                        if (err2) {
+                            res.writeHead(404);
+                            res.end('Not Found');
+                        } else {
+                            res.writeHead(200, { 'Content-Type': 'text/html' });
+                            res.end(fallbackData);
+                        }
+                    });
+                } else {
+                    res.writeHead(200, { 'Content-Type': contentType });
+                    res.end(data);
+                }
+            });
+        });
+
+        server.listen(0, '127.0.0.1', () => {
+            const staticServerPort = server.address().port;
+            console.log(`[Electron] Local HTTP server running at http://127.0.0.1:${staticServerPort}`);
+            mainWindow.loadURL(`http://127.0.0.1:${staticServerPort}/index.html`);
+        });
     }
 
     // Open DevTools only in development mode
@@ -1102,20 +1161,28 @@ ipcMain.handle('get-kiosk-status', () => {
 });
 
 app.whenReady().then(() => {
+    // Rewrite request headers for Snap endpoints to pass CameraKit API Token validation
+    const { session } = require('electron');
+    const filter = { urls: ['https://*/*', 'http://*/*'] };
+    const ALLOWED_ORIGIN = 'https://127.0.0.1'; // The Origin whitelisted in Snap AR Portal
+    session.defaultSession.webRequest.onBeforeSendHeaders(filter, (details, callback) => {
+        try {
+            const reqUrl = details.url || '';
+            const isSnapApi = /(snapar|snapchat|snapkit|sc-cdn|sc-prod)\.(com|net)/i.test(reqUrl);
+            if (isSnapApi) {
+                details.requestHeaders['Origin'] = ALLOWED_ORIGIN;
+                details.requestHeaders['Referer'] = ALLOWED_ORIGIN + '/';
+            }
+        } catch {}
+        callback({ requestHeaders: details.requestHeaders });
+    });
+
     createWindow();
 
     // Register blocking shortcuts immediately on startup since window starts focused
     if (isKioskModeActive) {
         registerKioskShortcuts();
     }
-
-    // Commented out keyboard shortcut registration as requested (now triggered via title click pattern)
-    /*
-    const success = globalShortcut.register('CommandOrControl+Alt+Shift+Q', () => {
-        toggleKiosk();
-    });
-    console.log(`[Kiosk] Secret exit shortcut registration status: ${success}`);
-    */
 });
 
 // Disable standard menu shortcuts globally when focused so users cannot trigger them

@@ -1,11 +1,11 @@
 # Graph Report - EGYPT-TIME-MACHINE-FF  (2026-06-25)
 
 ## Corpus Check
-- 254 files · ~1,236,996 words
+- 254 files · ~1,236,926 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
-- 2194 nodes · 5151 edges · 151 communities (141 shown, 10 thin omitted)
+- 2194 nodes · 5149 edges · 164 communities (151 shown, 13 thin omitted)
 - Extraction: 96% EXTRACTED · 4% INFERRED · 0% AMBIGUOUS · INFERRED: 231 edges (avg confidence: 0.81)
 - Token cost: 0 input · 0 output
 
@@ -131,10 +131,23 @@
 - [[_COMMUNITY_Community 144|Community 144]]
 - [[_COMMUNITY_Community 145|Community 145]]
 - [[_COMMUNITY_Community 146|Community 146]]
+- [[_COMMUNITY_Community 147|Community 147]]
+- [[_COMMUNITY_Community 148|Community 148]]
 - [[_COMMUNITY_Community 149|Community 149]]
+- [[_COMMUNITY_Community 150|Community 150]]
+- [[_COMMUNITY_Community 151|Community 151]]
 - [[_COMMUNITY_Community 152|Community 152]]
 - [[_COMMUNITY_Community 153|Community 153]]
+- [[_COMMUNITY_Community 154|Community 154]]
+- [[_COMMUNITY_Community 155|Community 155]]
+- [[_COMMUNITY_Community 156|Community 156]]
+- [[_COMMUNITY_Community 157|Community 157]]
+- [[_COMMUNITY_Community 158|Community 158]]
 - [[_COMMUNITY_Community 159|Community 159]]
+- [[_COMMUNITY_Community 160|Community 160]]
+- [[_COMMUNITY_Community 161|Community 161]]
+- [[_COMMUNITY_Community 162|Community 162]]
+- [[_COMMUNITY_Community 163|Community 163]]
 
 ## God Nodes (most connected - your core abstractions)
 1. `get_test_example_file()` - 130 edges
@@ -167,15 +180,15 @@
 - 1-file cycle: `facefusion/tests/test_time_helper.py -> facefusion/tests/test_time_helper.py`
 - 1-file cycle: `facefusion/facefusion/uis/components/terminal.py -> facefusion/facefusion/uis/components/terminal.py`
 
-## Communities (151 total, 10 thin omitted)
+## Communities (164 total, 13 thin omitted)
 
 ### Community 0 - "Community 0"
-Cohesion: 0.08
-Nodes (59): Anchors, collect_model_downloads(), create_static_model_set(), detect_faces(), detect_faces_by_angle(), detect_with_retinaface(), detect_with_scrfd(), detect_with_yolo_face() (+51 more)
+Cohesion: 0.19
+Nodes (31): Anchors, collect_model_downloads(), detect_faces(), detect_faces_by_angle(), detect_with_retinaface(), detect_with_scrfd(), detect_with_yolo_face(), detect_with_yunet() (+23 more)
 
 ### Community 1 - "Community 1"
 Cohesion: 0.15
-Nodes (29): balance_source_embedding(), clear_inference_pool(), convert_source_embedding(), create_static_model_set(), extract_source_face(), forward_convert_embedding(), forward_swap_face(), get_inference_pool() (+21 more)
+Nodes (29): apply_args(), balance_source_embedding(), clear_inference_pool(), convert_source_embedding(), extract_source_face(), forward_convert_embedding(), forward_swap_face(), get_inference_pool() (+21 more)
 
 ### Community 2 - "Community 2"
 Cohesion: 0.07
@@ -186,12 +199,12 @@ Cohesion: 0.36
 Nodes (14): reduce_step_args(), cli(), common_pre_check(), conditional_process(), pre_check(), process_batch(), process_headless(), process_step() (+6 more)
 
 ### Community 4 - "Community 4"
-Cohesion: 0.21
-Nodes (26): ArgumentParser, apply_config_path(), collect_job_program(), create_benchmark_program(), create_config_path_program(), create_download_providers_program(), create_download_scope_program(), create_execution_program() (+18 more)
+Cohesion: 0.07
+Nodes (64): register_args(), _ArgumentGroup, register_args(), register_args(), register_args(), register_args(), register_args(), create_float_metavar() (+56 more)
 
 ### Community 5 - "Community 5"
 Cohesion: 0.06
-Nodes (38): { ipcRenderer }, CameraCapture(), CameraCaptureProps, CFG, CORNER_COLORS, CORNERS, FeaturedGallery(), { ipcRenderer } (+30 more)
+Nodes (37): { ipcRenderer }, CameraCapture(), CameraCaptureProps, CFG, CORNER_COLORS, CORNERS, FeaturedGallery(), { ipcRenderer } (+29 more)
 
 ### Community 6 - "Community 6"
 Cohesion: 0.07
@@ -199,15 +212,15 @@ Nodes (57): AudioEncoder, Command, Duration, Fps, StreamMode, VideoEncoder, Vide
 
 ### Community 7 - "Community 7"
 Cohesion: 0.08
-Nodes (55): apply_args(), apply_edit(), calculate_distance_ratio(), clear_inference_pool(), create_static_model_set(), edit_eye_gaze(), edit_eye_open(), edit_eyebrow_direction() (+47 more)
+Nodes (55): apply_args(), apply_edit(), calculate_distance_ratio(), clear_inference_pool(), edit_eye_gaze(), edit_eye_open(), edit_eyebrow_direction(), edit_face() (+47 more)
 
 ### Community 8 - "Community 8"
-Cohesion: 0.19
-Nodes (17): apply(), get_step_choices(), listen(), remote_update(), render(), update(), update_step_index(), register_args() (+9 more)
+Cohesion: 0.26
+Nodes (13): apply(), get_step_choices(), listen(), remote_update(), render(), update(), update_step_index(), Dropdown (+5 more)
 
 ### Community 9 - "Community 9"
-Cohesion: 0.07
-Nodes (61): conditional_download(), get_many_faces(), get_file_size(), get_test_example_file(), get_test_examples_directory(), before_all(), test_get_audio_frame(), test_read_static_audio() (+53 more)
+Cohesion: 0.08
+Nodes (55): conditional_download(), get_file_size(), get_test_example_file(), get_test_examples_directory(), before_all(), test_get_audio_frame(), test_read_static_audio(), before_all() (+47 more)
 
 ### Community 10 - "Community 10"
 Cohesion: 0.18
@@ -218,15 +231,15 @@ Cohesion: 0.07
 Nodes (46): detect_app_context(), AppContext, DownloadSet, ExecutionProvider, InferencePool, JobStatus, TableContent, TableHeader (+38 more)
 
 ### Community 12 - "Community 12"
-Cohesion: 0.16
-Nodes (21): apply_background_color(), clear_inference_pool(), create_static_model_set(), forward(), get_inference_pool(), get_model_options(), normalize_vision_mask(), post_process() (+13 more)
+Cohesion: 0.15
+Nodes (22): apply_background_color(), clear_inference_pool(), create_static_model_set(), forward(), get_inference_pool(), get_model_options(), normalize_vision_mask(), post_process() (+14 more)
 
 ### Community 13 - "Community 13"
-Cohesion: 0.19
+Cohesion: 0.18
 Nodes (29): get_test_jobs_directory(), get_test_output_file(), is_test_output_file(), test_modify_age_to_image(), test_modify_age_to_video(), test_remove_background_to_image(), test_remove_background_to_video(), test_batch_run_sources_to_targets() (+21 more)
 
 ### Community 14 - "Community 14"
-Cohesion: 0.11
+Cohesion: 0.13
 Nodes (27): pre_process(), pre_process(), pre_process(), pre_process(), pre_process(), pre_process(), pre_process(), pre_process() (+19 more)
 
 ### Community 15 - "Community 15"
@@ -238,44 +251,44 @@ Cohesion: 0.12
 Nodes (32): is_windows(), VideoCapture, Resolution, Size, VisionFrame, get_video_capture(), get_video_writer(), blend_frame() (+24 more)
 
 ### Community 17 - "Community 17"
-Cohesion: 0.10
-Nodes (34): apply_args(), apply_restore(), clear_inference_pool(), create_static_model_set(), forward_extract_feature(), forward_extract_motion(), forward_generate_frame(), get_inference_pool() (+26 more)
+Cohesion: 0.11
+Nodes (31): apply_args(), apply_restore(), clear_inference_pool(), forward_extract_feature(), forward_extract_motion(), forward_generate_frame(), get_inference_pool(), get_model_options() (+23 more)
 
 ### Community 18 - "Community 18"
 Cohesion: 0.15
 Nodes (29): create_directory(), is_directory(), remove_directory(), clear_jobs(), init_jobs(), get_test_outputs_directory(), prepare_test_output_directory(), before_each() (+21 more)
 
 ### Community 19 - "Community 19"
-Cohesion: 0.10
-Nodes (23): Component, ComponentName, listen(), remote_update(), render(), update_face_debugger_items(), listen(), listen() (+15 more)
+Cohesion: 0.14
+Nodes (15): Component, ComponentName, listen(), remote_update(), render(), update_face_debugger_items(), listen(), listen() (+7 more)
 
 ### Community 20 - "Community 20"
 Cohesion: 0.12
-Nodes (23): apply_args(), clear_inference_pool(), create_static_model_set(), forward(), get_inference_pool(), get_model_options(), get_model_size(), has_morph_input() (+15 more)
+Nodes (28): apply_args(), clear_inference_pool(), create_static_model_set(), forward(), get_inference_pool(), get_model_options(), get_model_size(), has_morph_input() (+20 more)
 
 ### Community 21 - "Community 21"
-Cohesion: 0.09
-Nodes (16): create_float_range(), create_int_range(), is_linux(), is_macos(), ArgumentParser, FrameType, cli(), run() (+8 more)
+Cohesion: 0.15
+Nodes (4): is_linux(), is_macos(), limit_system_memory(), test_limit_system_memory()
 
 ### Community 22 - "Community 22"
-Cohesion: 0.13
-Nodes (25): apply_args(), blend_paste_frame(), clear_inference_pool(), create_static_model_set(), enhance_face(), forward(), get_inference_pool(), get_model_options() (+17 more)
+Cohesion: 0.15
+Nodes (22): apply_args(), blend_paste_frame(), clear_inference_pool(), enhance_face(), forward(), get_inference_pool(), get_model_options(), has_weight_input() (+14 more)
 
 ### Community 23 - "Community 23"
-Cohesion: 0.16
-Nodes (22): swap_face(), collect_model_downloads(), create_area_mask(), create_box_mask(), create_occlusion_mask(), create_region_mask(), create_static_model_set(), forward_occlude_face() (+14 more)
+Cohesion: 0.17
+Nodes (20): collect_model_downloads(), create_area_mask(), create_box_mask(), create_occlusion_mask(), create_region_mask(), create_static_model_set(), forward_occlude_face(), forward_parse_face() (+12 more)
 
 ### Community 25 - "Community 25"
 Cohesion: 0.14
-Nodes (26): ApplyStateItem, Args, AudioFrame, Face, InferencePool, LipSyncerWeight, ModelOptions, ProcessMode (+18 more)
+Nodes (25): ApplyStateItem, Args, AudioFrame, Face, InferencePool, LipSyncerWeight, ModelOptions, ProcessMode (+17 more)
 
 ### Community 26 - "Community 26"
-Cohesion: 0.06
-Nodes (49): resolve_execution_providers(), render(), ExecutionDevice, resolve_execution_providers(), create_inference_providers(), create_value_and_unit(), detect_execution_devices(), detect_static_execution_devices() (+41 more)
+Cohesion: 0.22
+Nodes (17): InferencePool, ModelOptions, ProcessorOutputs, VisionFrame, blend_merge_frame(), clear_inference_pool(), enhance_frame(), forward() (+9 more)
 
 ### Community 27 - "Community 27"
-Cohesion: 0.13
-Nodes (13): ConfigParser, cast_bool(), cast_float(), cast_int(), get_bool_value(), get_config_parser(), get_float_value(), get_int_list() (+5 more)
+Cohesion: 0.26
+Nodes (11): cast_bool(), cast_float(), cast_int(), get_bool_value(), get_config_parser(), get_float_value(), get_int_list(), get_int_value() (+3 more)
 
 ### Community 28 - "Community 28"
 Cohesion: 0.17
@@ -290,20 +303,20 @@ Cohesion: 0.17
 Nodes (12): BackgroundRemoverModel, listen(), remote_update(), render(), update_background_remover_color(), update_background_remover_model(), update_face_detector_margin(), update_face_mask_padding() (+4 more)
 
 ### Community 31 - "Community 31"
-Cohesion: 0.11
-Nodes (24): listen(), remote_update(), render(), update_deep_swapper_model(), listen(), remote_update(), render(), update_face_enhancer_model() (+16 more)
+Cohesion: 0.14
+Nodes (18): listen(), remote_update(), render(), update_deep_swapper_model(), listen(), remote_update(), render(), update_face_enhancer_model() (+10 more)
 
 ### Community 32 - "Community 32"
 Cohesion: 0.10
 Nodes (7): listen(), remote_update(), render(), update_face_editor_model(), FaceEditorModel, Dropdown, Slider
 
 ### Community 33 - "Community 33"
-Cohesion: 0.16
-Nodes (13): process_frame(), AgeModifierInputs, process_frame(), DeepSwapperInputs, process_frame(), FaceEditorInputs, get_average_face(), get_one_face() (+5 more)
+Cohesion: 0.60
+Nodes (4): get_average_face(), get_one_face(), scale_face(), Face
 
 ### Community 34 - "Community 34"
-Cohesion: 0.20
-Nodes (15): clear(), create_and_run_job(), listen(), remote_update(), render(), run(), start(), stop() (+7 more)
+Cohesion: 0.22
+Nodes (14): clear(), create_and_run_job(), listen(), remote_update(), render(), run(), start(), stop() (+6 more)
 
 ### Community 35 - "Community 35"
 Cohesion: 0.12
@@ -314,20 +327,20 @@ Cohesion: 0.21
 Nodes (15): Age, categorize_age(), categorize_gender(), categorize_race(), classify_face(), forward(), get_inference_pool(), get_model_options() (+7 more)
 
 ### Community 37 - "Community 37"
-Cohesion: 0.14
-Nodes (17): apply_args(), Color, apply_args(), collect_job_args(), reduce_job_args(), ApplyStateItem, Args, Fps (+9 more)
+Cohesion: 0.20
+Nodes (12): apply_args(), collect_job_args(), collect_step_args(), reduce_job_args(), ApplyStateItem, Args, Fps, Padding (+4 more)
 
 ### Community 38 - "Community 38"
-Cohesion: 0.14
-Nodes (21): register_args(), _ArgumentGroup, register_args(), register_args(), register_args(), create_int_metavar(), ArgumentParser, ArgumentParser (+13 more)
+Cohesion: 0.18
+Nodes (19): DownloadScope, InferencePool, ModelOptions, ModelSet, ProcessorOutputs, VisionFrame, blend_color_frame(), clear_inference_pool() (+11 more)
 
 ### Community 39 - "Community 39"
 Cohesion: 0.14
 Nodes (19): clear_and_update_reference_position_gallery(), extract_gallery_frames(), render(), update_face_selector_age_range(), update_face_selector_gender(), update_face_selector_mode(), update_face_selector_order(), update_face_selector_race() (+11 more)
 
 ### Community 40 - "Community 40"
-Cohesion: 0.19
-Nodes (17): apply_args(), clear_inference_pool(), forward(), get_inference_pool(), get_model_options(), modify_age(), normalize_extend_frame(), post_process() (+9 more)
+Cohesion: 0.15
+Nodes (21): apply_args(), clear_inference_pool(), forward(), get_inference_pool(), get_model_options(), modify_age(), normalize_extend_frame(), post_process() (+13 more)
 
 ### Community 41 - "Community 41"
 Cohesion: 0.16
@@ -350,8 +363,8 @@ Cohesion: 0.15
 Nodes (16): render(), update(), validate_source_paths(), clear_static_faces(), get_face_store(), get_static_faces(), set_static_faces(), Face (+8 more)
 
 ### Community 46 - "Community 46"
-Cohesion: 0.27
-Nodes (10): calculate_face_embedding(), forward(), get_inference_pool(), get_model_options(), pre_check(), Embedding, FaceLandmark5, InferencePool (+2 more)
+Cohesion: 0.16
+Nodes (15): calculate_face_embedding(), create_static_model_set(), forward(), get_inference_pool(), get_model_options(), pre_check(), DownloadScope, Embedding (+7 more)
 
 ### Community 47 - "Community 47"
 Cohesion: 0.21
@@ -362,20 +375,20 @@ Cohesion: 0.21
 Nodes (12): JobStatus, get_test_job_file(), is_test_job_file(), test_job_add_step(), test_job_create(), test_job_delete(), test_job_delete_all(), test_job_insert_step() (+4 more)
 
 ### Community 49 - "Community 49"
-Cohesion: 0.27
-Nodes (10): register_args(), create_float_metavar(), ArgumentParser, ArgumentParser, collect_step_program(), create_face_detector_program(), create_face_landmarker_program(), create_face_masker_program() (+2 more)
+Cohesion: 0.18
+Nodes (12): resolve_execution_providers(), resolve_execution_providers(), get_available_execution_providers(), has_execution_provider(), ExecutionProvider, ExecutionProvider, ExecutionProvider, ExecutionProvider (+4 more)
 
 ### Community 50 - "Community 50"
 Cohesion: 0.10
 Nodes (19): 📁 Asset Structure, 🐛 Common Issues, Components, Configuration, 📱 Core Features, Egypt Time Machine - Quick Reference, 🎨 Era Breakdown, 🔌 External APIs (+11 more)
 
 ### Community 51 - "Community 51"
-Cohesion: 0.40
-Nodes (4): render(), update_download_providers(), CheckboxGroup, DownloadProvider
+Cohesion: 0.39
+Nodes (6): fatal_exit(), graceful_exit(), hard_exit(), signal_exit(), ErrorCode, FrameType
 
 ### Community 52 - "Community 52"
-Cohesion: 0.16
-Nodes (15): create_static_model_set(), pre_check(), resolve_download_url(), create_static_model_set(), create_static_model_set(), DownloadScope, ModelSet, DownloadScope (+7 more)
+Cohesion: 0.09
+Nodes (27): create_static_model_set(), create_static_model_set(), create_static_model_set(), create_static_model_set(), create_static_model_set(), pre_check(), resolve_download_url(), create_static_model_set() (+19 more)
 
 ### Community 53 - "Community 53"
 Cohesion: 0.24
@@ -386,7 +399,7 @@ Cohesion: 0.26
 Nodes (10): has_face_swapper_weight(), listen(), remote_update(), render(), update_face_swapper_model(), update_face_swapper_weight(), Dropdown, Slider (+2 more)
 
 ### Community 55 - "Community 55"
-Cohesion: 0.22
+Cohesion: 0.26
 Nodes (10): get_static_download_size(), open_curl(), ping_static_url(), resolve_download_url_by_provider(), Command, DownloadProvider, Popen, test_get_static_download_size() (+2 more)
 
 ### Community 56 - "Community 56"
@@ -399,15 +412,15 @@ Nodes (15): create_table_parts(), render_table(), TableContent, TableHeader, Log
 
 ### Community 58 - "Community 58"
 Cohesion: 0.18
-Nodes (17): pre_check(), update_execution_providers(), render(), sort_processors(), update_processors(), force_download(), conditional_download_hashes(), conditional_download_sources() (+9 more)
+Nodes (16): render(), update_download_providers(), update_execution_providers(), force_download(), conditional_download_hashes(), conditional_download_sources(), validate_hash_paths(), DownloadSet (+8 more)
 
 ### Community 59 - "Community 59"
 Cohesion: 0.16
-Nodes (27): Distance, apply_nms(), calculate_paste_area(), create_bounding_box(), distance_to_bounding_box(), distance_to_face_landmark_5(), estimate_matrix_by_face_landmark_5(), merge_matrix() (+19 more)
+Nodes (27): Distance, apply_nms(), calculate_paste_area(), create_bounding_box(), create_rotation_matrix_and_size(), distance_to_bounding_box(), distance_to_face_landmark_5(), estimate_matrix_by_face_landmark_5() (+19 more)
 
 ### Community 60 - "Community 60"
-Cohesion: 0.08
-Nodes (15): BenchmarkMode, BenchmarkResolution, render(), update_benchmark_mode(), update_benchmark_resolutions(), render(), render(), update_job_status_checkbox_group() (+7 more)
+Cohesion: 0.11
+Nodes (10): BenchmarkMode, BenchmarkResolution, render(), update_benchmark_mode(), update_benchmark_resolutions(), render(), render(), update_video_memory_strategy() (+2 more)
 
 ### Community 61 - "Community 61"
 Cohesion: 0.13
@@ -446,8 +459,8 @@ Cohesion: 0.14
 Nodes (14): 10. **User Experience Enhancements**, 1. **Multi-Era Historical Transformation**, 2. **Intelligent Face Detection**, 3. **AI Image Generation**, 4. **Local FaceFusion Transformation (High-Fidelity)**, 5. **Camera & Upload Capabilities**, 5. **Orchestrator Logic: Surgical Tiling (Multi-Face Precision)**, 6. **FaceFusion Tuning Parameters** (+6 more)
 
 ### Community 71 - "Community 71"
-Cohesion: 0.40
-Nodes (5): Configuration Files, `.env.local`, `package.json`, `tsconfig.json`, `vite.config.ts`
+Cohesion: 0.26
+Nodes (12): ExecutionDevice, create_inference_providers(), create_value_and_unit(), detect_execution_devices(), detect_static_execution_devices(), resolve_cache_path(), resolve_cudnn_conv_algo_search(), resolve_openvino_device_type() (+4 more)
 
 ### Community 72 - "Community 72"
 Cohesion: 0.33
@@ -494,24 +507,24 @@ Cohesion: 0.60
 Nodes (4): __autoload__(), get(), load(), Locales
 
 ### Community 88 - "Community 88"
-Cohesion: 0.40
-Nodes (5): Components, `components/CameraCapture.tsx`, `components/LoadingScreen.tsx`, `components/ResultScreen.tsx`, `components/SplashScreen.tsx`
+Cohesion: 0.15
+Nodes (13): Components, `components/CameraCapture.tsx`, `components/LoadingScreen.tsx`, `components/ResultScreen.tsx`, `components/SplashScreen.tsx`, Configuration Files, `.env.local`, 📁 File Structure & Functionality (+5 more)
 
 ### Community 90 - "Community 90"
-Cohesion: 0.18
-Nodes (24): create_rotation_matrix_and_size(), collect_model_downloads(), conditional_optimize_contrast(), create_static_model_set(), detect_face_landmark(), detect_with_2dfan4(), detect_with_peppa_wutz(), estimate_face_landmark_68_5() (+16 more)
+Cohesion: 0.17
+Nodes (25): collect_model_downloads(), conditional_optimize_contrast(), create_static_model_set(), detect_face_landmark(), detect_with_2dfan4(), detect_with_peppa_wutz(), estimate_face_landmark_68_5(), forward_fan_68_5() (+17 more)
 
 ### Community 91 - "Community 91"
-Cohesion: 0.67
-Nodes (3): apply_args(), ApplyStateItem, Args
+Cohesion: 0.39
+Nodes (6): get_many_faces(), test_get_many_faces(), test_get_one_face_with_retinaface(), test_get_one_face_with_scrfd(), test_get_one_face_with_yoloface(), test_get_one_face_with_yunet()
 
 ### Community 92 - "Community 92"
 Cohesion: 0.22
 Nodes (8): 1. Prerequisites & Installation, 2. Vite Configuration, 3. Electron Main Script, 4. Package.json Configuration, 5. Asset Path Enforcement (CRITICAL), 6. Building the App, Electron Windows Build Workflow, Troubleshooting
 
 ### Community 93 - "Community 93"
-Cohesion: 0.12
-Nodes (17): `App.tsx`, `constants.ts`, `detectFaces(videoElement, isLoaded)`, 📁 File Structure & Functionality, `GenderDetectionService.ts`, `generateHistoricalImage(base64Image, era, faceData)`, `incrementGeneratedCount()`, `index.html` (+9 more)
+Cohesion: 0.25
+Nodes (8): `detectFaces(videoElement, isLoaded)`, `generateHistoricalImage(base64Image, era, faceData)`, `incrementGeneratedCount()`, `loadFaceApiModels()`, Services, `services/faceService.ts`, `services/geminiService.ts`, `services/stampService.ts`
 
 ### Community 96 - "Community 96"
 Cohesion: 0.29
@@ -528,10 +541,6 @@ Nodes (6): 1. Image Composition (Renderer), 2. macOS Printer Preferences (Manual
 ### Community 114 - "Community 114"
 Cohesion: 0.17
 Nodes (19): AudioChunk, Audio, DownloadScope, DownloadSet, InferencePool, ModelSet, batch_extract_voice(), collect_model_downloads() (+11 more)
-
-### Community 117 - "Community 117"
-Cohesion: 0.67
-Nodes (3): create_help_formatter_large(), create_help_formatter_small(), HelpFormatter
 
 ### Community 130 - "Community 130"
 Cohesion: 0.33
@@ -578,8 +587,8 @@ Cohesion: 0.23
 Nodes (10): BenchmarkCycleSet, cycle(), render(), run(), suggest_output_path(), get_file_extension(), get_file_format(), test_get_file_extension() (+2 more)
 
 ### Community 142 - "Community 142"
-Cohesion: 0.11
-Nodes (16): render(), update_face_detector_angles(), update_face_detector_model(), update_face_detector_score(), render(), update_face_landmarker_model(), update_face_landmarker_score(), calculate_float_step() (+8 more)
+Cohesion: 0.20
+Nodes (9): render(), update_face_detector_angles(), update_face_detector_model(), update_face_detector_score(), Angle, CheckboxGroup, Dropdown, FaceDetectorModel (+1 more)
 
 ### Community 144 - "Community 144"
 Cohesion: 0.22
@@ -593,9 +602,21 @@ Nodes (10): Scale, ErrorCode, detect_image_resolution(), restrict_image_resoluti
 Cohesion: 0.36
 Nodes (9): listen(), pre_start(), pre_stop(), render(), stop(), update_source(), Button, File (+1 more)
 
+### Community 147 - "Community 147"
+Cohesion: 0.29
+Nodes (8): Any, ModuleType, Theme, get_css(), get_theme(), get_ui_layouts_modules(), launch(), load_ui_layout_module()
+
+### Community 148 - "Community 148"
+Cohesion: 0.25
+Nodes (7): render(), update_face_landmarker_model(), update_face_landmarker_score(), calculate_float_step(), Dropdown, Score, FaceLandmarkerModel
+
 ### Community 149 - "Community 149"
 Cohesion: 0.33
-Nodes (7): render(), update(), Audio, File, Image, has_audio(), has_image()
+Nodes (7): render(), update(), Audio, File, Image, filter_image_paths(), has_audio()
+
+### Community 151 - "Community 151"
+Cohesion: 0.25
+Nodes (8): create_float_range(), create_int_range(), test_calc_float_step(), test_calc_int_step(), test_create_float_metavar(), test_create_float_range(), test_create_int_metavar(), test_create_int_range()
 
 ### Community 152 - "Community 152"
 Cohesion: 0.36
@@ -605,29 +626,61 @@ Nodes (6): render(), clear_camera_pool(), detect_local_camera_ids(), get_local_c
 Cohesion: 0.38
 Nodes (6): listen(), remote_update(), render(), update_voice_extractor_model(), Dropdown, VoiceExtractorModel
 
+### Community 154 - "Community 154"
+Cohesion: 0.33
+Nodes (6): apply_args(), Color, ApplyStateItem, Args, normalize_color(), test_normalize_color()
+
+### Community 155 - "Community 155"
+Cohesion: 0.40
+Nodes (4): render(), update_job_status_checkbox_group(), CheckboxGroup, JobStatus
+
+### Community 156 - "Community 156"
+Cohesion: 0.53
+Nodes (4): render(), sort_processors(), update_processors(), CheckboxGroup
+
+### Community 157 - "Community 157"
+Cohesion: 0.47
+Nodes (5): ArgumentParser, FrameType, cli(), run(), signal_exit()
+
+### Community 158 - "Community 158"
+Cohesion: 0.33
+Nodes (6): `App.tsx`, `constants.ts`, `index.html`, `index.tsx`, Root Files, `types.ts`
+
 ### Community 159 - "Community 159"
 Cohesion: 0.60
 Nodes (4): Size, VisionFrame, explode_pixel_boost(), implode_pixel_boost()
 
+### Community 160 - "Community 160"
+Cohesion: 0.67
+Nodes (3): create_static_model_set(), DownloadScope, ModelSet
+
+### Community 161 - "Community 161"
+Cohesion: 0.67
+Nodes (3): ApplyStateItem, Args, apply_args()
+
+### Community 162 - "Community 162"
+Cohesion: 0.67
+Nodes (3): ApplyStateItem, Args, apply_args()
+
 ## Knowledge Gaps
-- **459 isolated node(s):** `{ ipcRenderer }`, `{ ipcRenderer }`, `CFG`, `Phase`, `radialGlowTexture` (+454 more)
+- **460 isolated node(s):** `{ ipcRenderer }`, `{ ipcRenderer }`, `CFG`, `Phase`, `radialGlowTexture` (+455 more)
   These have ≤1 connection - possible missing edges or undocumented components.
-- **10 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
+- **13 thin communities (<3 nodes) omitted from report** — run `graphify query` to explore isolated nodes.
 
 ## Suggested Questions
 _Questions this graph is uniquely positioned to answer:_
 
-- **Why does `get_test_example_file()` connect `Community 9` to `Community 2`, `Community 137`, `Community 10`, `Community 13`, `Community 15`, `Community 48`, `Community 16`, `Community 18`, `Community 83`?**
+- **Why does `get_test_example_file()` connect `Community 9` to `Community 2`, `Community 137`, `Community 10`, `Community 13`, `Community 15`, `Community 48`, `Community 16`, `Community 18`, `Community 83`, `Community 91`?**
   _High betweenness centrality (0.024) - this node is a cross-community bridge._
-- **Why does `register_ui_component()` connect `Community 19` to `Community 142`, `Community 149`, `Community 152`, `Community 153`, `Community 30`, `Community 31`, `Community 32`, `Community 39`, `Community 41`, `Community 45`, `Community 53`, `Community 54`, `Community 58`, `Community 60`, `Community 63`, `Community 64`, `Community 65`, `Community 67`, `Community 68`, `Community 73`?**
+- **Why does `register_ui_component()` connect `Community 19` to `Community 142`, `Community 147`, `Community 148`, `Community 149`, `Community 152`, `Community 153`, `Community 155`, `Community 156`, `Community 30`, `Community 31`, `Community 32`, `Community 39`, `Community 41`, `Community 45`, `Community 53`, `Community 54`, `Community 63`, `Community 64`, `Community 65`, `Community 67`, `Community 68`, `Community 73`?**
   _High betweenness centrality (0.018) - this node is a cross-community bridge._
 - **Why does `is_video()` connect `Community 63` to `Community 34`, `Community 3`, `Community 2`, `Community 37`, `Community 39`, `Community 72`, `Community 73`, `Community 9`, `Community 43`, `Community 45`, `Community 14`, `Community 141`, `Community 15`, `Community 16`, `Community 153`?**
   _High betweenness centrality (0.016) - this node is a cross-community bridge._
 - **What connects `{ ipcRenderer }`, `{ ipcRenderer }`, `CFG` to the rest of the system?**
-  _459 weakly-connected nodes found - possible documentation gaps or missing edges._
-- **Should `Community 0` be split into smaller, more focused modules?**
-  _Cohesion score 0.07578084997439836 - nodes in this community are weakly interconnected._
+  _460 weakly-connected nodes found - possible documentation gaps or missing edges._
 - **Should `Community 1` be split into smaller, more focused modules?**
-  _Cohesion score 0.14838709677419354 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.14623655913978495 - nodes in this community are weakly interconnected._
 - **Should `Community 2` be split into smaller, more focused modules?**
-  _Cohesion score 0.07023214810461358 - nodes in this community are weakly interconnected._
+  _Cohesion score 0.06750700280112044 - nodes in this community are weakly interconnected._
+- **Should `Community 4` be split into smaller, more focused modules?**
+  _Cohesion score 0.07010402532790593 - nodes in this community are weakly interconnected._

@@ -147,7 +147,7 @@
       "label": "CameraCaptureProps",
       "file_type": "code",
       "source_file": "components/CameraCapture.tsx",
-      "source_location": "L18",
+      "source_location": "L16",
       "_origin": "ast",
       "id": "components_cameracapture_cameracaptureprops",
       "community": 5,
@@ -157,7 +157,7 @@
       "label": "CameraCapture()",
       "file_type": "code",
       "source_file": "components/CameraCapture.tsx",
-      "source_location": "L25",
+      "source_location": "L23",
       "_origin": "ast",
       "id": "components_cameracapture_cameracapture",
       "community": 5,
@@ -570,7 +570,7 @@
       "source_location": "L104",
       "_origin": "ast",
       "id": "facefusion_args_collect_step_args",
-      "community": 34,
+      "community": 37,
       "norm_label": "collect_step_args()"
     },
     {
@@ -1050,7 +1050,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "facefusion_common_helper_create_int_metavar",
-      "community": 38,
+      "community": 4,
       "norm_label": "create_int_metavar()"
     },
     {
@@ -1060,7 +1060,7 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "facefusion_common_helper_create_float_metavar",
-      "community": 49,
+      "community": 4,
       "norm_label": "create_float_metavar()"
     },
     {
@@ -1070,7 +1070,7 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "facefusion_common_helper_create_int_range",
-      "community": 21,
+      "community": 151,
       "norm_label": "create_int_range()"
     },
     {
@@ -1080,7 +1080,7 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "facefusion_common_helper_create_float_range",
-      "community": 21,
+      "community": 151,
       "norm_label": "create_float_range()"
     },
     {
@@ -1100,7 +1100,7 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "facefusion_common_helper_calculate_float_step",
-      "community": 142,
+      "community": 148,
       "norm_label": "calculate_float_step()"
     },
     {
@@ -1150,7 +1150,7 @@
       "source_location": "L75",
       "_origin": "ast",
       "id": "facefusion_common_helper_get_first",
-      "community": 8,
+      "community": 4,
       "norm_label": "get_first()"
     },
     {
@@ -1190,7 +1190,7 @@
       "source_location": "L10",
       "_origin": "ast",
       "id": "configparser",
-      "community": 27,
+      "community": 150,
       "norm_label": "configparser"
     },
     {
@@ -1340,7 +1340,7 @@
       "source_location": "L122",
       "_origin": "ast",
       "id": "facefusion_content_analyser_resolve_execution_providers",
-      "community": 26,
+      "community": 49,
       "norm_label": "resolve_execution_providers()"
     },
     {
@@ -1350,7 +1350,7 @@
       "source_location": "L122",
       "_origin": "ast",
       "id": "facefusion_facefusion_content_analyser_py_executionprovider",
-      "community": 26,
+      "community": 49,
       "norm_label": "executionprovider"
     },
     {
@@ -1750,7 +1750,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "facefusion_download",
-      "community": 13,
+      "community": 55,
       "norm_label": "download.py"
     },
     {
@@ -1900,7 +1900,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "facefusion_execution",
-      "community": 26,
+      "community": 71,
       "norm_label": "execution.py"
     },
     {
@@ -1910,7 +1910,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "facefusion_execution_has_execution_provider",
-      "community": 26,
+      "community": 49,
       "norm_label": "has_execution_provider()"
     },
     {
@@ -1920,7 +1920,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "facefusion_facefusion_execution_py_executionprovider",
-      "community": 26,
+      "community": 49,
       "norm_label": "executionprovider"
     },
     {
@@ -1930,7 +1930,7 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "facefusion_execution_get_available_execution_providers",
-      "community": 26,
+      "community": 49,
       "norm_label": "get_available_execution_providers()"
     },
     {
@@ -1940,7 +1940,7 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "facefusion_execution_create_inference_providers",
-      "community": 26,
+      "community": 71,
       "norm_label": "create_inference_providers()"
     },
     {
@@ -1950,7 +1950,7 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "inferenceprovider",
-      "community": 26,
+      "community": 71,
       "norm_label": "inferenceprovider"
     },
     {
@@ -1960,7 +1960,7 @@
       "source_location": "L111",
       "_origin": "ast",
       "id": "facefusion_execution_resolve_cache_path",
-      "community": 26,
+      "community": 71,
       "norm_label": "resolve_cache_path()"
     },
     {
@@ -1970,7 +1970,7 @@
       "source_location": "L115",
       "_origin": "ast",
       "id": "facefusion_execution_resolve_cudnn_conv_algo_search",
-      "community": 26,
+      "community": 71,
       "norm_label": "resolve_cudnn_conv_algo_search()"
     },
     {
@@ -1980,7 +1980,7 @@
       "source_location": "L126",
       "_origin": "ast",
       "id": "facefusion_execution_resolve_openvino_device_type",
-      "community": 26,
+      "community": 71,
       "norm_label": "resolve_openvino_device_type()"
     },
     {
@@ -1990,7 +1990,7 @@
       "source_location": "L132",
       "_origin": "ast",
       "id": "facefusion_execution_run_nvidia_smi",
-      "community": 26,
+      "community": 71,
       "norm_label": "run_nvidia_smi()"
     },
     {
@@ -2000,7 +2000,7 @@
       "source_location": "L132",
       "_origin": "ast",
       "id": "facefusion_facefusion_execution_py_popen",
-      "community": 26,
+      "community": 71,
       "norm_label": "popen"
     },
     {
@@ -2010,7 +2010,7 @@
       "source_location": "L138",
       "_origin": "ast",
       "id": "facefusion_execution_detect_static_execution_devices",
-      "community": 26,
+      "community": 71,
       "norm_label": "detect_static_execution_devices()"
     },
     {
@@ -2020,7 +2020,7 @@
       "source_location": "L138",
       "_origin": "ast",
       "id": "executiondevice",
-      "community": 26,
+      "community": 71,
       "norm_label": "executiondevice"
     },
     {
@@ -2030,7 +2030,7 @@
       "source_location": "L142",
       "_origin": "ast",
       "id": "facefusion_execution_detect_execution_devices",
-      "community": 26,
+      "community": 71,
       "norm_label": "detect_execution_devices()"
     },
     {
@@ -2040,7 +2040,7 @@
       "source_location": "L185",
       "_origin": "ast",
       "id": "facefusion_execution_create_value_and_unit",
-      "community": 26,
+      "community": 71,
       "norm_label": "create_value_and_unit()"
     },
     {
@@ -2050,7 +2050,7 @@
       "source_location": "L185",
       "_origin": "ast",
       "id": "valueandunit",
-      "community": 26,
+      "community": 71,
       "norm_label": "valueandunit"
     },
     {
@@ -2060,7 +2060,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "facefusion_exit_helper",
-      "community": 31,
+      "community": 51,
       "norm_label": "exit_helper.py"
     },
     {
@@ -2070,7 +2070,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "facefusion_exit_helper_fatal_exit",
-      "community": 31,
+      "community": 51,
       "norm_label": "fatal_exit()"
     },
     {
@@ -2080,7 +2080,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "facefusion_facefusion_exit_helper_py_errorcode",
-      "community": 31,
+      "community": 51,
       "norm_label": "errorcode"
     },
     {
@@ -2090,7 +2090,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "facefusion_exit_helper_hard_exit",
-      "community": 31,
+      "community": 51,
       "norm_label": "hard_exit()"
     },
     {
@@ -2100,7 +2100,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "facefusion_exit_helper_signal_exit",
-      "community": 31,
+      "community": 51,
       "norm_label": "signal_exit()"
     },
     {
@@ -2110,7 +2110,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "facefusion_facefusion_exit_helper_py_frametype",
-      "community": 31,
+      "community": 51,
       "norm_label": "frametype"
     },
     {
@@ -2120,7 +2120,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "facefusion_exit_helper_graceful_exit",
-      "community": 31,
+      "community": 51,
       "norm_label": "graceful_exit()"
     },
     {
@@ -2220,7 +2220,7 @@
       "source_location": "L96",
       "_origin": "ast",
       "id": "facefusion_face_analyser_get_many_faces",
-      "community": 9,
+      "community": 91,
       "norm_label": "get_many_faces()"
     },
     {
@@ -2250,7 +2250,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "facefusion_face_classifier_create_static_model_set",
-      "community": 52,
+      "community": 160,
       "norm_label": "create_static_model_set()"
     },
     {
@@ -2260,7 +2260,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "facefusion_facefusion_face_classifier_py_downloadscope",
-      "community": 52,
+      "community": 160,
       "norm_label": "downloadscope"
     },
     {
@@ -2270,7 +2270,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "facefusion_facefusion_face_classifier_py_modelset",
-      "community": 52,
+      "community": 160,
       "norm_label": "modelset"
     },
     {
@@ -2450,7 +2450,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "facefusion_face_detector_create_static_model_set",
-      "community": 0,
+      "community": 52,
       "norm_label": "create_static_model_set()"
     },
     {
@@ -2460,7 +2460,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "facefusion_facefusion_face_detector_py_downloadscope",
-      "community": 0,
+      "community": 52,
       "norm_label": "downloadscope"
     },
     {
@@ -2470,7 +2470,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "facefusion_facefusion_face_detector_py_modelset",
-      "community": 0,
+      "community": 52,
       "norm_label": "modelset"
     },
     {
@@ -2910,7 +2910,7 @@
       "source_location": "L142",
       "_origin": "ast",
       "id": "facefusion_face_helper_create_rotation_matrix_and_size",
-      "community": 90,
+      "community": 59,
       "norm_label": "create_rotation_matrix_and_size()"
     },
     {
@@ -3100,7 +3100,7 @@
       "source_location": "L249",
       "_origin": "ast",
       "id": "facefusion_face_helper_merge_matrix",
-      "community": 59,
+      "community": 40,
       "norm_label": "merge_matrix()"
     },
     {
@@ -3590,7 +3590,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "facefusion_face_recognizer_create_static_model_set",
-      "community": 52,
+      "community": 46,
       "norm_label": "create_static_model_set()"
     },
     {
@@ -3600,7 +3600,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "facefusion_facefusion_face_recognizer_py_downloadscope",
-      "community": 52,
+      "community": 46,
       "norm_label": "downloadscope"
     },
     {
@@ -3610,7 +3610,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "facefusion_facefusion_face_recognizer_py_modelset",
-      "community": 52,
+      "community": 46,
       "norm_label": "modelset"
     },
     {
@@ -4900,7 +4900,7 @@
       "source_location": "L80",
       "_origin": "ast",
       "id": "facefusion_filesystem_has_image",
-      "community": 149,
+      "community": 14,
       "norm_label": "has_image()"
     },
     {
@@ -4960,7 +4960,7 @@
       "source_location": "L114",
       "_origin": "ast",
       "id": "facefusion_filesystem_filter_image_paths",
-      "community": 14,
+      "community": 149,
       "norm_label": "filter_image_paths()"
     },
     {
@@ -5220,7 +5220,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "facefusion_installer",
-      "community": 21,
+      "community": 157,
       "norm_label": "installer.py"
     },
     {
@@ -5230,7 +5230,7 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "facefusion_installer_cli",
-      "community": 21,
+      "community": 157,
       "norm_label": "cli()"
     },
     {
@@ -5240,7 +5240,7 @@
       "source_location": "L45",
       "_origin": "ast",
       "id": "facefusion_installer_signal_exit",
-      "community": 21,
+      "community": 157,
       "norm_label": "signal_exit()"
     },
     {
@@ -5250,7 +5250,7 @@
       "source_location": "L45",
       "_origin": "ast",
       "id": "facefusion_facefusion_installer_py_frametype",
-      "community": 21,
+      "community": 157,
       "norm_label": "frametype"
     },
     {
@@ -5260,7 +5260,7 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "facefusion_installer_run",
-      "community": 21,
+      "community": 157,
       "norm_label": "run()"
     },
     {
@@ -5270,7 +5270,7 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "facefusion_facefusion_installer_py_argumentparser",
-      "community": 21,
+      "community": 157,
       "norm_label": "argumentparser"
     },
     {
@@ -5290,7 +5290,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "jobs_job_helper",
-      "community": 14,
+      "community": 2,
       "norm_label": "job_helper.py"
     },
     {
@@ -5310,7 +5310,7 @@
       "source_location": "L19",
       "_origin": "ast",
       "id": "jobs_job_helper_suggest_job_id",
-      "community": 14,
+      "community": 2,
       "norm_label": "suggest_job_id()"
     },
     {
@@ -6150,7 +6150,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "facefusion_normalizer_normalize_color",
-      "community": 37,
+      "community": 154,
       "norm_label": "normalize_color()"
     },
     {
@@ -6160,7 +6160,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "color",
-      "community": 37,
+      "community": 154,
       "norm_label": "color"
     },
     {
@@ -6340,7 +6340,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "processors_core",
-      "community": 31,
+      "community": 51,
       "norm_label": "core.py"
     },
     {
@@ -6610,7 +6610,7 @@
       "source_location": "L87",
       "_origin": "ast",
       "id": "age_modifier_core_register_args",
-      "community": 38,
+      "community": 4,
       "norm_label": "register_args()"
     },
     {
@@ -6620,7 +6620,7 @@
       "source_location": "L87",
       "_origin": "ast",
       "id": "facefusion_facefusion_processors_modules_age_modifier_core_py_argumentparser",
-      "community": 38,
+      "community": 4,
       "norm_label": "argumentparser"
     },
     {
@@ -6770,7 +6770,7 @@
       "source_location": "L207",
       "_origin": "ast",
       "id": "age_modifier_core_process_frame",
-      "community": 33,
+      "community": 40,
       "norm_label": "process_frame()"
     },
     {
@@ -6780,7 +6780,7 @@
       "source_location": "L207",
       "_origin": "ast",
       "id": "agemodifierinputs",
-      "community": 33,
+      "community": 40,
       "norm_label": "agemodifierinputs"
     },
     {
@@ -6790,7 +6790,7 @@
       "source_location": "L207",
       "_origin": "ast",
       "id": "facefusion_facefusion_processors_modules_age_modifier_core_py_processoroutputs",
-      "community": 33,
+      "community": 40,
       "norm_label": "processoroutputs"
     },
     {
@@ -6910,7 +6910,7 @@
       "source_location": "L409",
       "_origin": "ast",
       "id": "background_remover_core_resolve_execution_providers",
-      "community": 26,
+      "community": 49,
       "norm_label": "resolve_execution_providers()"
     },
     {
@@ -6920,7 +6920,7 @@
       "source_location": "L409",
       "_origin": "ast",
       "id": "facefusion_facefusion_processors_modules_background_remover_core_py_executionprovider",
-      "community": 26,
+      "community": 49,
       "norm_label": "executionprovider"
     },
     {
@@ -6970,7 +6970,7 @@
       "source_location": "L428",
       "_origin": "ast",
       "id": "background_remover_core_apply_args",
-      "community": 37,
+      "community": 154,
       "norm_label": "apply_args()"
     },
     {
@@ -6980,7 +6980,7 @@
       "source_location": "L428",
       "_origin": "ast",
       "id": "facefusion_facefusion_processors_modules_background_remover_core_py_args",
-      "community": 37,
+      "community": 154,
       "norm_label": "args"
     },
     {
@@ -6990,7 +6990,7 @@
       "source_location": "L428",
       "_origin": "ast",
       "id": "facefusion_facefusion_processors_modules_background_remover_core_py_applystateitem",
-      "community": 37,
+      "community": 154,
       "norm_label": "applystateitem"
     },
     {
@@ -7000,7 +7000,7 @@
       "source_location": "L433",
       "_origin": "ast",
       "id": "background_remover_core_pre_check",
-      "community": 58,
+      "community": 12,
       "norm_label": "pre_check()"
     },
     {
@@ -7290,7 +7290,7 @@
       "source_location": "L276",
       "_origin": "ast",
       "id": "deep_swapper_core_register_args",
-      "community": 38,
+      "community": 4,
       "norm_label": "register_args()"
     },
     {
@@ -7300,7 +7300,7 @@
       "source_location": "L276",
       "_origin": "ast",
       "id": "facefusion_facefusion_processors_modules_deep_swapper_core_py_argumentparser",
-      "community": 38,
+      "community": 4,
       "norm_label": "argumentparser"
     },
     {
@@ -7380,7 +7380,7 @@
       "source_location": "L326",
       "_origin": "ast",
       "id": "deep_swapper_core_swap_face",
-      "community": 23,
+      "community": 20,
       "norm_label": "swap_face()"
     },
     {
@@ -7390,7 +7390,7 @@
       "source_location": "L326",
       "_origin": "ast",
       "id": "facefusion_facefusion_processors_modules_deep_swapper_core_py_face",
-      "community": 23,
+      "community": 20,
       "norm_label": "face"
     },
     {
@@ -7480,7 +7480,7 @@
       "source_location": "L412",
       "_origin": "ast",
       "id": "deep_swapper_core_process_frame",
-      "community": 33,
+      "community": 20,
       "norm_label": "process_frame()"
     },
     {
@@ -7490,7 +7490,7 @@
       "source_location": "L412",
       "_origin": "ast",
       "id": "deepswapperinputs",
-      "community": 33,
+      "community": 20,
       "norm_label": "deepswapperinputs"
     },
     {
@@ -7500,7 +7500,7 @@
       "source_location": "L412",
       "_origin": "ast",
       "id": "facefusion_facefusion_processors_modules_deep_swapper_core_py_processoroutputs",
-      "community": 33,
+      "community": 20,
       "norm_label": "processoroutputs"
     },
     {
@@ -7560,7 +7560,7 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "expression_restorer_core_create_static_model_set",
-      "community": 17,
+      "community": 52,
       "norm_label": "create_static_model_set()"
     },
     {
@@ -7570,7 +7570,7 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "facefusion_facefusion_processors_modules_expression_restorer_core_py_downloadscope",
-      "community": 17,
+      "community": 52,
       "norm_label": "downloadscope"
     },
     {
@@ -7580,7 +7580,7 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "facefusion_facefusion_processors_modules_expression_restorer_core_py_modelset",
-      "community": 17,
+      "community": 52,
       "norm_label": "modelset"
     },
     {
@@ -7640,7 +7640,7 @@
       "source_location": "L99",
       "_origin": "ast",
       "id": "expression_restorer_core_register_args",
-      "community": 38,
+      "community": 4,
       "norm_label": "register_args()"
     },
     {
@@ -7650,7 +7650,7 @@
       "source_location": "L99",
       "_origin": "ast",
       "id": "facefusion_facefusion_processors_modules_expression_restorer_core_py_argumentparser",
-      "community": 38,
+      "community": 4,
       "norm_label": "argumentparser"
     },
     {
@@ -8280,7 +8280,7 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "face_editor_core_create_static_model_set",
-      "community": 7,
+      "community": 52,
       "norm_label": "create_static_model_set()"
     },
     {
@@ -8290,7 +8290,7 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "facefusion_facefusion_processors_modules_face_editor_core_py_downloadscope",
-      "community": 7,
+      "community": 52,
       "norm_label": "downloadscope"
     },
     {
@@ -8300,7 +8300,7 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "facefusion_facefusion_processors_modules_face_editor_core_py_modelset",
-      "community": 7,
+      "community": 52,
       "norm_label": "modelset"
     },
     {
@@ -8360,7 +8360,7 @@
       "source_location": "L129",
       "_origin": "ast",
       "id": "face_editor_core_register_args",
-      "community": 49,
+      "community": 4,
       "norm_label": "register_args()"
     },
     {
@@ -8370,7 +8370,7 @@
       "source_location": "L129",
       "_origin": "ast",
       "id": "facefusion_facefusion_processors_modules_face_editor_core_py_argumentparser",
-      "community": 49,
+      "community": 4,
       "norm_label": "argumentparser"
     },
     {
@@ -8780,7 +8780,7 @@
       "source_location": "L487",
       "_origin": "ast",
       "id": "face_editor_core_process_frame",
-      "community": 33,
+      "community": 7,
       "norm_label": "process_frame()"
     },
     {
@@ -8790,7 +8790,7 @@
       "source_location": "L487",
       "_origin": "ast",
       "id": "faceeditorinputs",
-      "community": 33,
+      "community": 7,
       "norm_label": "faceeditorinputs"
     },
     {
@@ -8800,7 +8800,7 @@
       "source_location": "L487",
       "_origin": "ast",
       "id": "facefusion_facefusion_processors_modules_face_editor_core_py_processoroutputs",
-      "community": 33,
+      "community": 7,
       "norm_label": "processoroutputs"
     },
     {
@@ -8860,7 +8860,7 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "face_enhancer_core_create_static_model_set",
-      "community": 22,
+      "community": 52,
       "norm_label": "create_static_model_set()"
     },
     {
@@ -8870,7 +8870,7 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "facefusion_facefusion_processors_modules_face_enhancer_core_py_downloadscope",
-      "community": 22,
+      "community": 52,
       "norm_label": "downloadscope"
     },
     {
@@ -8880,7 +8880,7 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "facefusion_facefusion_processors_modules_face_enhancer_core_py_modelset",
-      "community": 22,
+      "community": 52,
       "norm_label": "modelset"
     },
     {
@@ -8940,7 +8940,7 @@
       "source_location": "L292",
       "_origin": "ast",
       "id": "face_enhancer_core_register_args",
-      "community": 38,
+      "community": 4,
       "norm_label": "register_args()"
     },
     {
@@ -8950,7 +8950,7 @@
       "source_location": "L292",
       "_origin": "ast",
       "id": "facefusion_facefusion_processors_modules_face_enhancer_core_py_argumentparser",
-      "community": 38,
+      "community": 4,
       "norm_label": "argumentparser"
     },
     {
@@ -9200,7 +9200,7 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "face_swapper_core_create_static_model_set",
-      "community": 1,
+      "community": 52,
       "norm_label": "create_static_model_set()"
     },
     {
@@ -9210,7 +9210,7 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "facefusion_facefusion_processors_modules_face_swapper_core_py_downloadscope",
-      "community": 1,
+      "community": 52,
       "norm_label": "downloadscope"
     },
     {
@@ -9220,7 +9220,7 @@
       "source_location": "L32",
       "_origin": "ast",
       "id": "facefusion_facefusion_processors_modules_face_swapper_core_py_modelset",
-      "community": 1,
+      "community": 52,
       "norm_label": "modelset"
     },
     {
@@ -9290,7 +9290,7 @@
       "source_location": "L513",
       "_origin": "ast",
       "id": "face_swapper_core_register_args",
-      "community": 8,
+      "community": 4,
       "norm_label": "register_args()"
     },
     {
@@ -9300,7 +9300,7 @@
       "source_location": "L513",
       "_origin": "ast",
       "id": "facefusion_facefusion_processors_modules_face_swapper_core_py_argumentparser",
-      "community": 8,
+      "community": 4,
       "norm_label": "argumentparser"
     },
     {
@@ -9310,7 +9310,7 @@
       "source_location": "L524",
       "_origin": "ast",
       "id": "face_swapper_core_apply_args",
-      "community": 91,
+      "community": 1,
       "norm_label": "apply_args()"
     },
     {
@@ -9320,7 +9320,7 @@
       "source_location": "L524",
       "_origin": "ast",
       "id": "facefusion_facefusion_processors_modules_face_swapper_core_py_args",
-      "community": 91,
+      "community": 1,
       "norm_label": "args"
     },
     {
@@ -9330,7 +9330,7 @@
       "source_location": "L524",
       "_origin": "ast",
       "id": "facefusion_facefusion_processors_modules_face_swapper_core_py_applystateitem",
-      "community": 91,
+      "community": 1,
       "norm_label": "applystateitem"
     },
     {
@@ -9580,7 +9580,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "frame_colorizer_core",
-      "community": 0,
+      "community": 38,
       "norm_label": "core.py"
     },
     {
@@ -9590,7 +9590,7 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "frame_colorizer_core_create_static_model_set",
-      "community": 0,
+      "community": 38,
       "norm_label": "create_static_model_set()"
     },
     {
@@ -9600,7 +9600,7 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "facefusion_facefusion_processors_modules_frame_colorizer_core_py_downloadscope",
-      "community": 0,
+      "community": 38,
       "norm_label": "downloadscope"
     },
     {
@@ -9610,7 +9610,7 @@
       "source_location": "L25",
       "_origin": "ast",
       "id": "facefusion_facefusion_processors_modules_frame_colorizer_core_py_modelset",
-      "community": 0,
+      "community": 38,
       "norm_label": "modelset"
     },
     {
@@ -9620,7 +9620,7 @@
       "source_location": "L161",
       "_origin": "ast",
       "id": "frame_colorizer_core_get_inference_pool",
-      "community": 0,
+      "community": 38,
       "norm_label": "get_inference_pool()"
     },
     {
@@ -9630,7 +9630,7 @@
       "source_location": "L161",
       "_origin": "ast",
       "id": "facefusion_facefusion_processors_modules_frame_colorizer_core_py_inferencepool",
-      "community": 0,
+      "community": 38,
       "norm_label": "inferencepool"
     },
     {
@@ -9640,7 +9640,7 @@
       "source_location": "L168",
       "_origin": "ast",
       "id": "frame_colorizer_core_clear_inference_pool",
-      "community": 0,
+      "community": 38,
       "norm_label": "clear_inference_pool()"
     },
     {
@@ -9650,7 +9650,7 @@
       "source_location": "L173",
       "_origin": "ast",
       "id": "frame_colorizer_core_resolve_execution_providers",
-      "community": 26,
+      "community": 49,
       "norm_label": "resolve_execution_providers()"
     },
     {
@@ -9660,7 +9660,7 @@
       "source_location": "L173",
       "_origin": "ast",
       "id": "facefusion_facefusion_processors_modules_frame_colorizer_core_py_executionprovider",
-      "community": 26,
+      "community": 49,
       "norm_label": "executionprovider"
     },
     {
@@ -9670,7 +9670,7 @@
       "source_location": "L179",
       "_origin": "ast",
       "id": "frame_colorizer_core_get_model_options",
-      "community": 0,
+      "community": 38,
       "norm_label": "get_model_options()"
     },
     {
@@ -9680,7 +9680,7 @@
       "source_location": "L179",
       "_origin": "ast",
       "id": "facefusion_facefusion_processors_modules_frame_colorizer_core_py_modeloptions",
-      "community": 0,
+      "community": 38,
       "norm_label": "modeloptions"
     },
     {
@@ -9690,7 +9690,7 @@
       "source_location": "L184",
       "_origin": "ast",
       "id": "frame_colorizer_core_register_args",
-      "community": 38,
+      "community": 4,
       "norm_label": "register_args()"
     },
     {
@@ -9700,7 +9700,7 @@
       "source_location": "L184",
       "_origin": "ast",
       "id": "facefusion_facefusion_processors_modules_frame_colorizer_core_py_argumentparser",
-      "community": 38,
+      "community": 4,
       "norm_label": "argumentparser"
     },
     {
@@ -9710,7 +9710,7 @@
       "source_location": "L193",
       "_origin": "ast",
       "id": "frame_colorizer_core_apply_args",
-      "community": 0,
+      "community": 161,
       "norm_label": "apply_args()"
     },
     {
@@ -9720,7 +9720,7 @@
       "source_location": "L193",
       "_origin": "ast",
       "id": "facefusion_facefusion_processors_modules_frame_colorizer_core_py_args",
-      "community": 0,
+      "community": 161,
       "norm_label": "args"
     },
     {
@@ -9730,7 +9730,7 @@
       "source_location": "L193",
       "_origin": "ast",
       "id": "facefusion_facefusion_processors_modules_frame_colorizer_core_py_applystateitem",
-      "community": 0,
+      "community": 161,
       "norm_label": "applystateitem"
     },
     {
@@ -9740,7 +9740,7 @@
       "source_location": "L199",
       "_origin": "ast",
       "id": "frame_colorizer_core_pre_check",
-      "community": 0,
+      "community": 38,
       "norm_label": "pre_check()"
     },
     {
@@ -9770,7 +9770,7 @@
       "source_location": "L219",
       "_origin": "ast",
       "id": "frame_colorizer_core_post_process",
-      "community": 0,
+      "community": 38,
       "norm_label": "post_process()"
     },
     {
@@ -9780,7 +9780,7 @@
       "source_location": "L229",
       "_origin": "ast",
       "id": "frame_colorizer_core_colorize_frame",
-      "community": 0,
+      "community": 38,
       "norm_label": "colorize_frame()"
     },
     {
@@ -9790,7 +9790,7 @@
       "source_location": "L229",
       "_origin": "ast",
       "id": "facefusion_facefusion_processors_modules_frame_colorizer_core_py_visionframe",
-      "community": 0,
+      "community": 38,
       "norm_label": "visionframe"
     },
     {
@@ -9800,7 +9800,7 @@
       "source_location": "L237",
       "_origin": "ast",
       "id": "frame_colorizer_core_forward",
-      "community": 0,
+      "community": 38,
       "norm_label": "forward()"
     },
     {
@@ -9810,7 +9810,7 @@
       "source_location": "L249",
       "_origin": "ast",
       "id": "frame_colorizer_core_prepare_temp_frame",
-      "community": 0,
+      "community": 38,
       "norm_label": "prepare_temp_frame()"
     },
     {
@@ -9820,7 +9820,7 @@
       "source_location": "L267",
       "_origin": "ast",
       "id": "frame_colorizer_core_merge_color_frame",
-      "community": 0,
+      "community": 38,
       "norm_label": "merge_color_frame()"
     },
     {
@@ -9830,7 +9830,7 @@
       "source_location": "L289",
       "_origin": "ast",
       "id": "frame_colorizer_core_blend_color_frame",
-      "community": 0,
+      "community": 38,
       "norm_label": "blend_color_frame()"
     },
     {
@@ -9840,7 +9840,7 @@
       "source_location": "L295",
       "_origin": "ast",
       "id": "frame_colorizer_core_process_frame",
-      "community": 0,
+      "community": 38,
       "norm_label": "process_frame()"
     },
     {
@@ -9850,7 +9850,7 @@
       "source_location": "L295",
       "_origin": "ast",
       "id": "framecolorizerinputs",
-      "community": 0,
+      "community": 38,
       "norm_label": "framecolorizerinputs"
     },
     {
@@ -9860,7 +9860,7 @@
       "source_location": "L295",
       "_origin": "ast",
       "id": "facefusion_facefusion_processors_modules_frame_colorizer_core_py_processoroutputs",
-      "community": 0,
+      "community": 38,
       "norm_label": "processoroutputs"
     },
     {
@@ -9920,7 +9920,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "frame_enhancer_core_create_static_model_set",
-      "community": 26,
+      "community": 52,
       "norm_label": "create_static_model_set()"
     },
     {
@@ -9930,7 +9930,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "facefusion_facefusion_processors_modules_frame_enhancer_core_py_downloadscope",
-      "community": 26,
+      "community": 52,
       "norm_label": "downloadscope"
     },
     {
@@ -9940,7 +9940,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "facefusion_facefusion_processors_modules_frame_enhancer_core_py_modelset",
-      "community": 26,
+      "community": 52,
       "norm_label": "modelset"
     },
     {
@@ -10010,7 +10010,7 @@
       "source_location": "L573",
       "_origin": "ast",
       "id": "frame_enhancer_core_register_args",
-      "community": 38,
+      "community": 4,
       "norm_label": "register_args()"
     },
     {
@@ -10020,7 +10020,7 @@
       "source_location": "L573",
       "_origin": "ast",
       "id": "facefusion_facefusion_processors_modules_frame_enhancer_core_py_argumentparser",
-      "community": 38,
+      "community": 4,
       "norm_label": "argumentparser"
     },
     {
@@ -10030,7 +10030,7 @@
       "source_location": "L581",
       "_origin": "ast",
       "id": "frame_enhancer_core_apply_args",
-      "community": 26,
+      "community": 162,
       "norm_label": "apply_args()"
     },
     {
@@ -10040,7 +10040,7 @@
       "source_location": "L581",
       "_origin": "ast",
       "id": "facefusion_facefusion_processors_modules_frame_enhancer_core_py_args",
-      "community": 26,
+      "community": 162,
       "norm_label": "args"
     },
     {
@@ -10050,7 +10050,7 @@
       "source_location": "L581",
       "_origin": "ast",
       "id": "facefusion_facefusion_processors_modules_frame_enhancer_core_py_applystateitem",
-      "community": 26,
+      "community": 162,
       "norm_label": "applystateitem"
     },
     {
@@ -10320,7 +10320,7 @@
       "source_location": "L132",
       "_origin": "ast",
       "id": "lip_syncer_core_register_args",
-      "community": 49,
+      "community": 4,
       "norm_label": "register_args()"
     },
     {
@@ -10330,7 +10330,7 @@
       "source_location": "L132",
       "_origin": "ast",
       "id": "facefusion_facefusion_processors_modules_lip_syncer_core_py_argumentparser",
-      "community": 49,
+      "community": 4,
       "norm_label": "argumentparser"
     },
     {
@@ -10630,7 +10630,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "facefusion_program_create_help_formatter_small",
-      "community": 117,
+      "community": 4,
       "norm_label": "create_help_formatter_small()"
     },
     {
@@ -10640,7 +10640,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "helpformatter",
-      "community": 117,
+      "community": 4,
       "norm_label": "helpformatter"
     },
     {
@@ -10650,7 +10650,7 @@
       "source_location": "L20",
       "_origin": "ast",
       "id": "facefusion_program_create_help_formatter_large",
-      "community": 117,
+      "community": 4,
       "norm_label": "create_help_formatter_large()"
     },
     {
@@ -10760,7 +10760,7 @@
       "source_location": "L97",
       "_origin": "ast",
       "id": "facefusion_program_create_face_detector_program",
-      "community": 49,
+      "community": 4,
       "norm_label": "create_face_detector_program()"
     },
     {
@@ -10770,7 +10770,7 @@
       "source_location": "L111",
       "_origin": "ast",
       "id": "facefusion_program_create_face_landmarker_program",
-      "community": 49,
+      "community": 4,
       "norm_label": "create_face_landmarker_program()"
     },
     {
@@ -10780,7 +10780,7 @@
       "source_location": "L120",
       "_origin": "ast",
       "id": "facefusion_program_create_face_selector_program",
-      "community": 49,
+      "community": 4,
       "norm_label": "create_face_selector_program()"
     },
     {
@@ -10790,7 +10790,7 @@
       "source_location": "L136",
       "_origin": "ast",
       "id": "facefusion_program_create_face_masker_program",
-      "community": 49,
+      "community": 4,
       "norm_label": "create_face_masker_program()"
     },
     {
@@ -10820,7 +10820,7 @@
       "source_location": "L169",
       "_origin": "ast",
       "id": "facefusion_program_create_output_creation_program",
-      "community": 8,
+      "community": 4,
       "norm_label": "create_output_creation_program()"
     },
     {
@@ -10950,7 +10950,7 @@
       "source_location": "L287",
       "_origin": "ast",
       "id": "facefusion_program_collect_step_program",
-      "community": 49,
+      "community": 4,
       "norm_label": "collect_step_program()"
     },
     {
@@ -10990,7 +10990,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "facefusion_program_helper",
-      "community": 38,
+      "community": 4,
       "norm_label": "program_helper.py"
     },
     {
@@ -11000,7 +11000,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "facefusion_program_helper_find_argument_group",
-      "community": 38,
+      "community": 4,
       "norm_label": "find_argument_group()"
     },
     {
@@ -11010,7 +11010,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "facefusion_facefusion_program_helper_py_argumentparser",
-      "community": 38,
+      "community": 4,
       "norm_label": "argumentparser"
     },
     {
@@ -11020,7 +11020,7 @@
       "source_location": "L5",
       "_origin": "ast",
       "id": "argumentgroup",
-      "community": 38,
+      "community": 4,
       "norm_label": "_argumentgroup"
     },
     {
@@ -11030,7 +11030,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "facefusion_program_helper_validate_args",
-      "community": 38,
+      "community": 4,
       "norm_label": "validate_args()"
     },
     {
@@ -11040,7 +11040,7 @@
       "source_location": "L23",
       "_origin": "ast",
       "id": "facefusion_program_helper_validate_actions",
-      "community": 38,
+      "community": 4,
       "norm_label": "validate_actions()"
     },
     {
@@ -11380,7 +11380,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "facefusion_thread_helper",
-      "community": 0,
+      "community": 46,
       "norm_label": "thread_helper.py"
     },
     {
@@ -11390,7 +11390,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "facefusion_thread_helper_thread_lock",
-      "community": 0,
+      "community": 46,
       "norm_label": "thread_lock()"
     },
     {
@@ -11400,7 +11400,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "lock",
-      "community": 0,
+      "community": 46,
       "norm_label": "lock"
     },
     {
@@ -11420,7 +11420,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "semaphore",
-      "community": 0,
+      "community": 90,
       "norm_label": "semaphore"
     },
     {
@@ -11430,7 +11430,7 @@
       "source_location": "L21",
       "_origin": "ast",
       "id": "facefusion_thread_helper_conditional_thread_semaphore",
-      "community": 25,
+      "community": 90,
       "norm_label": "conditional_thread_semaphore()"
     },
     {
@@ -12060,7 +12060,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_download",
-      "community": 51,
+      "community": 58,
       "norm_label": "download.py"
     },
     {
@@ -12070,7 +12070,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "components_download_render",
-      "community": 51,
+      "community": 58,
       "norm_label": "render()"
     },
     {
@@ -12080,7 +12080,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "components_download_listen",
-      "community": 51,
+      "community": 58,
       "norm_label": "listen()"
     },
     {
@@ -12090,7 +12090,7 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "components_download_update_download_providers",
-      "community": 51,
+      "community": 58,
       "norm_label": "update_download_providers()"
     },
     {
@@ -12100,7 +12100,7 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "facefusion_facefusion_uis_components_download_py_downloadprovider",
-      "community": 51,
+      "community": 58,
       "norm_label": "downloadprovider"
     },
     {
@@ -12110,7 +12110,7 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "facefusion_facefusion_uis_components_download_py_checkboxgroup",
-      "community": 51,
+      "community": 58,
       "norm_label": "checkboxgroup"
     },
     {
@@ -12120,7 +12120,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_execution",
-      "community": 26,
+      "community": 117,
       "norm_label": "execution.py"
     },
     {
@@ -12130,7 +12130,7 @@
       "source_location": "L14",
       "_origin": "ast",
       "id": "components_execution_render",
-      "community": 26,
+      "community": 117,
       "norm_label": "render()"
     },
     {
@@ -12140,7 +12140,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "components_execution_listen",
-      "community": 26,
+      "community": 117,
       "norm_label": "listen()"
     },
     {
@@ -12170,7 +12170,7 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "facefusion_facefusion_uis_components_execution_py_checkboxgroup",
-      "community": 26,
+      "community": 117,
       "norm_label": "checkboxgroup"
     },
     {
@@ -12870,7 +12870,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_face_landmarker",
-      "community": 142,
+      "community": 148,
       "norm_label": "face_landmarker.py"
     },
     {
@@ -12880,7 +12880,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "components_face_landmarker_render",
-      "community": 142,
+      "community": 148,
       "norm_label": "render()"
     },
     {
@@ -12890,7 +12890,7 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "components_face_landmarker_listen",
-      "community": 142,
+      "community": 148,
       "norm_label": "listen()"
     },
     {
@@ -12900,7 +12900,7 @@
       "source_location": "L40",
       "_origin": "ast",
       "id": "components_face_landmarker_update_face_landmarker_model",
-      "community": 142,
+      "community": 148,
       "norm_label": "update_face_landmarker_model()"
     },
     {
@@ -12910,7 +12910,7 @@
       "source_location": "L40",
       "_origin": "ast",
       "id": "facelandmarkermodel",
-      "community": 142,
+      "community": 148,
       "norm_label": "facelandmarkermodel"
     },
     {
@@ -12920,7 +12920,7 @@
       "source_location": "L40",
       "_origin": "ast",
       "id": "facefusion_facefusion_uis_components_face_landmarker_py_dropdown",
-      "community": 142,
+      "community": 148,
       "norm_label": "dropdown"
     },
     {
@@ -12930,7 +12930,7 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "components_face_landmarker_update_face_landmarker_score",
-      "community": 142,
+      "community": 148,
       "norm_label": "update_face_landmarker_score()"
     },
     {
@@ -12940,7 +12940,7 @@
       "source_location": "L49",
       "_origin": "ast",
       "id": "facefusion_facefusion_uis_components_face_landmarker_py_score",
-      "community": 142,
+      "community": 148,
       "norm_label": "score"
     },
     {
@@ -13900,7 +13900,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_job_list_options",
-      "community": 60,
+      "community": 155,
       "norm_label": "job_list_options.py"
     },
     {
@@ -13910,7 +13910,7 @@
       "source_location": "L15",
       "_origin": "ast",
       "id": "components_job_list_options_render",
-      "community": 60,
+      "community": 155,
       "norm_label": "render()"
     },
     {
@@ -13920,7 +13920,7 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "components_job_list_options_listen",
-      "community": 60,
+      "community": 155,
       "norm_label": "listen()"
     },
     {
@@ -13930,7 +13930,7 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "components_job_list_options_update_job_status_checkbox_group",
-      "community": 60,
+      "community": 155,
       "norm_label": "update_job_status_checkbox_group()"
     },
     {
@@ -13940,7 +13940,7 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "facefusion_facefusion_uis_components_job_list_options_py_jobstatus",
-      "community": 60,
+      "community": 155,
       "norm_label": "jobstatus"
     },
     {
@@ -13950,7 +13950,7 @@
       "source_location": "L33",
       "_origin": "ast",
       "id": "facefusion_facefusion_uis_components_job_list_options_py_checkboxgroup",
-      "community": 60,
+      "community": 155,
       "norm_label": "checkboxgroup"
     },
     {
@@ -14830,7 +14830,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "components_processors",
-      "community": 58,
+      "community": 156,
       "norm_label": "processors.py"
     },
     {
@@ -14840,7 +14840,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "components_processors_render",
-      "community": 58,
+      "community": 156,
       "norm_label": "render()"
     },
     {
@@ -14850,7 +14850,7 @@
       "source_location": "L24",
       "_origin": "ast",
       "id": "components_processors_listen",
-      "community": 58,
+      "community": 156,
       "norm_label": "listen()"
     },
     {
@@ -14860,7 +14860,7 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "components_processors_update_processors",
-      "community": 58,
+      "community": 156,
       "norm_label": "update_processors()"
     },
     {
@@ -14870,7 +14870,7 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "facefusion_facefusion_uis_components_processors_py_checkboxgroup",
-      "community": 58,
+      "community": 156,
       "norm_label": "checkboxgroup"
     },
     {
@@ -14880,7 +14880,7 @@
       "source_location": "L41",
       "_origin": "ast",
       "id": "components_processors_sort_processors",
-      "community": 58,
+      "community": 156,
       "norm_label": "sort_processors()"
     },
     {
@@ -15500,7 +15500,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "uis_core",
-      "community": 19,
+      "community": 147,
       "norm_label": "core.py"
     },
     {
@@ -15510,7 +15510,7 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "uis_core_load_ui_layout_module",
-      "community": 19,
+      "community": 147,
       "norm_label": "load_ui_layout_module()"
     },
     {
@@ -15520,7 +15520,7 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "facefusion_facefusion_uis_core_py_any",
-      "community": 19,
+      "community": 147,
       "norm_label": "any"
     },
     {
@@ -15530,7 +15530,7 @@
       "source_location": "L44",
       "_origin": "ast",
       "id": "uis_core_get_ui_layouts_modules",
-      "community": 19,
+      "community": 147,
       "norm_label": "get_ui_layouts_modules()"
     },
     {
@@ -15540,7 +15540,7 @@
       "source_location": "L44",
       "_origin": "ast",
       "id": "facefusion_facefusion_uis_core_py_moduletype",
-      "community": 19,
+      "community": 147,
       "norm_label": "moduletype"
     },
     {
@@ -15600,7 +15600,7 @@
       "source_location": "L72",
       "_origin": "ast",
       "id": "uis_core_init",
-      "community": 19,
+      "community": 147,
       "norm_label": "init()"
     },
     {
@@ -15610,7 +15610,7 @@
       "source_location": "L83",
       "_origin": "ast",
       "id": "uis_core_launch",
-      "community": 19,
+      "community": 147,
       "norm_label": "launch()"
     },
     {
@@ -15620,7 +15620,7 @@
       "source_location": "L102",
       "_origin": "ast",
       "id": "uis_core_get_theme",
-      "community": 19,
+      "community": 147,
       "norm_label": "get_theme()"
     },
     {
@@ -15630,7 +15630,7 @@
       "source_location": "L102",
       "_origin": "ast",
       "id": "theme",
-      "community": 19,
+      "community": 147,
       "norm_label": "theme"
     },
     {
@@ -15640,7 +15640,7 @@
       "source_location": "L198",
       "_origin": "ast",
       "id": "uis_core_get_css",
-      "community": 19,
+      "community": 147,
       "norm_label": "get_css()"
     },
     {
@@ -17910,7 +17910,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_test_common_helper",
-      "community": 21,
+      "community": 151,
       "norm_label": "test_common_helper.py"
     },
     {
@@ -17920,7 +17920,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "tests_test_common_helper_test_create_int_metavar",
-      "community": 21,
+      "community": 151,
       "norm_label": "test_create_int_metavar()"
     },
     {
@@ -17930,7 +17930,7 @@
       "source_location": "L8",
       "_origin": "ast",
       "id": "tests_test_common_helper_test_create_float_metavar",
-      "community": 21,
+      "community": 151,
       "norm_label": "test_create_float_metavar()"
     },
     {
@@ -17940,7 +17940,7 @@
       "source_location": "L12",
       "_origin": "ast",
       "id": "tests_test_common_helper_test_create_int_range",
-      "community": 21,
+      "community": 151,
       "norm_label": "test_create_int_range()"
     },
     {
@@ -17950,7 +17950,7 @@
       "source_location": "L17",
       "_origin": "ast",
       "id": "tests_test_common_helper_test_create_float_range",
-      "community": 21,
+      "community": 151,
       "norm_label": "test_create_float_range()"
     },
     {
@@ -17960,7 +17960,7 @@
       "source_location": "L22",
       "_origin": "ast",
       "id": "tests_test_common_helper_test_calc_int_step",
-      "community": 60,
+      "community": 151,
       "norm_label": "test_calc_int_step()"
     },
     {
@@ -17970,7 +17970,7 @@
       "source_location": "L26",
       "_origin": "ast",
       "id": "tests_test_common_helper_test_calc_float_step",
-      "community": 21,
+      "community": 151,
       "norm_label": "test_calc_float_step()"
     },
     {
@@ -17980,7 +17980,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_test_config",
-      "community": 27,
+      "community": 150,
       "norm_label": "test_config.py"
     },
     {
@@ -17990,7 +17990,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "tests_test_config_before_all",
-      "community": 27,
+      "community": 150,
       "norm_label": "before_all()"
     },
     {
@@ -18000,7 +18000,7 @@
       "source_location": "L46",
       "_origin": "ast",
       "id": "tests_test_config_test_get_str_value",
-      "community": 27,
+      "community": 150,
       "norm_label": "test_get_str_value()"
     },
     {
@@ -18010,7 +18010,7 @@
       "source_location": "L53",
       "_origin": "ast",
       "id": "tests_test_config_test_get_int_value",
-      "community": 27,
+      "community": 150,
       "norm_label": "test_get_int_value()"
     },
     {
@@ -18020,7 +18020,7 @@
       "source_location": "L60",
       "_origin": "ast",
       "id": "tests_test_config_test_get_float_value",
-      "community": 27,
+      "community": 150,
       "norm_label": "test_get_float_value()"
     },
     {
@@ -18030,7 +18030,7 @@
       "source_location": "L67",
       "_origin": "ast",
       "id": "tests_test_config_test_get_bool_value",
-      "community": 27,
+      "community": 150,
       "norm_label": "test_get_bool_value()"
     },
     {
@@ -18040,7 +18040,7 @@
       "source_location": "L74",
       "_origin": "ast",
       "id": "tests_test_config_test_get_str_list",
-      "community": 27,
+      "community": 150,
       "norm_label": "test_get_str_list()"
     },
     {
@@ -18050,7 +18050,7 @@
       "source_location": "L81",
       "_origin": "ast",
       "id": "tests_test_config_test_get_int_list",
-      "community": 27,
+      "community": 150,
       "norm_label": "test_get_int_list()"
     },
     {
@@ -18130,7 +18130,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_test_execution",
-      "community": 26,
+      "community": 49,
       "norm_label": "test_execution.py"
     },
     {
@@ -18140,7 +18140,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "tests_test_execution_test_has_execution_provider",
-      "community": 26,
+      "community": 49,
       "norm_label": "test_has_execution_provider()"
     },
     {
@@ -18150,7 +18150,7 @@
       "source_location": "L9",
       "_origin": "ast",
       "id": "tests_test_execution_test_get_available_execution_providers",
-      "community": 26,
+      "community": 49,
       "norm_label": "test_get_available_execution_providers()"
     },
     {
@@ -18160,7 +18160,7 @@
       "source_location": "L13",
       "_origin": "ast",
       "id": "tests_test_execution_test_create_inference_providers",
-      "community": 26,
+      "community": 49,
       "norm_label": "test_create_inference_providers()"
     },
     {
@@ -18170,7 +18170,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_test_face_analyser",
-      "community": 9,
+      "community": 91,
       "norm_label": "test_face_analyser.py"
     },
     {
@@ -18190,7 +18190,7 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "tests_test_face_analyser_before_each",
-      "community": 9,
+      "community": 91,
       "norm_label": "before_each()"
     },
     {
@@ -18200,7 +18200,7 @@
       "source_location": "L42",
       "_origin": "ast",
       "id": "tests_test_face_analyser_test_get_one_face_with_retinaface",
-      "community": 9,
+      "community": 91,
       "norm_label": "test_get_one_face_with_retinaface()"
     },
     {
@@ -18210,7 +18210,7 @@
       "source_location": "L63",
       "_origin": "ast",
       "id": "tests_test_face_analyser_test_get_one_face_with_scrfd",
-      "community": 9,
+      "community": 91,
       "norm_label": "test_get_one_face_with_scrfd()"
     },
     {
@@ -18220,7 +18220,7 @@
       "source_location": "L84",
       "_origin": "ast",
       "id": "tests_test_face_analyser_test_get_one_face_with_yoloface",
-      "community": 9,
+      "community": 91,
       "norm_label": "test_get_one_face_with_yoloface()"
     },
     {
@@ -18230,7 +18230,7 @@
       "source_location": "L105",
       "_origin": "ast",
       "id": "tests_test_face_analyser_test_get_one_face_with_yunet",
-      "community": 9,
+      "community": 91,
       "norm_label": "test_get_one_face_with_yunet()"
     },
     {
@@ -18240,7 +18240,7 @@
       "source_location": "L126",
       "_origin": "ast",
       "id": "tests_test_face_analyser_test_get_many_faces",
-      "community": 9,
+      "community": 91,
       "norm_label": "test_get_many_faces()"
     },
     {
@@ -19080,7 +19080,7 @@
       "source_location": "L4",
       "_origin": "ast",
       "id": "tests_test_normalizer_test_normalize_color",
-      "community": 37,
+      "community": 154,
       "norm_label": "test_normalize_color()"
     },
     {
@@ -19150,7 +19150,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_test_program_helper",
-      "community": 38,
+      "community": 4,
       "norm_label": "test_program_helper.py"
     },
     {
@@ -19160,7 +19160,7 @@
       "source_location": "L6",
       "_origin": "ast",
       "id": "tests_test_program_helper_test_find_argument_group",
-      "community": 38,
+      "community": 4,
       "norm_label": "test_find_argument_group()"
     },
     {
@@ -19170,7 +19170,7 @@
       "source_location": "L16",
       "_origin": "ast",
       "id": "tests_test_program_helper_test_validate_args",
-      "community": 38,
+      "community": 4,
       "norm_label": "test_validate_args()"
     },
     {
@@ -19180,7 +19180,7 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "tests_test_program_helper_test_validate_actions",
-      "community": 38,
+      "community": 4,
       "norm_label": "test_validate_actions()"
     },
     {
@@ -19722,7 +19722,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "services_camerakitconfig",
-      "community": 5,
+      "community": 163,
       "norm_label": "camerakitconfig.ts"
     },
     {
@@ -19732,7 +19732,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "services_camerakitconfig_camerakit_config",
-      "community": 5,
+      "community": 163,
       "norm_label": "camerakit_config"
     },
     {
@@ -20792,7 +20792,7 @@
       "source_location": "L400",
       "_origin": "ast",
       "id": "project_documentation_file_structure_functionality",
-      "community": 93,
+      "community": 88,
       "norm_label": "\ud83d\udcc1 file structure & functionality"
     },
     {
@@ -20802,7 +20802,7 @@
       "source_location": "L402",
       "_origin": "ast",
       "id": "project_documentation_root_files",
-      "community": 93,
+      "community": 158,
       "norm_label": "root files"
     },
     {
@@ -20812,7 +20812,7 @@
       "source_location": "L404",
       "_origin": "ast",
       "id": "project_documentation_app_tsx",
-      "community": 93,
+      "community": 158,
       "norm_label": "`app.tsx`"
     },
     {
@@ -20822,7 +20822,7 @@
       "source_location": "L433",
       "_origin": "ast",
       "id": "project_documentation_constants_ts",
-      "community": 93,
+      "community": 158,
       "norm_label": "`constants.ts`"
     },
     {
@@ -20832,7 +20832,7 @@
       "source_location": "L472",
       "_origin": "ast",
       "id": "project_documentation_types_ts",
-      "community": 93,
+      "community": 158,
       "norm_label": "`types.ts`"
     },
     {
@@ -20842,7 +20842,7 @@
       "source_location": "L490",
       "_origin": "ast",
       "id": "project_documentation_index_tsx",
-      "community": 93,
+      "community": 158,
       "norm_label": "`index.tsx`"
     },
     {
@@ -20852,7 +20852,7 @@
       "source_location": "L499",
       "_origin": "ast",
       "id": "project_documentation_index_html",
-      "community": 93,
+      "community": 158,
       "norm_label": "`index.html`"
     },
     {
@@ -20992,7 +20992,7 @@
       "source_location": "L772",
       "_origin": "ast",
       "id": "project_documentation_configuration_files",
-      "community": 71,
+      "community": 88,
       "norm_label": "configuration files"
     },
     {
@@ -21002,7 +21002,7 @@
       "source_location": "L774",
       "_origin": "ast",
       "id": "project_documentation_vite_config_ts",
-      "community": 71,
+      "community": 88,
       "norm_label": "`vite.config.ts`"
     },
     {
@@ -21012,7 +21012,7 @@
       "source_location": "L789",
       "_origin": "ast",
       "id": "project_documentation_package_json",
-      "community": 71,
+      "community": 88,
       "norm_label": "`package.json`"
     },
     {
@@ -21022,7 +21022,7 @@
       "source_location": "L814",
       "_origin": "ast",
       "id": "project_documentation_tsconfig_json",
-      "community": 71,
+      "community": 88,
       "norm_label": "`tsconfig.json`"
     },
     {
@@ -21032,7 +21032,7 @@
       "source_location": "L825",
       "_origin": "ast",
       "id": "project_documentation_env_local",
-      "community": 71,
+      "community": 88,
       "norm_label": "`.env.local`"
     },
     {
@@ -21102,7 +21102,7 @@
       "source_location": "L892",
       "_origin": "ast",
       "id": "project_documentation_utility_files",
-      "community": 93,
+      "community": 88,
       "norm_label": "utility files"
     },
     {
@@ -21112,7 +21112,7 @@
       "source_location": "L894",
       "_origin": "ast",
       "id": "project_documentation_genderdetectionservice_ts",
-      "community": 93,
+      "community": 88,
       "norm_label": "`genderdetectionservice.ts`"
     },
     {
@@ -22414,28 +22414,6 @@
       "confidence_score": 1.0,
       "source": "components_cameracapture",
       "target": "components_cameracapture_cameracaptureprops"
-    },
-    {
-      "relation": "imports_from",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "components/CameraCapture.tsx",
-      "source_location": "L16",
-      "weight": 1.0,
-      "source": "components_cameracapture",
-      "target": "services_camerakitconfig",
-      "confidence_score": 1.0
-    },
-    {
-      "relation": "imports",
-      "context": "import",
-      "confidence": "EXTRACTED",
-      "source_file": "components/CameraCapture.tsx",
-      "source_location": "L16",
-      "weight": 1.0,
-      "source": "components_cameracapture",
-      "target": "services_camerakitconfig_camerakit_config",
-      "confidence_score": 1.0
     },
     {
       "relation": "imports_from",
@@ -75048,9 +75026,9 @@
       "source_file": "services/cameraKitConfig.ts",
       "source_location": "L1",
       "weight": 1.0,
-      "confidence_score": 1.0,
       "source": "services_camerakitconfig",
-      "target": "services_camerakitconfig_camerakit_config"
+      "target": "services_camerakitconfig_camerakit_config",
+      "confidence_score": 1.0
     },
     {
       "relation": "contains",

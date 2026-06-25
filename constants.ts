@@ -388,6 +388,15 @@ export const ERAS: EraData[] = [
     ]
   },
   {
+    id: EraId.AIRBUS,
+    name: "Airbus",
+    description: "Step into the future with our interactive Airbus flight deck experience.",
+    previewImage: "./Airbus-Preview.png",
+    scenery: [],
+    stamps: [],
+    frames: []
+  },
+  {
     id: EraId.SNAP_A_MEMORY,
     name: "Snap a Memory",
     description: "Capture a beautiful portrait with an Egyptian frame.",

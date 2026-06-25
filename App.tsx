@@ -61,9 +61,9 @@ const App: React.FC = () => {
 
         let resultImage: string;
 
-        if (selectedEra.id === EraId.SNAP_A_MEMORY) {
+        if (selectedEra.id === EraId.SNAP_A_MEMORY || selectedEra.id === EraId.AIRBUS) {
           resultImage = imageSrc;
-          setGeneratedPrompt('Snap a Memory (Instant)');
+          setGeneratedPrompt(selectedEra.id === EraId.AIRBUS ? 'Airbus Experience' : 'Snap a Memory (Instant)');
           await new Promise(resolve => setTimeout(resolve, 300));
         } else {
           // Face Fusion 
