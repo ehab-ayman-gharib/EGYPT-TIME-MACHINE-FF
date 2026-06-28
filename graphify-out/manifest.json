@@ -1,6 +1,6 @@
 {
   "App.tsx": {
-    "mtime": 1782380056.8864043,
+    "mtime": 1782395477.2062104,
     "ast_hash": "756d8ff3679aedd684146c5453aaec82",
     "semantic_hash": ""
   },
@@ -10,8 +10,8 @@
     "semantic_hash": "401671a3d5cb6f6642492386eb4fed95"
   },
   "components/CameraCapture.tsx": {
-    "mtime": 1782386984.431103,
-    "ast_hash": "6cc40fe215e90ed44488efb4f0cc974c",
+    "mtime": 1782399250.2360046,
+    "ast_hash": "2c80151fde137251f7c7eba1581071ee",
     "semantic_hash": ""
   },
   "components/FeaturedGallery.tsx": {
@@ -30,13 +30,13 @@
     "semantic_hash": ""
   },
   "components/SplashScreen.tsx": {
-    "mtime": 1782381613.4495633,
+    "mtime": 1782395477.2083595,
     "ast_hash": "da6e8b06318b7e84b22bc24076830dfb",
     "semantic_hash": ""
   },
   "constants.ts": {
-    "mtime": 1782380047.865427,
-    "ast_hash": "c389dff833497eb0c9c926f1e33315cc",
+    "mtime": 1782400941.021939,
+    "ast_hash": "bab63fb83ecf342e54f00710c994eebe",
     "semantic_hash": ""
   },
   "facefusion/.assets/models/iperov/elon_musk_224.dfm": {
@@ -1175,12 +1175,12 @@
     "semantic_hash": "4bacc89658ce6bd270df70d34d17d9d7"
   },
   "types.ts": {
-    "mtime": 1782380029.4019964,
+    "mtime": 1782395477.243996,
     "ast_hash": "fbdb2259d0ffd88cac77f67fa5cd2824",
     "semantic_hash": ""
   },
   "vite.config.ts": {
-    "mtime": 1782386692.2353237,
+    "mtime": 1782395477.2449975,
     "ast_hash": "9e976bc789a2a24cce1e1d391194a6a7",
     "semantic_hash": ""
   },
@@ -1279,14 +1279,14 @@
     "ast_hash": "87a3366c3aef3ea92088ede4ea5cbdf7",
     "semantic_hash": ""
   },
-  "camerakit-electron-integration.md": {
-    "mtime": 1782376553.089725,
-    "ast_hash": "13f32e15ad763a12c6033145bde8c933",
+  "services/cameraKitConfig.ts": {
+    "mtime": 1782395744.4703093,
+    "ast_hash": "89b37fbb3200cfbe2b915de5e7e2483c",
     "semantic_hash": ""
   },
-  "services/cameraKitConfig.ts": {
-    "mtime": 1782389821.330055,
-    "ast_hash": "2a18dab76b9ae2e5f7c24115d2809759",
+  ".agent/workflows/camerakit-electron-integration.md": {
+    "mtime": 1782399274.363575,
+    "ast_hash": "45eff26803b66d3a7eb7e209e1fef81a",
     "semantic_hash": ""
   }
 }

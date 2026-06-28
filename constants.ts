@@ -394,7 +394,9 @@ export const ERAS: EraData[] = [
     previewImage: "./Airbus-Preview.png",
     scenery: [],
     stamps: [],
-    frames: []
+    frames: [
+      "./Frames/Modern-Egypt/1.png"
+    ]
   },
   {
     id: EraId.SNAP_A_MEMORY,

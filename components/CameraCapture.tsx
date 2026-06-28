@@ -112,11 +112,11 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
           await session.setSource(source);
           if (!active) return;
 
-          // Rotate 90 degrees for portrait setup
+          // Rotate 90 degrees and mirror on x-axis (column-major)
           const rotate90 = new Transform2D([
-            0, 1, 0,
+            0, -1, 0,
             1, 0, 0,
-            0, 0, 1
+            0, 1, 1
           ]);
           source.setTransform(rotate90);
 
@@ -390,7 +390,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
         {era?.id === EraId.AIRBUS ? (
           <canvas
             ref={camerakitCanvasRef}
-            className="absolute scale-x-[-1] object-cover animate-fade-in"
+            className="absolute object-cover animate-fade-in"
             style={{ width: '100%', height: '100%' }}
           />
         ) : (
