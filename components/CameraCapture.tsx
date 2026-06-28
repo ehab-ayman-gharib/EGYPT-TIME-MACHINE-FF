@@ -41,6 +41,15 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [previewFaceData, setPreviewFaceData] = useState<FaceDetectionResult | null>(null);
   const [processingCountdown, setProcessingCountdown] = useState<number | null>(null);
+  const [backgroundId] = useState<string>(() => {
+    const stored = localStorage.getItem('airbus_background_id');
+    let nextId = 0;
+    if (stored !== null) {
+      nextId = (parseInt(stored, 10) + 1) % 3;
+    }
+    localStorage.setItem('airbus_background_id', nextId.toString());
+    return nextId.toString();
+  });
 
   /**
    * 1. CAMERA & AI INITIALIZATION
@@ -82,8 +91,12 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
 
           console.log("[CameraKit] Applying lens:", lens ? (lens.name || lens.id) : "None found");
           if (lens) {
-            await session.applyLens(lens);
-            console.log("[CameraKit] Lens applied successfully");
+            await session.applyLens(lens, {
+              launchParams: {
+                backgroundID: backgroundId
+              }
+            });
+            console.log("[CameraKit] Lens applied successfully with backgroundID:", backgroundId);
           } else {
             console.error("[CameraKit] No lens found to apply.");
           }

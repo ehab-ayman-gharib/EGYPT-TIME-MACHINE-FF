@@ -10,8 +10,8 @@
     "semantic_hash": "401671a3d5cb6f6642492386eb4fed95"
   },
   "components/CameraCapture.tsx": {
-    "mtime": 1782399250.2360046,
-    "ast_hash": "2c80151fde137251f7c7eba1581071ee",
+    "mtime": 1782660136.518267,
+    "ast_hash": "8f709266d75b926b395f5e6b778fbd8a",
     "semantic_hash": ""
   },
   "components/FeaturedGallery.tsx": {
@@ -1280,8 +1280,8 @@
     "semantic_hash": ""
   },
   "services/cameraKitConfig.ts": {
-    "mtime": 1782395744.4703093,
-    "ast_hash": "89b37fbb3200cfbe2b915de5e7e2483c",
+    "mtime": 1782655498.1378374,
+    "ast_hash": "9086fe986a758c03cf562bc9002c1196",
     "semantic_hash": ""
   },
   ".agent/workflows/camerakit-electron-integration.md": {
