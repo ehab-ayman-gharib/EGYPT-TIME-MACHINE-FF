@@ -27,7 +27,7 @@
       "label": "App()",
       "file_type": "code",
       "source_file": "App.tsx",
-      "source_location": "L19",
+      "source_location": "L18",
       "_origin": "ast",
       "id": "app_app",
       "community": 5,
@@ -347,7 +347,7 @@
       "label": "ResultScreenProps",
       "file_type": "code",
       "source_file": "components/ResultScreen.tsx",
-      "source_location": "L14",
+      "source_location": "L15",
       "_origin": "ast",
       "id": "components_resultscreen_resultscreenprops",
       "community": 5,
@@ -357,7 +357,7 @@
       "label": "ResultScreen()",
       "file_type": "code",
       "source_file": "components/ResultScreen.tsx",
-      "source_location": "L23",
+      "source_location": "L24",
       "_origin": "ast",
       "id": "components_resultscreen_resultscreen",
       "community": 5,
@@ -17140,7 +17140,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_test_cli_background_remover",
-      "community": 13,
+      "community": 18,
       "norm_label": "test_cli_background_remover.py"
     },
     {
@@ -17170,7 +17170,7 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "tests_test_cli_background_remover_test_remove_background_to_image",
-      "community": 13,
+      "community": 18,
       "norm_label": "test_remove_background_to_image()"
     },
     {
@@ -17180,7 +17180,7 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "tests_test_cli_background_remover_test_remove_background_to_video",
-      "community": 13,
+      "community": 18,
       "norm_label": "test_remove_background_to_video()"
     },
     {
@@ -17240,7 +17240,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_test_cli_expression_restorer",
-      "community": 18,
+      "community": 13,
       "norm_label": "test_cli_expression_restorer.py"
     },
     {
@@ -17270,7 +17270,7 @@
       "source_location": "L27",
       "_origin": "ast",
       "id": "tests_test_cli_expression_restorer_test_restore_expression_to_image",
-      "community": 18,
+      "community": 13,
       "norm_label": "test_restore_expression_to_image()"
     },
     {
@@ -17280,7 +17280,7 @@
       "source_location": "L34",
       "_origin": "ast",
       "id": "tests_test_cli_expression_restorer_test_restore_expression_to_video",
-      "community": 18,
+      "community": 13,
       "norm_label": "test_restore_expression_to_video()"
     },
     {
@@ -17390,7 +17390,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_test_cli_face_enhancer",
-      "community": 13,
+      "community": 18,
       "norm_label": "test_cli_face_enhancer.py"
     },
     {
@@ -17420,7 +17420,7 @@
       "source_location": "L28",
       "_origin": "ast",
       "id": "tests_test_cli_face_enhancer_test_enhance_face_to_image",
-      "community": 13,
+      "community": 18,
       "norm_label": "test_enhance_face_to_image()"
     },
     {
@@ -17430,7 +17430,7 @@
       "source_location": "L35",
       "_origin": "ast",
       "id": "tests_test_cli_face_enhancer_test_enhance_face_to_video",
-      "community": 13,
+      "community": 18,
       "norm_label": "test_enhance_face_to_video()"
     },
     {
@@ -17790,7 +17790,7 @@
       "source_location": "L1",
       "_origin": "ast",
       "id": "tests_test_cli_lip_syncer",
-      "community": 18,
+      "community": 13,
       "norm_label": "test_cli_lip_syncer.py"
     },
     {
@@ -17820,7 +17820,7 @@
       "source_location": "L29",
       "_origin": "ast",
       "id": "tests_test_cli_lip_syncer_test_sync_lip_to_image",
-      "community": 18,
+      "community": 13,
       "norm_label": "test_sync_lip_to_image()"
     },
     {
@@ -17830,7 +17830,7 @@
       "source_location": "L36",
       "_origin": "ast",
       "id": "tests_test_cli_lip_syncer_test_sync_lip_to_video",
-      "community": 18,
+      "community": 13,
       "norm_label": "test_sync_lip_to_video()"
     },
     {
@@ -20952,7 +20952,7 @@
       "source_location": "L400",
       "_origin": "ast",
       "id": "project_documentation_file_structure_functionality",
-      "community": 71,
+      "community": 93,
       "norm_label": "\ud83d\udcc1 file structure & functionality"
     },
     {
@@ -20962,7 +20962,7 @@
       "source_location": "L402",
       "_origin": "ast",
       "id": "project_documentation_root_files",
-      "community": 137,
+      "community": 93,
       "norm_label": "root files"
     },
     {
@@ -20972,7 +20972,7 @@
       "source_location": "L404",
       "_origin": "ast",
       "id": "project_documentation_app_tsx",
-      "community": 137,
+      "community": 93,
       "norm_label": "`app.tsx`"
     },
     {
@@ -20982,7 +20982,7 @@
       "source_location": "L433",
       "_origin": "ast",
       "id": "project_documentation_constants_ts",
-      "community": 137,
+      "community": 93,
       "norm_label": "`constants.ts`"
     },
     {
@@ -20992,7 +20992,7 @@
       "source_location": "L472",
       "_origin": "ast",
       "id": "project_documentation_types_ts",
-      "community": 137,
+      "community": 93,
       "norm_label": "`types.ts`"
     },
     {
@@ -21002,7 +21002,7 @@
       "source_location": "L490",
       "_origin": "ast",
       "id": "project_documentation_index_tsx",
-      "community": 137,
+      "community": 93,
       "norm_label": "`index.tsx`"
     },
     {
@@ -21012,7 +21012,7 @@
       "source_location": "L499",
       "_origin": "ast",
       "id": "project_documentation_index_html",
-      "community": 137,
+      "community": 93,
       "norm_label": "`index.html`"
     },
     {
@@ -21152,7 +21152,7 @@
       "source_location": "L772",
       "_origin": "ast",
       "id": "project_documentation_configuration_files",
-      "community": 71,
+      "community": 137,
       "norm_label": "configuration files"
     },
     {
@@ -21162,7 +21162,7 @@
       "source_location": "L774",
       "_origin": "ast",
       "id": "project_documentation_vite_config_ts",
-      "community": 71,
+      "community": 137,
       "norm_label": "`vite.config.ts`"
     },
     {
@@ -21172,7 +21172,7 @@
       "source_location": "L789",
       "_origin": "ast",
       "id": "project_documentation_package_json",
-      "community": 71,
+      "community": 137,
       "norm_label": "`package.json`"
     },
     {
@@ -21182,7 +21182,7 @@
       "source_location": "L814",
       "_origin": "ast",
       "id": "project_documentation_tsconfig_json",
-      "community": 71,
+      "community": 137,
       "norm_label": "`tsconfig.json`"
     },
     {
@@ -21192,7 +21192,7 @@
       "source_location": "L825",
       "_origin": "ast",
       "id": "project_documentation_env_local",
-      "community": 71,
+      "community": 137,
       "norm_label": "`.env.local`"
     },
     {
@@ -21262,7 +21262,7 @@
       "source_location": "L892",
       "_origin": "ast",
       "id": "project_documentation_utility_files",
-      "community": 71,
+      "community": 93,
       "norm_label": "utility files"
     },
     {
@@ -21272,7 +21272,7 @@
       "source_location": "L894",
       "_origin": "ast",
       "id": "project_documentation_genderdetectionservice_ts",
-      "community": 71,
+      "community": 93,
       "norm_label": "`genderdetectionservice.ts`"
     },
     {
@@ -75455,9 +75455,9 @@
       "source_file": ".agent/workflows/camerakit-electron-integration.md",
       "source_location": "L1",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "workflows_camerakit_electron_integration",
-      "target": "workflows_camerakit_electron_integration_snap_camerakit_electron_integration",
-      "confidence_score": 1.0
+      "target": "workflows_camerakit_electron_integration_snap_camerakit_electron_integration"
     },
     {
       "relation": "contains",
@@ -75465,9 +75465,9 @@
       "source_file": ".agent/workflows/camerakit-electron-integration.md",
       "source_location": "L7",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "workflows_camerakit_electron_integration_snap_camerakit_electron_integration",
-      "target": "workflows_camerakit_electron_integration_1_installation",
-      "confidence_score": 1.0
+      "target": "workflows_camerakit_electron_integration_1_installation"
     },
     {
       "relation": "contains",
@@ -75475,9 +75475,9 @@
       "source_file": ".agent/workflows/camerakit-electron-integration.md",
       "source_location": "L16",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "workflows_camerakit_electron_integration_snap_camerakit_electron_integration",
-      "target": "workflows_camerakit_electron_integration_2_production_local_server_architecture",
-      "confidence_score": 1.0
+      "target": "workflows_camerakit_electron_integration_2_production_local_server_architecture"
     },
     {
       "relation": "contains",
@@ -75485,9 +75485,9 @@
       "source_file": ".agent/workflows/camerakit-electron-integration.md",
       "source_location": "L100",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "workflows_camerakit_electron_integration_snap_camerakit_electron_integration",
-      "target": "workflows_camerakit_electron_integration_3_bypassing_snap_api_origin_whitelists",
-      "confidence_score": 1.0
+      "target": "workflows_camerakit_electron_integration_3_bypassing_snap_api_origin_whitelists"
     },
     {
       "relation": "contains",
@@ -75495,9 +75495,9 @@
       "source_file": ".agent/workflows/camerakit-electron-integration.md",
       "source_location": "L138",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "workflows_camerakit_electron_integration_snap_camerakit_electron_integration",
-      "target": "workflows_camerakit_electron_integration_4_front_end_core_integration",
-      "confidence_score": 1.0
+      "target": "workflows_camerakit_electron_integration_4_front_end_core_integration"
     },
     {
       "relation": "contains",
@@ -75505,9 +75505,9 @@
       "source_file": ".agent/workflows/camerakit-electron-integration.md",
       "source_location": "L236",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "workflows_camerakit_electron_integration_snap_camerakit_electron_integration",
-      "target": "workflows_camerakit_electron_integration_5_matrix_transformations_transform2d_for_rotated_portrait_setups",
-      "confidence_score": 1.0
+      "target": "workflows_camerakit_electron_integration_5_matrix_transformations_transform2d_for_rotated_portrait_setups"
     },
     {
       "relation": "contains",
@@ -75515,9 +75515,9 @@
       "source_file": ".agent/workflows/camerakit-electron-integration.md",
       "source_location": "L282",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "workflows_camerakit_electron_integration_snap_camerakit_electron_integration",
-      "target": "workflows_camerakit_electron_integration_6_capturing_photos",
-      "confidence_score": 1.0
+      "target": "workflows_camerakit_electron_integration_6_capturing_photos"
     },
     {
       "relation": "contains",
@@ -75525,9 +75525,9 @@
       "source_file": ".agent/workflows/camerakit-electron-integration.md",
       "source_location": "L18",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "workflows_camerakit_electron_integration_2_production_local_server_architecture",
-      "target": "workflows_camerakit_electron_integration_the_problem",
-      "confidence_score": 1.0
+      "target": "workflows_camerakit_electron_integration_the_problem"
     },
     {
       "relation": "contains",
@@ -75535,9 +75535,9 @@
       "source_file": ".agent/workflows/camerakit-electron-integration.md",
       "source_location": "L23",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "workflows_camerakit_electron_integration_2_production_local_server_architecture",
-      "target": "workflows_camerakit_electron_integration_the_solution",
-      "confidence_score": 1.0
+      "target": "workflows_camerakit_electron_integration_the_solution"
     },
     {
       "relation": "contains",
@@ -75545,9 +75545,9 @@
       "source_file": ".agent/workflows/camerakit-electron-integration.md",
       "source_location": "L102",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "workflows_camerakit_electron_integration_3_bypassing_snap_api_origin_whitelists",
-      "target": "workflows_camerakit_electron_integration_the_problem_102",
-      "confidence_score": 1.0
+      "target": "workflows_camerakit_electron_integration_the_problem_102"
     },
     {
       "relation": "contains",
@@ -75555,9 +75555,9 @@
       "source_file": ".agent/workflows/camerakit-electron-integration.md",
       "source_location": "L106",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "workflows_camerakit_electron_integration_3_bypassing_snap_api_origin_whitelists",
-      "target": "workflows_camerakit_electron_integration_the_solution_106",
-      "confidence_score": 1.0
+      "target": "workflows_camerakit_electron_integration_the_solution_106"
     },
     {
       "relation": "contains",
@@ -75565,9 +75565,9 @@
       "source_file": ".agent/workflows/camerakit-electron-integration.md",
       "source_location": "L238",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "workflows_camerakit_electron_integration_5_matrix_transformations_transform2d_for_rotated_portrait_setups",
-      "target": "workflows_camerakit_electron_integration_setup_context",
-      "confidence_score": 1.0
+      "target": "workflows_camerakit_electron_integration_setup_context"
     },
     {
       "relation": "contains",
@@ -75575,9 +75575,9 @@
       "source_file": ".agent/workflows/camerakit-electron-integration.md",
       "source_location": "L244",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "workflows_camerakit_electron_integration_5_matrix_transformations_transform2d_for_rotated_portrait_setups",
-      "target": "workflows_camerakit_electron_integration_the_correct_approach",
-      "confidence_score": 1.0
+      "target": "workflows_camerakit_electron_integration_the_correct_approach"
     },
     {
       "relation": "contains",
@@ -75585,9 +75585,9 @@
       "source_file": ".agent/workflows/camerakit-electron-integration.md",
       "source_location": "L241",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "workflows_camerakit_electron_integration_5_matrix_transformations_transform2d_for_rotated_portrait_setups",
-      "target": "workflows_camerakit_electron_integration_the_error",
-      "confidence_score": 1.0
+      "target": "workflows_camerakit_electron_integration_the_error"
     },
     {
       "relation": "contains",
@@ -75595,9 +75595,9 @@
       "source_file": ".agent/workflows/camerakit-electron-integration.md",
       "source_location": "L247",
       "weight": 1.0,
+      "confidence_score": 1.0,
       "source": "workflows_camerakit_electron_integration_the_correct_approach",
-      "target": "workflows_camerakit_electron_integration_column_major_matrix_formula",
-      "confidence_score": 1.0
+      "target": "workflows_camerakit_electron_integration_column_major_matrix_formula"
     },
     {
       "relation": "contains",
@@ -77311,5 +77311,5 @@
     }
   ],
   "hyperedges": [],
-  "built_at_commit": "ea056bd212b41c39a3081fb920ac354f7a9ed56b"
+  "built_at_commit": "970337761a363155b5f05578bf6f8a89f121bf8e"
 }

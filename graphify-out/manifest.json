@@ -1,7 +1,7 @@
 {
   "App.tsx": {
-    "mtime": 1782395477.2062104,
-    "ast_hash": "756d8ff3679aedd684146c5453aaec82",
+    "mtime": 1783516360.9263427,
+    "ast_hash": "69978011470f78084f913a15082b054a",
     "semantic_hash": ""
   },
   "GenderDetectionService.ts": {
@@ -10,14 +10,14 @@
     "semantic_hash": "401671a3d5cb6f6642492386eb4fed95"
   },
   "components/CameraCapture.tsx": {
-    "mtime": 1782660136.518267,
-    "ast_hash": "8f709266d75b926b395f5e6b778fbd8a",
+    "mtime": 1783513557.6089272,
+    "ast_hash": "fa0a0b7c851104c6192b9e59c66482e0",
     "semantic_hash": ""
   },
   "components/FeaturedGallery.tsx": {
-    "mtime": 1778518978.102733,
-    "ast_hash": "0e0ef6de8a72d7045723dd2ec194b9a9",
-    "semantic_hash": "0e0ef6de8a72d7045723dd2ec194b9a9"
+    "mtime": 1783349448.8843718,
+    "ast_hash": "91c1cb5a49787821fdc23c95986bfb49",
+    "semantic_hash": ""
   },
   "components/LoadingScreen.tsx": {
     "mtime": 1773487663.0,
@@ -25,13 +25,13 @@
     "semantic_hash": "fdacc41d43e4ab22bab4a1b5bcfddbb3"
   },
   "components/ResultScreen.tsx": {
-    "mtime": 1782144823.7689645,
-    "ast_hash": "8eaaabb593c023cc64dab57b88a65803",
+    "mtime": 1783516144.5938706,
+    "ast_hash": "7a881d62d15698c1d95640a6ba9831ff",
     "semantic_hash": ""
   },
   "components/SplashScreen.tsx": {
-    "mtime": 1782395477.2083595,
-    "ast_hash": "da6e8b06318b7e84b22bc24076830dfb",
+    "mtime": 1783347403.6870909,
+    "ast_hash": "1cf3a1e59270cdc7d692c503f649fb05",
     "semantic_hash": ""
   },
   "constants.ts": {

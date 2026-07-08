@@ -1,7 +1,7 @@
-# Graph Report - EGYPT-TIME-MACHINE-FF  (2026-06-25)
+# Graph Report - EGYPT-TIME-MACHINE-FF  (2026-07-08)
 
 ## Corpus Check
-- 254 files · ~1,237,598 words
+- 254 files · ~1,237,272 words
 - Verdict: corpus is large enough that graph structure adds value.
 
 ## Summary
@@ -10,7 +10,7 @@
 - Token cost: 0 input · 0 output
 
 ## Graph Freshness
-- Built from commit: `ea056bd2`
+- Built from commit: `97033776`
 - Run `git rev-parse HEAD` and compare to check if the graph is stale.
 - Run `graphify update .` after code changes (no API cost).
 
@@ -221,7 +221,7 @@ Nodes (36): apply_args(), apply_background_color(), clear_inference_pool(), crea
 
 ### Community 13 - "Community 13"
 Cohesion: 0.12
-Nodes (31): get_test_output_file(), is_test_output_file(), test_remove_background_to_image(), test_remove_background_to_video(), test_batch_run_sources_to_targets(), test_batch_run_targets(), test_debug_face_to_image(), test_debug_face_to_video() (+23 more)
+Nodes (31): get_test_output_file(), is_test_output_file(), test_batch_run_sources_to_targets(), test_batch_run_targets(), test_restore_expression_to_image(), test_restore_expression_to_video(), test_debug_face_to_image(), test_debug_face_to_video() (+23 more)
 
 ### Community 14 - "Community 14"
 Cohesion: 0.13
@@ -440,8 +440,8 @@ Cohesion: 0.14
 Nodes (14): 10. **User Experience Enhancements**, 1. **Multi-Era Historical Transformation**, 2. **Intelligent Face Detection**, 3. **AI Image Generation**, 4. **Local FaceFusion Transformation (High-Fidelity)**, 5. **Camera & Upload Capabilities**, 5. **Orchestrator Logic: Surgical Tiling (Multi-Face Precision)**, 6. **FaceFusion Tuning Parameters** (+6 more)
 
 ### Community 71 - "Community 71"
-Cohesion: 0.15
-Nodes (13): Components, `components/CameraCapture.tsx`, `components/LoadingScreen.tsx`, `components/ResultScreen.tsx`, `components/SplashScreen.tsx`, Configuration Files, `.env.local`, 📁 File Structure & Functionality (+5 more)
+Cohesion: 0.40
+Nodes (5): Components, `components/CameraCapture.tsx`, `components/LoadingScreen.tsx`, `components/ResultScreen.tsx`, `components/SplashScreen.tsx`
 
 ### Community 72 - "Community 72"
 Cohesion: 0.33
@@ -504,8 +504,8 @@ Cohesion: 0.22
 Nodes (8): 1. Prerequisites & Installation, 2. Vite Configuration, 3. Electron Main Script, 4. Package.json Configuration, 5. Asset Path Enforcement (CRITICAL), 6. Building the App, Electron Windows Build Workflow, Troubleshooting
 
 ### Community 93 - "Community 93"
-Cohesion: 0.25
-Nodes (8): `detectFaces(videoElement, isLoaded)`, `generateHistoricalImage(base64Image, era, faceData)`, `incrementGeneratedCount()`, `loadFaceApiModels()`, Services, `services/faceService.ts`, `services/geminiService.ts`, `services/stampService.ts`
+Cohesion: 0.12
+Nodes (17): `App.tsx`, `constants.ts`, `detectFaces(videoElement, isLoaded)`, 📁 File Structure & Functionality, `GenderDetectionService.ts`, `generateHistoricalImage(base64Image, era, faceData)`, `incrementGeneratedCount()`, `index.html` (+9 more)
 
 ### Community 96 - "Community 96"
 Cohesion: 0.29
@@ -556,8 +556,8 @@ Cohesion: 0.50
 Nodes (4): 🏗️ Architecture, Component Architecture, Service Layer, Technology Stack
 
 ### Community 137 - "Community 137"
-Cohesion: 0.33
-Nodes (6): `App.tsx`, `constants.ts`, `index.html`, `index.tsx`, Root Files, `types.ts`
+Cohesion: 0.40
+Nodes (5): Configuration Files, `.env.local`, `package.json`, `tsconfig.json`, `vite.config.ts`
 
 ### Community 138 - "Community 138"
 Cohesion: 0.26

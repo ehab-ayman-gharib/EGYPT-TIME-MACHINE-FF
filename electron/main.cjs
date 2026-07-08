@@ -31,7 +31,7 @@ if (fs.existsSync(envPath)) {
 }
 
 let mainWindow = null;
-let isKioskModeActive = false;
+let isKioskModeActive = true;
 let isRecreatingWindow = false;
 
 /**
@@ -705,29 +705,54 @@ ipcMain.handle('print-image', async (event, { imageSrc, printerName }) => {
 // C2. CLEAR PRINTER QUEUE
 // Cancels all print jobs for a specific printer (PowerShell on Windows, CUPS cancel on Mac)
 ipcMain.handle('clear-printer-queue', async (event, { printerName }) => {
-    return new Promise((resolve) => {
-        if (!printerName) {
-            console.log('[Printer] No printer name provided to clear queue.');
-            return resolve({ success: false, error: 'No printer name provided' });
+    return new Promise(async (resolve) => {
+        let targetPrinter = printerName;
+        if (!targetPrinter) {
+            // Try to resolve from app config
+            const config = getAppConfig();
+            if (config && config.printerName) {
+                targetPrinter = config.printerName;
+                console.log(`[Printer] Resolved printer from config to clear queue: ${targetPrinter}`);
+            } else {
+                // Try to resolve from system default printer
+                try {
+                    const win = BrowserWindow.getAllWindows()[0];
+                    if (win) {
+                        const printers = await win.webContents.getPrintersAsync();
+                        const defaultP = printers.find(p => p.isDefault);
+                        if (defaultP) {
+                            targetPrinter = defaultP.name;
+                            console.log(`[Printer] Resolved default system printer to clear queue: ${targetPrinter}`);
+                        }
+                    }
+                } catch (e) {
+                    console.error('[Printer] Failed to get default system printer for queue clearing:', e);
+                }
+            }
+        }
+
+        if (!targetPrinter) {
+            console.log('[Printer] No printer name provided or resolved to clear queue.');
+            return resolve({ success: false, error: 'No printer name provided or resolved' });
         }
         
         let clearCommand = '';
         if (process.platform === 'win32') {
             // Using PowerShell to query jobs for this printer and remove them
-            clearCommand = `powershell -Command "Get-PrintJob -PrinterName '${printerName}' | Remove-PrintJob"`;
+            clearCommand = `powershell -Command "Get-PrintJob -PrinterName '${targetPrinter}' | Remove-PrintJob"`;
         } else {
             // CUPS cancel command for macOS
-            clearCommand = `cancel -a "${printerName}"`;
+            clearCommand = `cancel -a "${targetPrinter}"`;
         }
 
-        console.log(`[Printer] Attempting to clear queue for: ${printerName} using command: ${clearCommand}`);
+        console.log(`[Printer] Attempting to clear queue for: ${targetPrinter} using command: ${clearCommand}`);
 
         require('child_process').exec(clearCommand, { shell: true }, (error, stdout, stderr) => {
             if (error) {
-                console.error(`[Printer] Failed to clear queue for ${printerName}:`, error.message);
+                console.error(`[Printer] Failed to clear queue for ${targetPrinter}:`, error.message);
                 resolve({ success: false, error: error.message });
             } else {
-                console.log(`[Printer] Successfully cleared queue for ${printerName}`);
+                console.log(`[Printer] Successfully cleared queue for ${targetPrinter}`);
                 resolve({ success: true });
             }
         });
@@ -1074,6 +1099,76 @@ ipcMain.handle('list-remote-templates', async (event, { folder }) => {
     });
 });
 
+ipcMain.handle('upload-to-cloudinary', async (event, { imageSrc, folder, metadata }) => {
+    return new Promise(async (resolve) => {
+        try {
+            const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+            const apiKey = process.env.CLOUDINARY_API_KEY;
+            const apiSecret = process.env.CLOUDINARY_API_SECRET;
+
+            if (!cloudName || !apiKey || !apiSecret) {
+                console.error('[Cloudinary] Missing credentials in .env.local');
+                return resolve({ success: false, error: 'Cloudinary credentials missing in .env.local' });
+            }
+
+            const timestamp = Math.round(new Date().getTime() / 1000);
+            
+            const sanitizeContextValue = (val) => {
+                if (!val) return '';
+                return String(val).replace(/[|=]/g, ' ').trim();
+            };
+
+            let contextString = '';
+            if (metadata) {
+                contextString = `event=${sanitizeContextValue(metadata.event)}|era=${sanitizeContextValue(metadata.era)}|prompt=${sanitizeContextValue(metadata.prompt)}`;
+            }
+
+            const crypto = require('crypto');
+            const paramsToSign = {
+                timestamp: timestamp,
+                folder: folder
+            };
+            if (contextString) {
+                paramsToSign.context = contextString;
+            }
+
+            const sortedKeys = Object.keys(paramsToSign).sort();
+            const signingString = sortedKeys.map(key => `${key}=${paramsToSign[key]}`).join('&') + apiSecret;
+            const signature = crypto.createHash('sha1').update(signingString).digest('hex');
+
+            const formData = new FormData();
+            formData.append('file', imageSrc);
+            formData.append('api_key', apiKey);
+            formData.append('timestamp', timestamp.toString());
+            formData.append('signature', signature);
+            formData.append('folder', folder);
+            if (contextString) {
+                formData.append('context', contextString);
+            }
+
+            const url = `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`;
+            console.log(`[Cloudinary] Direct uploading image to folder: ${folder}...`);
+
+            const res = await fetch(url, {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await res.json();
+            if (res.ok) {
+                console.log('[Cloudinary] Direct upload success:', data.secure_url);
+                resolve({ success: true, secure_url: data.secure_url });
+            } else {
+                console.error('[Cloudinary] Direct upload failed:', data.error?.message || data);
+                resolve({ success: false, error: data.error?.message || 'Upload failed' });
+            }
+        } catch (err) {
+            console.error('[Cloudinary] Upload handler error:', err);
+            resolve({ success: false, error: err.message });
+        }
+    });
+});
+
 
 /**
  * 5. APP LIFECYCLE
@@ -1177,7 +1272,7 @@ app.whenReady().then(() => {
         callback({ requestHeaders: details.requestHeaders });
     });
 
-    createWindow();
+    createWindow(isKioskModeActive);
 
     // Register blocking shortcuts immediately on startup since window starts focused
     if (isKioskModeActive) {

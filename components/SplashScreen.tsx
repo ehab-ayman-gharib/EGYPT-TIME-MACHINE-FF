@@ -16,7 +16,7 @@ import { ERAS } from '../constants';
 import { Camera } from 'lucide-react';
 
 const { ipcRenderer } = window.require('electron');
-const WELCOME_VIDEO_URL = 'https://res.cloudinary.com/dniredeim/video/upload/v1778078166/isis_talk_2_emjmhw.mp4';
+const WELCOME_VIDEO_PATH = './Videos/isis_talk.mp4';
 
 
 interface SplashScreenProps {
@@ -30,8 +30,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onSelectEra, isMuted
   const videoRef = useRef<HTMLVideoElement>(null);
   const [isExiting, setIsExiting] = useState(false);     // Triggers the wash-out animation
   const [hasStarted, setHasStarted] = useState(true);   // Starts directly in welcome phase
-  const [videoSrc, setVideoSrc] = useState(WELCOME_VIDEO_URL);
-  const [pendingVideoSrc, setPendingVideoSrc] = useState<string | null>(null);
+  const [videoSrc, setVideoSrc] = useState(WELCOME_VIDEO_PATH);
 
 
 
@@ -92,40 +91,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onSelectEra, isMuted
     }, 1800);
   };
 
-  /**
-   * Handle the end of a video loop.
-   * If a cached version is pending, we swap it now to avoid glitches.
-   */
-  const handleVideoEnded = () => {
-    if (pendingVideoSrc) {
-      console.log("[SplashScreen] Swapping to cached video source");
-      setVideoSrc(pendingVideoSrc);
-      setPendingVideoSrc(null);
-    }
-  };
 
-
-  /**
-   * CACHE REMOTE ASSETS
-   */
-  useEffect(() => {
-    const cacheAssets = async () => {
-      try {
-        const cachedPath = await ipcRenderer.invoke('get-cached-video', WELCOME_VIDEO_URL);
-        if (cachedPath) {
-          const safePath = cachedPath.startsWith('http') ? cachedPath : `file:///${cachedPath.replace(/\\/g, '/')}`;
-          
-          // Only queue if it's actually a different source (e.g. switching from remote to local)
-          if (safePath !== videoSrc) {
-            setPendingVideoSrc(safePath);
-          }
-        }
-      } catch (err) {
-        console.error("[SplashScreen] Caching error:", err);
-      }
-    };
-    cacheAssets();
-  }, []);
 
 
   /**
@@ -248,9 +214,7 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onSelectEra, isMuted
           key={videoSrc}
           ref={videoRef}
           autoPlay
-          // If we have a pending cached video, disable native loop so we can catch 'onEnded' and swap
-          loop={!pendingVideoSrc}
-          onEnded={handleVideoEnded}
+          loop
           muted={isMuted}
           playsInline
           className="w-full h-full object-cover"

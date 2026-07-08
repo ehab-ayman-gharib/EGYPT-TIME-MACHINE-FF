@@ -21,7 +21,7 @@ const CFG = {
   IDLE_SPIN_MS: 1500,
 };
 
-const VIDEO_URL = 'https://res.cloudinary.com/dniredeim/video/upload/v1778078092/Intro_rz8mvx.mp4';
+const FEATURED_VIDEO_PATH = './Videos/Featured.mp4';
 
 
 type Phase = 'spinning' | 'zoom-in' | 'hold' | 'zoom-out';
@@ -422,20 +422,13 @@ const CornerParticles: React.FC = () => {
 /* ── Exported FeaturedGallery ── */
 export const FeaturedGallery: React.FC<{ onDismiss: () => void }> = ({ onDismiss }) => {
   const [images, setImages] = useState<string[]>([]);
-  const [videoSrc, setVideoSrc] = useState<string>(VIDEO_URL);
+  const [videoSrc] = useState<string>(FEATURED_VIDEO_PATH);
 
   useEffect(() => {
     const loadAssets = async () => {
       // Load Images
       const { files } = await ipcRenderer.invoke('get-featured-info');
       if (files && files.length > 0) setImages(files);
-
-      // Cache and Load Video
-      const cachedPath = await ipcRenderer.invoke('get-cached-video', VIDEO_URL);
-      if (cachedPath) {
-        const safePath = cachedPath.startsWith('http') ? cachedPath : `file:///${cachedPath.replace(/\\/g, '/')}`;
-        setVideoSrc(safePath);
-      }
     };
     loadAssets();
     const handleInteraction = () => onDismiss();
@@ -458,7 +451,7 @@ export const FeaturedGallery: React.FC<{ onDismiss: () => void }> = ({ onDismiss
         key={videoSrc}
         autoPlay
         loop
-        muted={true}
+        muted={false}
         playsInline
         className="absolute inset-0 w-full h-full object-cover z-0"
         src={videoSrc}

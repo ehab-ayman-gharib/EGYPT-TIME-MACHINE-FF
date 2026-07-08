@@ -458,14 +458,14 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
       {!modelsLoaded && !error && era?.id !== EraId.SNAP_A_MEMORY && era?.id !== EraId.AIRBUS && (
         <div className="absolute inset-0 z-[60] flex flex-col items-center justify-center bg-slate-900/80 backdrop-blur-sm">
           <RefreshCw className="w-12 h-12 text-yellow-500 animate-spin mb-4" />
-          <p className="text-white text-lg font-bold brand-font tracking-wider uppercase">Initializing AI</p>
+          <p className="text-white text-lg font-bold brand-font tracking-wider uppercase">Initializing</p>
         </div>
       )}
 
       {camerakitLoading && (
         <div className="absolute inset-0 z-[60] flex flex-col items-center justify-center bg-slate-900/80 backdrop-blur-sm animate-fade-in">
           <RefreshCw className="w-12 h-12 text-yellow-500 animate-spin mb-4" />
-          <p className="text-white text-lg font-bold brand-font tracking-wider uppercase">Loading Airbus Deck</p>
+          <p className="text-white text-lg font-bold brand-font tracking-wider uppercase">Initializing</p>
         </div>
       )}
 

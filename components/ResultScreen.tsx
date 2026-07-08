@@ -10,6 +10,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { EraData, FaceDetectionResult } from '../types';
 import { Download, RotateCcw, Share2, QrCode, Loader2, Printer, CheckCircle2, XCircle } from 'lucide-react';
+import QRCode from 'qrcode';
 
 interface ResultScreenProps {
   imageSrc: string;
@@ -34,11 +35,12 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({ imageSrc, prompt, er
    */
   const handleRestart = useCallback(() => {
     const isElectron = navigator.userAgent.indexOf('Electron') !== -1;
-    if (isElectron && (window as any).require && selectedPrinter) {
+    if (isElectron && (window as any).require) {
       const { ipcRenderer } = (window as any).require('electron');
-      console.log('[ResultScreen] Invoking clear-printer-queue for:', selectedPrinter);
+      const printerToClear = selectedPrinter || localStorage.getItem('preferredPrinter') || '';
+      console.log('[ResultScreen] Invoking clear-printer-queue for printer:', printerToClear || 'Default/Config Printer');
       // Execute in the background without blocking the UI transition
-      ipcRenderer.invoke('clear-printer-queue', { printerName: selectedPrinter }).catch((err: any) => {
+      ipcRenderer.invoke('clear-printer-queue', { printerName: printerToClear }).catch((err: any) => {
         console.error('[ResultScreen] Failed to clear printer queue:', err);
       });
     }
@@ -111,36 +113,56 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({ imageSrc, prompt, er
 
   /**
    * 2. SHARING (UPLOAD & QR)
-   * Automatically uploads the generated image to a web API to generate a shareable QR code link.
+   * Automatically uploads the generated image directly to Cloudinary and generates a shareable QR code locally.
    */
   useEffect(() => {
-    const uploadImage = async () => {
+    const uploadAndGenerateQr = async () => {
       if (!imageSrc) return;
       setIsUploading(true);
       try {
-        const response = await fetch(imageSrc);
-        const blob = await response.blob();
-        
-        const formData = new FormData();
-        formData.append('image', blob, 'egypt-time-machine.png');
-        formData.append('folder', 'kemet-mirror');
-        formData.append('metadata', JSON.stringify({
-          event: 'Time Machine Photobooth',
-          era: era.name,
-          prompt: prompt
-        }));
+        const isElectron = navigator.userAgent.indexOf('Electron') !== -1;
+        if (isElectron && (window as any).require) {
+          const { ipcRenderer } = (window as any).require('electron');
+          console.log('[Sharing] Uploading directly to Cloudinary...');
+          
+          const result = await ipcRenderer.invoke('upload-to-cloudinary', {
+            imageSrc,
+            folder: 'kemet-mirror',
+            metadata: {
+              event: 'Time Machine Photobooth',
+              era: era.name,
+              prompt: prompt
+            }
+          });
 
-        const uploadRes = await fetch('https://qr-web-api.vercel.app/upload', { method: 'POST', body: formData });
-        const data = await uploadRes.json();
-        setQrCodeUrl(data.qrCodeUrl);
+          if (result.success && result.secure_url) {
+            const shareUrl = `https://cairo-airport-company-photobooth-qr.vercel.app/?url=${encodeURIComponent(result.secure_url)}`;
+            console.log('[Sharing] Direct upload succeeded. Generating QR code for:', shareUrl);
+            const qrDataUrl = await QRCode.toDataURL(shareUrl, {
+              width: 384,
+              margin: 2
+            });
+            setQrCodeUrl(qrDataUrl);
+          } else {
+            throw new Error(result.error || 'Upload failed');
+          }
+        } else {
+          // Non-Electron / browser fallback
+          console.warn('[Sharing] Running in browser. Cloudinary credentials not exposed directly.');
+          const qrDataUrl = await QRCode.toDataURL(
+            imageSrc.length < 2000 ? imageSrc : 'https://github.com/ehab-ayman-gharib/EGYPT-TIME-MACHINE-FF',
+            { width: 384, margin: 2 }
+          );
+          setQrCodeUrl(qrDataUrl);
+        }
       } catch (err) {
-        console.error('[Sharing] Upload failed:', err);
+        console.error('[Sharing] Upload or QR generation failed:', err);
       } finally {
         setIsUploading(false);
       }
     };
-    uploadImage();
-  }, [imageSrc]);
+    uploadAndGenerateQr();
+  }, [imageSrc, era.name, prompt]);
 
   const handleDownload = () => {
     const link = document.createElement('a');
@@ -284,8 +306,8 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({ imageSrc, prompt, er
 
           {/* QR Code fulfillment */}
           <div className="flex flex-col items-center gap-2">
-            <div className="w-24 h-24 bg-white rounded-xl p-2 border-2 border-yellow-600 shadow-xl flex items-center justify-center">
-              {isUploading ? <Loader2 className="animate-spin text-yellow-600" /> : <img src={qrCodeUrl || ''} className="w-full h-full" />}
+            <div className="w-36 h-36 bg-white rounded-xl p-2 border-2 border-yellow-600 shadow-xl flex items-center justify-center">
+              {isUploading ? <Loader2 className="animate-spin text-yellow-600" size={32} /> : <img src={qrCodeUrl || ''} className="w-full h-full" />}
             </div>
             <span className="text-[10px] text-yellow-500 font-bold uppercase tracking-widest">Scan to share</span>
           </div>

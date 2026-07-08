@@ -9,7 +9,6 @@ import { applyEraStamp } from './services/stampService';
 import { FeaturedGallery } from './components/FeaturedGallery';
 
 const { ipcRenderer } = window.require('electron');
-const CLOUDINARY_CLOUD_NAME = "dniredeim"; // Default based on project context, update if different
 const IDLE_TIMEOUT = 30000; // 30 seconds
 
 /**
@@ -25,7 +24,6 @@ const App: React.FC = () => {
   const [faceDetectionResult, setFaceDetectionResult] = useState<FaceDetectionResult | null>(null); // Details of user's detected face
   const [sessionKey, setSessionKey] = useState(0);                                 // Forces re-mounting of components on restart
   const [isMuted, setIsMuted] = useState(true);                                    // Global audio mute state
-  const [isSyncing, setIsSyncing] = useState(false);                               // Tracks background sync status
   const [isKioskMode, setIsKioskMode] = useState<boolean>(true);                   // Tracks if kiosk mode is active
 
 
@@ -202,10 +200,6 @@ const App: React.FC = () => {
     return () => clearInterval(interval);
   }, [currentScreen]);
 
-const CLOUDINARY_PROJECT_FOLDER = "kemet-mirror"; // Cloudinary folder name
-
-
-
   // Fetch kiosk status on boot
   useEffect(() => {
     const checkKiosk = async () => {
@@ -219,72 +213,6 @@ const CLOUDINARY_PROJECT_FOLDER = "kemet-mirror"; // Cloudinary folder name
     };
     checkKiosk();
   }, []);
-
-  const handleManualSync = async () => {
-    if (isSyncing) return;
-    setIsSyncing(true);
-    try {
-      console.log('[Manual Sync] Requesting Cloudinary Sync...');
-      
-      // 1. Sync Featured Assets
-      console.log(`[Manual Sync] Syncing featured assets...`);
-      const featuredResponse = await fetch(`https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/list/Featured.json`);
-      if (featuredResponse.ok) {
-        const data = await featuredResponse.json();
-        const allResources = data.resources || [];
-        const projectImages = allResources.filter((img: any) => 
-          img.public_id.startsWith(`${CLOUDINARY_PROJECT_FOLDER}/`)
-        );
-        const imageData = projectImages.map((img: any) => ({
-          id: img.public_id,
-          url: `https://res.cloudinary.com/${CLOUDINARY_CLOUD_NAME}/image/upload/v${img.version}/${img.public_id}.${img.format}`
-        }));
-        await ipcRenderer.invoke('sync-featured-images', imageData);
-      } else {
-        throw new Error('Cloudinary Featured.json list endpoint returned non-OK status');
-      }
-
-      // 2. Sync Templates
-      console.log(`[Manual Sync] Syncing templates...`);
-      const folder = `${CLOUDINARY_PROJECT_FOLDER}/Templates`;
-      const templatesResult = await ipcRenderer.invoke('list-remote-templates', { folder });
-      if (templatesResult.success) {
-        const allResources = templatesResult.resources || [];
-        const projectTemplates = allResources.map((img: any) => {
-          const folder = img.asset_folder || '';
-          const rawFilename = img.public_id;
-          const filename = rawFilename.replace(/_[a-z0-9]{6}$/i, '');
-          const prefix = `${CLOUDINARY_PROJECT_FOLDER}/Templates/`;
-          let relativeFolder = folder;
-          if (folder.startsWith(prefix)) {
-            relativeFolder = folder.substring(prefix.length);
-          } else if (folder.includes('/Templates/')) {
-            const idx = folder.toLowerCase().indexOf('/templates/');
-            relativeFolder = folder.substring(idx + 11);
-          }
-          return {
-            id: img.public_id,
-            url: img.secure_url || img.url,
-            relativePath: relativeFolder 
-              ? `${relativeFolder}/${filename}.${img.format}`
-              : `${filename}.${img.format}`
-          };
-        }).filter(Boolean);
-        if (projectTemplates.length > 0) {
-          await ipcRenderer.invoke('sync-templates', projectTemplates);
-        }
-      } else {
-        throw new Error(templatesResult.error || 'Failed to fetch remote templates list');
-      }
-
-      alert('Sync completed successfully!');
-    } catch (err: any) {
-      console.error('[Manual Sync] Error occurred:', err);
-      alert(`Sync failed: ${err.message || err}`);
-    } finally {
-      setIsSyncing(false);
-    }
-  };
 
   // Initialize idle timer on mount to prevent immediate Featured screen trigger
   useEffect(() => {
@@ -307,15 +235,7 @@ const CLOUDINARY_PROJECT_FOLDER = "kemet-mirror"; // Cloudinary folder name
       className="h-[100dvh] w-screen bg-slate-900 text-slate-100 flex flex-col overflow-hidden relative"
       onClick={handleGlobalClick}
     >
-      {!isKioskMode && (
-        <button
-          onClick={handleManualSync}
-          disabled={isSyncing}
-          className="fixed top-4 right-4 z-[99999] px-6 py-3 bg-amber-500 hover:bg-amber-400 disabled:bg-slate-800 disabled:text-slate-400 text-black font-black uppercase tracking-wider rounded-2xl shadow-[0_10px_30px_rgba(245,158,11,0.3)] border border-amber-300/30 flex items-center gap-2 text-sm transition-all active:scale-95"
-        >
-          {isSyncing ? 'Syncing...' : 'Sync Cloud Images'}
-        </button>
-      )}
+
       <main className="flex-grow relative h-full w-full" key={sessionKey}>
         {renderScreen()}
         {/* Render LoadingScreen when currentScreen is PROCESSING */}
