@@ -38,6 +38,26 @@ export const SplashScreen: React.FC<SplashScreenProps> = ({ onSelectEra, isMuted
   const isExitingRef = useRef(false);
   const clickTimesRef = useRef<number[]>([]);
 
+  /**
+   * CLEAR PRINTER QUEUE ON MOUNT
+   * Ensures any leftover or failed print jobs are purged when the splash screen initializes.
+   */
+  useEffect(() => {
+    const isElectron = typeof window !== 'undefined' && navigator.userAgent.indexOf('Electron') !== -1;
+    if (isElectron && (window as any).require) {
+      try {
+        const { ipcRenderer: ipc } = (window as any).require('electron');
+        const preferredPrinter = localStorage.getItem('preferredPrinter') || '';
+        console.log('[SplashScreen] Clearing printer queue on splash load...');
+        ipc.invoke('clear-printer-queue', { printerName: preferredPrinter }).catch((err: any) => {
+          console.error('[SplashScreen] Failed to clear printer queue:', err);
+        });
+      } catch (err) {
+        console.error('[SplashScreen] Error invoking clear-printer-queue:', err);
+      }
+    }
+  }, []);
+
   const handleTitleClick = async () => {
     const now = Date.now();
     const recentClicks = [...clickTimesRef.current, now].filter(t => now - t < 3000);

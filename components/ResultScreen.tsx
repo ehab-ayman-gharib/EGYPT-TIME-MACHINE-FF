@@ -173,11 +173,20 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({ imageSrc, prompt, er
     document.body.removeChild(link);
   };
 
+  const [hasPrinted, setHasPrinted] = useState(false);
+
   /**
    * 3. PRINTING EXECUTION
    * Sends the image data to the Electron main process for high-quality native printing.
+   * Restricted to 1 print execution per result session. Subsequent clicks are clickable but perform no action.
    */
   const handlePrint = async () => {
+    if (hasPrinted) {
+      console.log('[ResultScreen] Print button already used in this session. Click ignored.');
+      return;
+    }
+    setHasPrinted(true);
+
     const isElectron = navigator.userAgent.indexOf('Electron') !== -1;
     setPrintStatus('printing');
 
@@ -191,10 +200,19 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({ imageSrc, prompt, er
           setTimeout(() => setPrintStatus('idle'), 3000);
         } else {
           setPrintStatus(`error:${result.failureReason}`);
+          console.warn('[ResultScreen] Print failed. Clearing printer queue...');
+          ipcRenderer.invoke('clear-printer-queue', { printerName: selectedPrinter }).catch((err: any) => {
+            console.error('[ResultScreen] Error clearing queue after print failure:', err);
+          });
           setTimeout(() => setPrintStatus('idle'), 5000);
         }
-      } catch (e) {
+      } catch (e: any) {
         setPrintStatus('error:Communication Error');
+        try {
+          const { ipcRenderer } = (window as any).require('electron');
+          ipcRenderer.invoke('clear-printer-queue', { printerName: selectedPrinter }).catch(() => {});
+        } catch (_) {}
+        setTimeout(() => setPrintStatus('idle'), 5000);
       }
     } else {
       window.print(); // Fallback for standard browser
