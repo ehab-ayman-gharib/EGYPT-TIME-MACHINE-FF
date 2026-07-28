@@ -9,7 +9,7 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { EraData, FaceDetectionResult } from '../types';
-import { Download, RotateCcw, Share2, QrCode, Loader2, Printer, CheckCircle2, XCircle } from 'lucide-react';
+import { RotateCcw, Share2, QrCode, Loader2, Printer, CheckCircle2, XCircle } from 'lucide-react';
 import QRCode from 'qrcode';
 
 interface ResultScreenProps {
@@ -309,14 +309,9 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({ imageSrc, prompt, er
         {/* Footer fulfillment methods */}
         <div className="w-full flex justify-center gap-12 pb-8">
           <div className="flex flex-col gap-4">
-             <div className="flex gap-4">
-                <button onClick={handleDownload} className="flex gap-2 px-6 py-3 bg-yellow-600 text-black font-bold rounded-xl">
-                  <Download size={18} /> DOWNLOAD
-                </button>
-                <button onClick={handlePrint} className="flex gap-2 px-6 py-3 bg-indigo-600 text-white font-bold rounded-xl">
-                  <Printer size={18} /> PRINT PHOTO
-                </button>
-             </div>
+             <button onClick={handlePrint} className="flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 text-white font-bold rounded-xl">
+               <Printer size={18} /> PRINT PHOTO
+             </button>
              <button onClick={handleRestart} className="py-3 bg-white/10 text-white font-bold rounded-xl border border-white/20">
                <RotateCcw size={16} className="inline mr-2" /> NEW ADVENTURE
              </button>
