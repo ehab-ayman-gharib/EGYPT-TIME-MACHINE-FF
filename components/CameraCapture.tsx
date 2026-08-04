@@ -9,11 +9,9 @@
  */
 
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { RefreshCw, AlertCircle, ChevronLeft } from 'lucide-react';
+import { RefreshCw, AlertCircle, ChevronLeft, Upload } from 'lucide-react';
 import { loadFaceApiModels, detectFaces } from '../services/faceService';
 import { EraData, FaceDetectionResult, EraId } from '../types';
-import { bootstrapCameraKit, createMediaStreamSource, Transform2D } from '@snap/camera-kit';
-import { CAMERAKIT_CONFIG } from '../services/cameraKitConfig';
 
 interface CameraCaptureProps {
   era: EraData | null;
@@ -26,14 +24,10 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const camerakitCanvasRef = useRef<HTMLCanvasElement>(null);
-  const cameraKitSessionRef = useRef<any>(null);
-  const cameraKitSourceRef = useRef<any>(null);
 
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [modelsLoaded, setModelsLoaded] = useState(false);
-  const [camerakitLoading, setCamerakitLoading] = useState(false);
   const [isDetecting, setIsDetecting] = useState(false);
   const [countdown, setCountdown] = useState<number | null>(null);
   const [showFlash, setShowFlash] = useState(false);
@@ -41,170 +35,52 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
   const [previewImage, setPreviewImage] = useState<string | null>(null);
   const [previewFaceData, setPreviewFaceData] = useState<FaceDetectionResult | null>(null);
   const [processingCountdown, setProcessingCountdown] = useState<number | null>(null);
-  const [backgroundId] = useState<string>(() => {
-    const stored = localStorage.getItem('airbus_background_id');
-    let nextId = 0;
-    if (stored !== null) {
-      nextId = (parseInt(stored, 10) + 1) % 3;
-    }
-    localStorage.setItem('airbus_background_id', nextId.toString());
-    return nextId.toString();
-  });
 
   /**
    * 1. CAMERA & AI INITIALIZATION
-   * Loads Face-API models and requests the camera stream, or bootstraps CameraKit for Airbus.
+   * Loads Face-API models and requests the camera stream.
    */
   useEffect(() => {
     let active = true;
     const init = async () => {
-      if (era?.id === EraId.AIRBUS) {
-        setCamerakitLoading(true);
-        console.log("[CameraKit] Starting CameraKit initialization for Airbus era...");
-        try {
-          if (!active) return;
-          if (!camerakitCanvasRef.current) {
-            console.error("[CameraKit] Canvas ref is not ready.");
-            return;
+      try {
+        const loaded = await loadFaceApiModels();
+        if (!active) return;
+        setModelsLoaded(loaded);
+
+        const mediaStream = await navigator.mediaDevices.getUserMedia({
+          video: {
+            facingMode: 'user',
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
           }
-
-          console.log("[CameraKit] Bootstrapping SDK...");
-          const kit = await bootstrapCameraKit({ apiToken: CAMERAKIT_CONFIG.CAMERA_KIT_API_TOKEN });
-          if (!active) return;
-
-          console.log("[CameraKit] Creating session...");
-          const session = await kit.createSession({ liveRenderTarget: camerakitCanvasRef.current });
-          if (!active) return;
-          cameraKitSessionRef.current = session;
-
-          console.log("[CameraKit] Loading lens group directly:", CAMERAKIT_CONFIG.LENS_GROUP_ID);
-          const group = await kit.lensRepository.loadLensGroups([CAMERAKIT_CONFIG.LENS_GROUP_ID]);
-          if (!active) return;
-          console.log("[CameraKit] Loaded group object:", group);
-          console.log("[CameraKit] group.lenses:", group.lenses);
-          if (group.errors && group.errors.length > 0) {
-            console.error("[CameraKit] group.errors:", group.errors);
-          }
-
-          const lens = group.lenses.find((l: any) => l.id === CAMERAKIT_CONFIG.LENS_ID) || group.lenses[0];
-          if (!active) return;
-
-          console.log("[CameraKit] Applying lens:", lens ? (lens.name || lens.id) : "None found");
-          if (lens) {
-            await session.applyLens(lens, {
-              launchParams: {
-                backgroundID: backgroundId
-              }
-            });
-            console.log("[CameraKit] Lens applied successfully with backgroundID:", backgroundId);
-          } else {
-            console.error("[CameraKit] No lens found to apply.");
-          }
-          if (!active) return;
-
-          console.log("[CameraKit] Getting user media stream...");
-          const mediaStream = await navigator.mediaDevices.getUserMedia({
-            video: {
-              facingMode: 'user',
-              width: { ideal: 1280 },
-              height: { ideal: 720 }
-            }
-          });
-          if (!active) {
-            mediaStream.getTracks().forEach(track => track.stop());
-            return;
-          }
-          setStream(mediaStream);
-
-          console.log("[CameraKit] Wrapping stream in media stream source...");
-          const source = createMediaStreamSource(mediaStream, {
-            cameraType: 'user'
-          });
-          cameraKitSourceRef.current = source;
-
-          await session.setSource(source);
-          if (!active) return;
-
-          // Rotate 90 degrees and mirror on x-axis (column-major)
-          const rotate90 = new Transform2D([
-            0, -1, 0,
-            1, 0, 0,
-            0, 1, 1
-          ]);
-          source.setTransform(rotate90);
-
-          console.log("[CameraKit] Starting session play...");
-          session.play();
-          source.setRenderSize(1080, 1920);
-          setCamerakitLoading(false);
-          console.log("[CameraKit] CameraKit successfully running.");
-        } catch (err) {
-          console.error("[CameraKit] CameraKit initialization failed:", err);
-          setError("Failed to initialize CameraKit AR experience: " + (err instanceof Error ? err.message : String(err)));
-          setCamerakitLoading(false);
+        });
+        if (!active) {
+          mediaStream.getTracks().forEach(track => track.stop());
+          return;
         }
-      } else {
-        try {
-          const loaded = await loadFaceApiModels();
-          if (!active) return;
-          setModelsLoaded(loaded);
-
-          const mediaStream = await navigator.mediaDevices.getUserMedia({
-            video: {
-              facingMode: 'user',
-              width: { ideal: 1280 },
-              height: { ideal: 720 }
-            }
-          });
-          if (!active) {
-            mediaStream.getTracks().forEach(track => track.stop());
-            return;
-          }
-          setStream(mediaStream);
-          if (videoRef.current) videoRef.current.srcObject = mediaStream;
-        } catch (err) {
-          setError("Camera access denied. Please check system permissions.");
-          console.error(err);
-        }
+        setStream(mediaStream);
+        if (videoRef.current) videoRef.current.srcObject = mediaStream;
+      } catch (err) {
+        setError("Camera access denied. Please check system permissions.");
+        console.error(err);
       }
     };
     init();
 
     return () => {
       active = false;
-      if (cameraKitSessionRef.current) {
-        try {
-          cameraKitSessionRef.current.pause();
-          cameraKitSessionRef.current.destroy();
-        } catch (e) {
-          console.warn("Error cleaning up CameraKit session", e);
-        }
-      }
       if (stream) {
         stream.getTracks().forEach(track => track.stop());
       }
     };
-  }, [era]);
+  }, []);
 
   /**
    * 2. CAPTURE LOGIC (The "Shutter")
-   * Captures the current video frame (or CameraKit canvas), rotates it 90deg, and runs face detection.
+   * Captures the current video frame, rotates it 90deg, and runs face detection.
    */
   const handleCaptureImmediate = useCallback(async () => {
-    if (era?.id === EraId.AIRBUS) {
-      if (!camerakitCanvasRef.current) return;
-      setIsDetecting(true);
-
-      const imageData = camerakitCanvasRef.current.toDataURL('image/jpeg', 0.9);
-      const faceData: FaceDetectionResult = { maleCount: 0, femaleCount: 1, childCount: 0, totalPeople: 1 };
-
-      setPreviewImage(imageData);
-      setPreviewFaceData(faceData);
-      setProcessingCountdown(5);
-      setIsDetecting(false);
-      return;
-    }
-
     if (!videoRef.current || !canvasRef.current) return;
     setIsDetecting(true);
 
@@ -357,7 +233,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
         const imageData = canvas.toDataURL('image/jpeg', 0.9);
 
         let faceData: FaceDetectionResult = { maleCount: 0, femaleCount: 1, childCount: 0, totalPeople: 1 };
-        if (era?.id !== EraId.SNAP_A_MEMORY && era?.id !== EraId.AIRBUS) {
+        if (era?.id !== EraId.SNAP_A_MEMORY) {
           console.log('[Upload] Running AI Detection...');
           faceData = await detectFaces(canvas, modelsLoaded);
 
@@ -398,24 +274,16 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
 
   return (
     <div className="h-full w-full bg-black relative flex flex-col">
-      {/* 1. NATIVE VIDEO FEED or CameraKit Canvas */}
+      {/* 1. NATIVE VIDEO FEED */}
       <div className="absolute inset-0 z-0 overflow-hidden flex items-center justify-center bg-black">
-        {era?.id === EraId.AIRBUS ? (
-          <canvas
-            ref={camerakitCanvasRef}
-            className="absolute object-cover animate-fade-in"
-            style={{ width: '100%', height: '100%' }}
-          />
-        ) : (
-          <video
-            ref={videoRef}
-            autoPlay
-            playsInline
-            muted
-            className="absolute transform rotate-[90deg] scale-x-[-1] object-cover"
-            style={{ width: '100vh', height: '100vw', maxWidth: 'none' }}
-          />
-        )}
+        <video
+          ref={videoRef}
+          autoPlay
+          playsInline
+          muted
+          className="absolute transform rotate-[90deg] scale-x-[-1] object-cover"
+          style={{ width: '100vh', height: '100vw', maxWidth: 'none' }}
+        />
         <canvas ref={canvasRef} className="hidden" />
       </div>
 
@@ -455,15 +323,8 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
       )}
 
       {/* 3. OVERLAYS (AI Loading, Countdown, Flash, Error Messages) */}
-      {!modelsLoaded && !error && era?.id !== EraId.SNAP_A_MEMORY && era?.id !== EraId.AIRBUS && (
+      {!modelsLoaded && !error && era?.id !== EraId.SNAP_A_MEMORY && (
         <div className="absolute inset-0 z-[60] flex flex-col items-center justify-center bg-slate-900/80 backdrop-blur-sm">
-          <RefreshCw className="w-12 h-12 text-yellow-500 animate-spin mb-4" />
-          <p className="text-white text-lg font-bold brand-font tracking-wider uppercase">Initializing</p>
-        </div>
-      )}
-
-      {camerakitLoading && (
-        <div className="absolute inset-0 z-[60] flex flex-col items-center justify-center bg-slate-900/80 backdrop-blur-sm animate-fade-in">
           <RefreshCw className="w-12 h-12 text-yellow-500 animate-spin mb-4" />
           <p className="text-white text-lg font-bold brand-font tracking-wider uppercase">Initializing</p>
         </div>
@@ -501,6 +362,26 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
       {/* 4. FOOTER CONTROLS (Shutter, Upload) */}
       {!isProcessing && !previewImage && (
         <div className="absolute bottom-0 left-0 right-0 p-10 pb-16 z-20 flex justify-center items-center gap-8 bg-gradient-to-t from-black/80 to-transparent">
+          {/* Hidden File Input */}
+          <input
+            type="file"
+            ref={fileInputRef}
+            onChange={handleFileSelect}
+            accept="image/*"
+            className="hidden"
+          />
+
+          {/* Upload Button */}
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isDetecting || countdown !== null}
+            className="w-16 h-16 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 backdrop-blur-md border border-white/20 text-white flex items-center justify-center transition-all shadow-lg disabled:opacity-50"
+            title="Upload Photo"
+          >
+            <Upload size={24} />
+          </button>
+
+          {/* Shutter Button */}
           <button onClick={startCaptureSequence} disabled={isDetecting || countdown !== null} className="relative w-28 h-28 flex items-center justify-center">
             {!isDetecting && countdown === null && <div className="absolute inset-0 rounded-full border-[6px] border-white/30 animate-pulse-medium" />}
             <div className={`w-20 h-20 rounded-full border-[4px] border-white flex items-center justify-center bg-black/20 backdrop-blur-sm ${isDetecting ? 'opacity-50' : ''}`}>

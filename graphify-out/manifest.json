@@ -1,7 +1,7 @@
 {
   "App.tsx": {
-    "mtime": 1783516360.9263427,
-    "ast_hash": "69978011470f78084f913a15082b054a",
+    "mtime": 1785843479.345915,
+    "ast_hash": "e5931417ab0159d178ad8195f4c45e0f",
     "semantic_hash": ""
   },
   "GenderDetectionService.ts": {
@@ -10,8 +10,8 @@
     "semantic_hash": "401671a3d5cb6f6642492386eb4fed95"
   },
   "components/CameraCapture.tsx": {
-    "mtime": 1783513557.6089272,
-    "ast_hash": "fa0a0b7c851104c6192b9e59c66482e0",
+    "mtime": 1785851589.9325144,
+    "ast_hash": "6cd9decb5d2e291583dbab231b37969c",
     "semantic_hash": ""
   },
   "components/FeaturedGallery.tsx": {
@@ -25,8 +25,8 @@
     "semantic_hash": ""
   },
   "components/ResultScreen.tsx": {
-    "mtime": 1785158826.4838965,
-    "ast_hash": "667a2def23b32935a41eeabf89f9d458",
+    "mtime": 1785231743.6163933,
+    "ast_hash": "5781ee7b7b389cab97cffdfc317017ac",
     "semantic_hash": ""
   },
   "components/SplashScreen.tsx": {
@@ -1155,9 +1155,9 @@
     "semantic_hash": "53d41d3be119211f2e944d7bb8ff6fe2"
   },
   "services/faceFusionService.ts": {
-    "mtime": 1778514456.5517745,
-    "ast_hash": "ac78f91c3b24087e07b19ea740183f7c",
-    "semantic_hash": "ac78f91c3b24087e07b19ea740183f7c"
+    "mtime": 1785843471.4744217,
+    "ast_hash": "359ebe765223750ea54a3a46611259ff",
+    "semantic_hash": ""
   },
   "services/faceService.ts": {
     "mtime": 1774727435.2762005,
@@ -1280,8 +1280,8 @@
     "semantic_hash": ""
   },
   "services/cameraKitConfig.ts": {
-    "mtime": 1782655498.1378374,
-    "ast_hash": "9086fe986a758c03cf562bc9002c1196",
+    "mtime": 1785843508.3126223,
+    "ast_hash": "e2ebd7ddedcadeeadbf819c35985c768",
     "semantic_hash": ""
   },
   ".agent/workflows/camerakit-electron-integration.md": {

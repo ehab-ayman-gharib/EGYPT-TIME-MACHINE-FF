@@ -61,7 +61,8 @@ const ERA_NAME_MAP: Record<string, string> = {
   [EraId.OLD_EGYPT]: 'Old Kingdom',
   [EraId.COPTIC_EGYPT]: 'Coptic',
   [EraId.ISLAMIC_EGYPT]: 'Islamic',
-  [EraId.MODERN_EGYPT]: 'Modern'
+  [EraId.MODERN_EGYPT]: 'Modern',
+  [EraId.AIRBUS]: 'Airplane'
 };
 
 declare global {
