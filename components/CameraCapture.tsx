@@ -9,7 +9,7 @@
  */
 
 import React, { useRef, useEffect, useState, useCallback } from 'react';
-import { RefreshCw, AlertCircle, ChevronLeft, Upload } from 'lucide-react';
+import { RefreshCw, AlertCircle, ChevronLeft } from 'lucide-react';
 import { loadFaceApiModels, detectFaces } from '../services/faceService';
 import { EraData, FaceDetectionResult, EraId } from '../types';
 
@@ -23,7 +23,6 @@ interface CameraCaptureProps {
 export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, onBack, isProcessing = false }) => {
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [stream, setStream] = useState<MediaStream | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -191,75 +190,11 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
     setPreviewImage(null);
     setPreviewFaceData(null);
     setProcessingCountdown(null);
-    // Reset file input so the same file can be selected again
-    if (fileInputRef.current) fileInputRef.current.value = '';
   };
 
   const startCaptureSequence = () => {
     if (countdown !== null || isDetecting) return;
     setCountdown(3);
-  };
-
-  const handleFileSelect = async (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file || !canvasRef.current) return;
-
-    setIsDetecting(true);
-
-    const reader = new FileReader();
-    reader.onload = async (e) => {
-      const img = new Image();
-      img.onload = async () => {
-        const canvas = canvasRef.current!;
-        const ctx = canvas.getContext('2d');
-        if (!ctx) return;
-
-        // BOOTH OUTPUT SPEC: 1080x1920 Portrait
-        const canvasWidth = 1080;
-        const canvasHeight = 1920;
-        canvas.width = canvasWidth;
-        canvas.height = canvasHeight;
-
-        // Draw image to fill portrait frame (Cover style)
-        const scale = Math.max(canvasWidth / img.width, canvasHeight / img.height);
-        const drawWidth = img.width * scale;
-        const drawHeight = img.height * scale;
-        const x = (canvasWidth - drawWidth) / 2;
-        const y = (canvasHeight - drawHeight) / 2;
-
-        ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-        ctx.drawImage(img, x, y, drawWidth, drawHeight);
-
-        const imageData = canvas.toDataURL('image/jpeg', 0.9);
-
-        let faceData: FaceDetectionResult = { maleCount: 0, femaleCount: 1, childCount: 0, totalPeople: 1 };
-        if (era?.id !== EraId.SNAP_A_MEMORY) {
-          console.log('[Upload] Running AI Detection...');
-          faceData = await detectFaces(canvas, modelsLoaded);
-
-          if (faceData.totalPeople === 0) {
-            setDetectionError("No faces detected in this photo!");
-            setTimeout(() => setDetectionError(null), 3500);
-            setIsDetecting(false);
-            return;
-          }
-          if (faceData.totalPeople > 3) {
-            setDetectionError("Too many people! This photo should have 1-3 people.");
-            setTimeout(() => setDetectionError(null), 3500);
-            setIsDetecting(false);
-            return;
-          }
-        }
-
-        // Show preview for uploaded images too
-        setPreviewImage(imageData);
-        setPreviewFaceData(faceData);
-        setProcessingCountdown(5);
-        setIsDetecting(false);
-      };
-      img.src = e.target?.result as string;
-    };
-    reader.readAsDataURL(file);
   };
 
   if (error) {
@@ -359,28 +294,9 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ era, onCapture, on
         </div>
       )}
 
-      {/* 4. FOOTER CONTROLS (Shutter, Upload) */}
+      {/* 4. FOOTER CONTROLS (Shutter) */}
       {!isProcessing && !previewImage && (
-        <div className="absolute bottom-0 left-0 right-0 p-10 pb-16 z-20 flex justify-center items-center gap-8 bg-gradient-to-t from-black/80 to-transparent">
-          {/* Hidden File Input */}
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileSelect}
-            accept="image/*"
-            className="hidden"
-          />
-
-          {/* Upload Button */}
-          <button
-            onClick={() => fileInputRef.current?.click()}
-            disabled={isDetecting || countdown !== null}
-            className="w-16 h-16 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 backdrop-blur-md border border-white/20 text-white flex items-center justify-center transition-all shadow-lg disabled:opacity-50"
-            title="Upload Photo"
-          >
-            <Upload size={24} />
-          </button>
-
+        <div className="absolute bottom-0 left-0 right-0 p-10 pb-16 z-20 flex justify-center items-center bg-gradient-to-t from-black/80 to-transparent">
           {/* Shutter Button */}
           <button onClick={startCaptureSequence} disabled={isDetecting || countdown !== null} className="relative w-28 h-28 flex items-center justify-center">
             {!isDetecting && countdown === null && <div className="absolute inset-0 rounded-full border-[6px] border-white/30 animate-pulse-medium" />}

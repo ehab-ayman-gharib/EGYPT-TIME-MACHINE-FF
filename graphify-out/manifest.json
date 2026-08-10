@@ -1,7 +1,7 @@
 {
   "App.tsx": {
-    "mtime": 1785843479.345915,
-    "ast_hash": "e5931417ab0159d178ad8195f4c45e0f",
+    "mtime": 1786359202.578757,
+    "ast_hash": "6770cd645da58fbecb16a90ae119cca9",
     "semantic_hash": ""
   },
   "GenderDetectionService.ts": {
@@ -10,8 +10,8 @@
     "semantic_hash": "401671a3d5cb6f6642492386eb4fed95"
   },
   "components/CameraCapture.tsx": {
-    "mtime": 1785851589.9325144,
-    "ast_hash": "6cd9decb5d2e291583dbab231b37969c",
+    "mtime": 1786278829.8668907,
+    "ast_hash": "7459bff12a3adab1fb884f56b1f72174",
     "semantic_hash": ""
   },
   "components/FeaturedGallery.tsx": {
@@ -25,13 +25,13 @@
     "semantic_hash": ""
   },
   "components/ResultScreen.tsx": {
-    "mtime": 1785231743.6163933,
-    "ast_hash": "5781ee7b7b389cab97cffdfc317017ac",
+    "mtime": 1786278375.4573257,
+    "ast_hash": "773facc24c8554735c28b48fe3b051df",
     "semantic_hash": ""
   },
   "components/SplashScreen.tsx": {
-    "mtime": 1785158833.9040031,
-    "ast_hash": "dae5ad9885d8e756db47f8a074dd3424",
+    "mtime": 1786358058.5208826,
+    "ast_hash": "2d8f9263d8422f3b006525824e4623e2",
     "semantic_hash": ""
   },
   "constants.ts": {
@@ -1165,9 +1165,9 @@
     "semantic_hash": "b38ff32660bf1ef437538bdfe338c068"
   },
   "services/geminiService.ts": {
-    "mtime": 1777753600.5599997,
-    "ast_hash": "68a797148502d6b1d10ab49837de23a7",
-    "semantic_hash": "68a797148502d6b1d10ab49837de23a7"
+    "mtime": 1786276165.3700614,
+    "ast_hash": "1f5a3864cec21e94a90a5bd6fcbce85a",
+    "semantic_hash": ""
   },
   "services/stampService.ts": {
     "mtime": 1780402946.855633,
@@ -1230,13 +1230,13 @@
     "semantic_hash": ""
   },
   "PROJECT_DOCUMENTATION.md": {
-    "mtime": 1776808688.4801314,
-    "ast_hash": "1e26e89bfc872ed73f3a39fcf63ac3e4",
+    "mtime": 1786276178.3153152,
+    "ast_hash": "2b5c8813fe031220a9e4db1d0363732c",
     "semantic_hash": ""
   },
   "QUICK_REFERENCE.md": {
-    "mtime": 1773719924.0210469,
-    "ast_hash": "2caabc923e337942b22627c7478a2352",
+    "mtime": 1786276181.9807954,
+    "ast_hash": "33761914c6098c01c6ad4ba73a0a2639",
     "semantic_hash": ""
   },
   "README.md": {
@@ -1275,8 +1275,8 @@
     "semantic_hash": ""
   },
   "index.html": {
-    "mtime": 1773572640.8605912,
-    "ast_hash": "87a3366c3aef3ea92088ede4ea5cbdf7",
+    "mtime": 1786359438.968047,
+    "ast_hash": "6dea8f01b01afa29f83a8df98f3edeff",
     "semantic_hash": ""
   },
   "services/cameraKitConfig.ts": {
@@ -1287,6 +1287,11 @@
   ".agent/workflows/camerakit-electron-integration.md": {
     "mtime": 1782399274.363575,
     "ast_hash": "45eff26803b66d3a7eb7e209e1fef81a",
+    "semantic_hash": ""
+  },
+  "services/dashboardService.ts": {
+    "mtime": 1786276154.1309874,
+    "ast_hash": "c9fef63672a927a33dcecc6a63c71169",
     "semantic_hash": ""
   }
 }

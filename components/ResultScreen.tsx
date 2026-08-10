@@ -65,7 +65,7 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({ imageSrc, prompt, er
 
     // User interactions to listen for
     const interactionEvents = ['mousemove', 'mousedown', 'keypress', 'touchstart', 'scroll', 'click'];
-    
+
     interactionEvents.forEach(event => {
       window.addEventListener(event, resetTimer);
     });
@@ -124,19 +124,19 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({ imageSrc, prompt, er
         if (isElectron && (window as any).require) {
           const { ipcRenderer } = (window as any).require('electron');
           console.log('[Sharing] Uploading directly to Cloudinary...');
-          
+
           const result = await ipcRenderer.invoke('upload-to-cloudinary', {
             imageSrc,
-            folder: 'kemet-mirror',
+            folder: 'cairo-airport-photobooth',
             metadata: {
-              event: 'Time Machine Photobooth',
+              event: 'Cairo Airport Photobooth',
               era: era.name,
               prompt: prompt
             }
           });
 
           if (result.success && result.secure_url) {
-            const shareUrl = `https://cairo-airport-company-photobooth-qr.vercel.app/?url=${encodeURIComponent(result.secure_url)}`;
+            const shareUrl = `https://cairo-airport-photobooth-qr.vercel.app/?url=${encodeURIComponent(result.secure_url)}`;
             console.log('[Sharing] Direct upload succeeded. Generating QR code for:', shareUrl);
             const qrDataUrl = await QRCode.toDataURL(shareUrl, {
               width: 384,
@@ -210,8 +210,8 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({ imageSrc, prompt, er
         setPrintStatus('error:Communication Error');
         try {
           const { ipcRenderer } = (window as any).require('electron');
-          ipcRenderer.invoke('clear-printer-queue', { printerName: selectedPrinter }).catch(() => {});
-        } catch (_) {}
+          ipcRenderer.invoke('clear-printer-queue', { printerName: selectedPrinter }).catch(() => { });
+        } catch (_) { }
         setTimeout(() => setPrintStatus('idle'), 5000);
       }
     } else {
@@ -255,7 +255,7 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({ imageSrc, prompt, er
     <div className="h-full w-full relative overflow-hidden bg-black flex flex-col items-center justify-center">
       {/* BACKGROUND & OVERLAYS */}
       <img src="./Result-Screen.jpg" alt="" className="absolute inset-0 w-full h-full object-cover blur-sm" />
-      
+
       {/* Status Notifications */}
       {printStatus !== 'idle' && (
         <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 z-[110] flex flex-col items-center">
@@ -309,12 +309,12 @@ export const ResultScreen: React.FC<ResultScreenProps> = ({ imageSrc, prompt, er
         {/* Footer fulfillment methods */}
         <div className="w-full flex justify-center gap-12 pb-8">
           <div className="flex flex-col gap-4">
-             <button onClick={handlePrint} className="flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 text-white font-bold rounded-xl">
-               <Printer size={18} /> PRINT PHOTO
-             </button>
-             <button onClick={handleRestart} className="py-3 bg-white/10 text-white font-bold rounded-xl border border-white/20">
-               <RotateCcw size={16} className="inline mr-2" /> NEW ADVENTURE
-             </button>
+            <button onClick={handlePrint} className="flex items-center justify-center gap-2 px-6 py-3 bg-indigo-600 text-white font-bold rounded-xl">
+              <Printer size={18} /> PRINT PHOTO
+            </button>
+            <button onClick={handleRestart} className="py-3 bg-white/10 text-white font-bold rounded-xl border border-white/20">
+              <RotateCcw size={16} className="inline mr-2" /> NEW ADVENTURE
+            </button>
           </div>
 
           {/* QR Code fulfillment */}

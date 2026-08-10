@@ -24,7 +24,9 @@
     "qrcode": "^1.5.4",
     "react": "^19.2.1",
     "react-dom": "^19.2.1",
+    "react-simple-keyboard": "^3.8.256",
     "sharp": "^0.34.5",
+    "simple-keyboard": "^3.8.176",
     "three": "0.160.0"
   },
   "devDependencies": {

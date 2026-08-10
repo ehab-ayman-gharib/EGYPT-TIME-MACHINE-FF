@@ -159,7 +159,7 @@
 
 #### 9. **Analytics Integration**
 - **Dashboard API**: Tracks generated image count
-- **Endpoint**: `https://ai-photobooth-dashboard.vercel.app/api/projects/ee7c55cd-39d5-481c-84e5-691c1a3f100e/generate`
+- **Endpoint**: `https://cairo-airport-photobooth-dashboard.vercel.app/api/projects/0397f1e6-32f8-4330-9156-ec541fadcda6/generate`
 - **Metrics**: Increments counter after successful generation
 
 #### 10. **User Experience Enhancements**
@@ -1131,7 +1131,7 @@ FormData {
 
 ### 3. Analytics Dashboard API
 
-**Endpoint**: `https://ai-photobooth-dashboard.vercel.app/api/projects/ee7c55cd-39d5-481c-84e5-691c1a3f100e/generate`
+**Endpoint**: `https://cairo-airport-photobooth-dashboard.vercel.app/api/projects/0397f1e6-32f8-4330-9156-ec541fadcda6/generate`
 **Method**: POST
 
 **Request**:

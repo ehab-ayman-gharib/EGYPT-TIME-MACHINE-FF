@@ -126,7 +126,7 @@ npm run electron:build
 
 1. **Google Gemini** - Image generation
 2. **QR Upload API** - `qr-web-api.vercel.app/upload`
-3. **Analytics Dashboard** - `ai-photobooth-dashboard.vercel.app`
+3. **Analytics Dashboard** - `cairo-airport-photobooth-dashboard.vercel.app`
 
 ---
 
