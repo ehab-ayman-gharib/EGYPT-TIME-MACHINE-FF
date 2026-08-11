@@ -361,6 +361,62 @@ const App: React.FC = () => {
     return () => events.forEach(event => window.removeEventListener(event, handler));
   }, [resetIdleTimer]);
 
+  // -------------------------------------------------------------
+  // DAILY 7:00 AM AUTO-RELOAD (Kiosk Self-Healing)
+  // -------------------------------------------------------------
+  const pendingDailyReloadRef = useRef<boolean>(false);
+
+  const triggerWindowReload = useCallback(() => {
+    console.log('[Auto-Reload] Executing daily 7:00 AM window refresh...');
+    window.location.reload();
+  }, []);
+
+  useEffect(() => {
+    let timerId: NodeJS.Timeout;
+
+    const scheduleDailyReload = () => {
+      const now = new Date();
+      const target = new Date();
+      target.setHours(7, 0, 0, 0); // Target 7:00:00 AM local time
+
+      if (now.getTime() >= target.getTime()) {
+        // If 7:00 AM has already passed today, schedule for 7:00 AM tomorrow
+        target.setDate(target.getDate() + 1);
+      }
+
+      const delayMs = target.getTime() - now.getTime();
+      console.log(`[Auto-Reload] Daily 7:00 AM window reload scheduled in ${(delayMs / (1000 * 60 * 60)).toFixed(2)} hours (at ${target.toLocaleString()})`);
+
+      timerId = setTimeout(() => {
+        // At 7:00 AM: if on idle screen (SPLASH or SCREEN_SAVER), reload immediately.
+        // If user is currently in a photo session (CAMERA, PROCESSING, RESULT), defer until returning to SPLASH.
+        if (currentScreen === AppScreen.SPLASH || currentScreen === AppScreen.SCREEN_SAVER) {
+          triggerWindowReload();
+        } else {
+          console.log('[Auto-Reload] 7:00 AM reached during active photo session. Deferred until session finishes.');
+          pendingDailyReloadRef.current = true;
+        }
+        // Reschedule for the next day
+        scheduleDailyReload();
+      }, delayMs);
+    };
+
+    scheduleDailyReload();
+
+    return () => {
+      if (timerId) clearTimeout(timerId);
+    };
+  }, [currentScreen, triggerWindowReload]);
+
+  // Execute deferred reload as soon as user returns to SPLASH / SCREEN_SAVER
+  useEffect(() => {
+    if ((currentScreen === AppScreen.SPLASH || currentScreen === AppScreen.SCREEN_SAVER) && pendingDailyReloadRef.current) {
+      console.log('[Auto-Reload] Active session completed after 7:00 AM. Executing deferred window reload now.');
+      pendingDailyReloadRef.current = false;
+      triggerWindowReload();
+    }
+  }, [currentScreen, triggerWindowReload]);
+
 
   return (
     // Main Wrapper container ensuring full screen dimensions and dark mode defaults

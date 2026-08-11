@@ -85,6 +85,17 @@ function createWindow(isKiosk = false) {
         return allowedPermissions.includes(permission);
     });
 
+    // Auto-Recovery handlers for 24/7 kiosk reliability
+    mainWindow.webContents.on('unresponsive', () => {
+        console.warn('[Electron] Renderer process became unresponsive. Performing window reload...');
+        mainWindow.reload();
+    });
+
+    mainWindow.webContents.on('render-process-gone', (event, details) => {
+        console.error('[Electron] Renderer process crashed or exited unexpectedly:', details);
+        mainWindow.reload();
+    });
+
     const isDevEnv = !app.isPackaged;
 
 
