@@ -392,7 +392,20 @@ export const ERAS: EraData[] = [
     name: "Airbus",
     description: "Step into the future with our interactive Airbus flight deck experience.",
     previewImage: "./Airbus-Preview.png",
-    scenery: [],
+    scenery: [
+      {
+        prompt: "A stunning, golden hour full-body photograph of the individuals standing in a relaxed, confident pose on the airport tarmac. Behind them, standing in perfectly focused clarity with no background blur, is an EgyptAir Airbus A350-900. The plane's livery, including the large blue Horus logo and the 'EGYPTAIR' text, is sharp and distinct. The warm, low sun of the golden hour casts a crisp light across the tarmac, the aircraft, and the individuals, highlighting all textures. The sky is a beautiful gradient of orange, pink, and light blue, and the entire scene is rendered with no blur on the aircraft or surrounding details.",
+        maleClothingIds: [
+          "an authentic navy blue EgyptAir commercial airline captain's uniform jacket with four gold cuff stripes with a star on each sleeve, matching navy trousers, a crisp white dress shirt with black tie, and a small multi-colored Egyptian flag pin accurately pinned to the lapel. [LLM INSTRUCTION: Look at the user photo. If they have exposed hair, output 'completely bare-headed, visible natural hair, no hats or caps'. If they are wearing a head covering, output 'an accurate black peaked captain cap with the gold strap, gold brim trim, and the winged eagle emblem'].",
+          "a tailored navy blue EgyptAir commercial airline captain's uniform jacket featuring four gold cuff stripes with a star on the sleeves, white collared shirt with dark tie, matching navy trousers, and an Egyptian flag lapel pin. [LLM INSTRUCTION: Look at the user photo. If they have exposed hair, output 'completely bare-headed, visible natural hair, no hats or caps'. If they are wearing a head covering, output 'an accurate black peaked captain cap with the gold strap, gold brim trim, and the winged eagle emblem'].",
+          "a double-breasted navy blue EgyptAir captain's uniform jacket with four gold cuff stripes with a star, shoulder epaulets, a crisp white dress shirt with dark tie, and a small Egyptian flag lapel pin. [LLM INSTRUCTION: Look at the user photo. If they have exposed hair, output 'completely bare-headed, visible natural hair, no hats or caps'. If they are wearing a head covering, output 'an authentic black peaked captain cap with gold strap, gold brim trim, and winged eagle emblem']."
+        ],
+        femaleClothingIds: [
+          "an elegant tailored navy blue female EgyptAir commercial airline captain's uniform jacket with four gold cuff stripes with a star, a crisp white shirt with dark tie, matching navy trousers, and a small multi-colored Egyptian flag pin pinned to the lapel. [LLM INSTRUCTION: Look at the user photo. If they have exposed hair, output 'completely bare-headed, visible natural hair, no hats or caps'. If they are wearing a head covering, output 'a matching navy blue pilot cap or dark head covering'].",
+          "a sharp navy blue female EgyptAir commercial airline captain's uniform jacket featuring four gold cuff stripes with a star on the sleeves, white collared blouse with dark tie, navy tailored trousers, and an Egyptian flag lapel pin. [LLM INSTRUCTION: Look at the user photo. If they have exposed hair, output 'completely bare-headed, visible natural hair, no hats or caps'. If they are wearing a head covering, output 'a matching dark hijab head covering or black peaked captain cap']."
+        ]
+      }
+    ],
     stamps: [],
     frames: [
       "./Frames/Modern-Egypt/1.png"
